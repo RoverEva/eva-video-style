@@ -1,0 +1,9 @@
+{
+  "name": "eva-video-style",
+  "version": "1.0.0",
+  "description": "Eva Video Style: deterministic motion-graphics toolkit and Claude skill for bilingual talking-head videos",
+  "license": "MIT",
+  "type": "module",
+  "scripts": { "example": "node scripts/render.mjs template/section/index.html --stills check --times 0.8,2.5,5" },
+  "dependencies": { "playwright": "^1.47.0" }
+}

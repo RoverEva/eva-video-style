@@ -1,0 +1,9 @@
+node_modules/
+media/
+sec/
+out/
+check/
+*.mp4
+*.mov
+*.wav
+.DS_Store
