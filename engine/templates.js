@@ -33,7 +33,7 @@
   T.hudFrameAt = (f, t, total) => { const fr = Math.floor(t * 30); const s = Math.floor(t);
     f.tc.textContent = `00:${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}:${String(fr % 30).padStart(2, '0')}`;
     f.dot.style.left = (62 + (1920 - 136) * clamp(t / (total || C.end))) + 'px'; };
-  /* small title with one highlighted word: T.title(L, '持续', '打磨', x, y, size, hiColor) */
+  /* small title with one highlighted word: T.title(L, 'KEEP ', 'IMPROVING', x, y, size, hiColor) */
   T.title = (L, a, hi, x, y, size, col, after) => el(L, 'div', 'abs cn', { left: x + 'px', top: y + 'px', fontSize: (size || 46) + 'px', color: '#fff', fontWeight: 900 }, `${a || ''}<span style="color:${col || T.HUD.BLUE}">${hi || ''}</span>${after || ''}`);
   T.kicker = (L, txt, x, y, col) => el(L, 'div', 'abs mono', { left: x + 'px', top: y + 'px', fontSize: '16px', color: col || T.HUD.DIM }, txt);
 
@@ -146,7 +146,7 @@
     ['#ff5f57', '#febc2e', '#28c840'].forEach((c, i) => el(p, 'div', 'abs', { left: (18 + i * 20) + 'px', top: '16px', width: '11px', height: '11px', borderRadius: '50%', background: c }));
     p.ls = lines.map((t, i) => { const d = el(p, 'div', 'abs mono', { left: '24px', top: (54 + i * 48) + 'px', fontSize: '30px', letterSpacing: '0', textTransform: 'none', color: i ? '#9fe6b4' : '#fff' }, ''); d.full = t; return d; }); return p; };
   T.terminalAt = (p, t, t0, cps) => { let tt = t - t0; p.ls.forEach(d => { const n = Math.max(0, Math.min(d.full.length, Math.floor(tt * (cps || 22)))); d.textContent = d.full.slice(0, n) + (n > 0 && n < d.full.length ? '▌' : ''); tt -= d.full.length / (cps || 22) + .25; }); };
-  /* gold stamp (内测中 / NEW) */
+  /* gold stamp (BETA / NEW) */
   T.goldStamp = (L, txt, x, y) => el(L, 'div', 'abs cn', { left: x + 'px', top: y + 'px', fontSize: '44px', color: T.HUD.GOLD, border: `3px solid ${T.HUD.GOLD}`, borderRadius: '8px', padding: '4px 18px', transform: 'rotate(-6deg)', boxShadow: '0 0 24px rgba(245,184,61,.35)', transformOrigin: '50% 50%' }, txt);
   /* version counter V1 → Vn over a tick ruler */
   T.version = (L, x, y) => { const v = el(L, 'div', 'abs disp', { left: x + 'px', top: y + 'px', fontSize: '150px', color: '#fff' }, 'V1'); el(L, 'div', 'abs', { left: x + 'px', top: (y + 170) + 'px', width: '1200px', height: '30px', backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0 2px, transparent 2px 16px)' }); return v; };
@@ -179,7 +179,7 @@
     const s = K.svg(L, 140, 120, x + w - 180, y + 186); K.sv(s, 'path', { d: 'M0 0 L120 100 L60 0', fill: '#fff', stroke: '#222', 'stroke-width': 4 }); el(L, 'div', 'abs', { left: (x + w - 220) + 'px', top: (y + 172) + 'px', width: '200px', height: '12px', background: '#fff' });
     b.e = K.emoji(L, emoji || '🤔', 190, x + w - 10, y + 190); return b; };
   T.bubbleAt = (b, t, t0, cps) => { tf(b.box, pop(t, t0, .4, 1.6)); const n = Math.max(0, Math.min(b.full.length, Math.floor((t - t0 - .3) * (cps || 10)))); b.t.textContent = b.full.slice(0, n); tf(b.e, pop(t, t0 + .5, .4, 2.2)); };
-  /* dashed slot boxes that get filled ("技能 1 / 2 / 3") */
+  /* dashed slot boxes that get filled ("SKILL 1 / 2 / 3") */
   T.slots = (L, x, y, labels, words, w) => labels.map((lab, i) => { const s = el(L, 'div', 'abs', { left: (x + i * ((w || 260) + 40)) + 'px', top: y + 'px', width: (w || 260) + 'px', height: '150px', border: '3px dashed rgba(255,255,255,.75)', borderRadius: '10px', transformOrigin: '50% 50%' });
     el(s, 'div', 'abs cn', { left: '50%', top: '-22px', transform: 'translateX(-50%)', background: '#000', padding: '0 10px', fontSize: '26px', color: '#d4ff2e' }, lab); s.w = el(s, 'div', 'abs cn', { left: 0, width: '100%', top: '32px', textAlign: 'center', fontSize: '76px', color: '#fff' }, words[i] || ''); s.w.style.transformOrigin = '50% 50%'; return s; });
   T.slotsAt = (ss, t, t0, fillT) => ss.forEach((s, i) => { tf(s, pop(t, t0, .35, 1.5)); tf(s.w, pop(t, fillT[i] ?? 99, .3, 2)); });

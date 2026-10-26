@@ -17,14 +17,14 @@
 
   // 1 · hook chip over full-bleed Eva (z above Eva so the chip shows on her video)
   C.scene({ t0: 0, t1: 2.03, z: 60, quiet: true, build(L) {
-      const st = {}; st.c = k.O(k.chip(L, 'HOOK · 开场钩子', k.LIME, k.INK, 46, 110, 110));
+      const st = {}; st.c = k.O(k.chip(L, 'HOOK · THE FIRST 3 SECONDS', k.LIME, k.INK, 46, 110, 110));
       k.sfx('pop', .3, .14); return st; },
     update(lt, st) { tf(st.c, pop(lt, .3, .35)); } });
 
   // 2 · lime headline + bars (illustrative, no fake numbers)
   C.scene({ t0: 2.0, t1: 4.03, bg: k.LIME, cls: 'dotgrid', build(L) {
       const st = { bars: [] };
-      st.h = k.disp(L, 'BIG IDEA', k.INK, 200, 110, 120); st.z = k.O(k.chip(L, '一句话核心观点', k.INK, '#fff', 50, 116, 330));
+      st.h = k.disp(L, 'BIG IDEA', k.INK, 200, 110, 120); st.z = k.O(k.chip(L, 'ONE-LINE KEY IDEA', k.INK, '#fff', 50, 116, 330));
       [180, 260, 420].forEach((h, i) => { const b = k.card(L, 110 + i * 150, 900 - h, 110, h, i === 2 ? k.RED : k.INK, { borderRadius: '10px', transformOrigin: '50% 100%' }); st.bars.push(b); });
       k.note(L, 'ILLUSTRATIVE', 110, 930, k.INK);
       k.sfx('impact', 2.3, .16); return st; },
@@ -35,7 +35,7 @@
   C.scene({ t0: 4.0, t1: C.end + .05, bg: k.RED, build(L) {
       const st = {}; st.sun = k.sunburst(L);
       st.h = k.disp(L, 'YEAH!', '#fff', 260, 110, 300, { textShadow: '8px 8px 0 #0b0b0d' }); k.O(st.h, '50% 50%');
-      st.c = k.O(k.chip(L, '♥ 点赞  + 关注', '#fff', k.RED, 52, 116, 640));
+      st.c = k.O(k.chip(L, '♥ LIKE  + FOLLOW', '#fff', k.RED, 52, 116, 640));
       st.conf = k.confetti(L, 70, 3, 150, 1100);
       k.sfx('impact', 4.3, .2); k.sfx('applause', 4.4, .12, { d: 1.2 }); return st; },
     update(lt, st, t) { st.sun.style.transform = `rotate(${lt * 12}deg)`; wipe(st.sun.parentNode, ease.outExpo(lt / .35), 'u');

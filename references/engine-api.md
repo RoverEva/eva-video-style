@@ -82,7 +82,7 @@ Everything is created in `build`. In `update`, only transforms, opacity, text an
 **Stamp:** a rotated red chip with `pop(t, t0, .3, 2.6)` and an `impact` cue.
 
 ## Template helpers (`K.T`, engine/templates.js)
-Each builder creates elements in `build()`; the matching `*At()` animates them in `update()`. See `template/t08` … `template/t18` for full working sections.
+Each builder creates elements in `build()`; the matching `*At()` animates them in `update()`. See `template/demo/t08` … `template/demo/t18` for full working sections.
 
 | Template | Builders → animators |
 |---|---|
@@ -97,4 +97,4 @@ Each builder creates elements in `build()`; the matching `*At()` animates them i
 | T16 Comic | `CMC` palettes (`GREEN`, `YELLOW`, `BLUE`, `PURPLE`, `CYAN`, `LIME` = [dark, light]), `burst(L,cx,cy,pal,clip,{rays,dots,glow})`→`burstAt(b,t,speed)` (call every frame), `zigzag(L,pts)` (returns `left`/`right` clip polygons for a split screen), `comicCloud(L,x,y,w,seed)`→`cloudAt(c,t,amp)`, `cStar(L,cx,cy,r,col)`, `action(L,cx,cy,r,angles)`, `comicText(L,txt,x,y,size,fill,{anchor,font,rot})`, `speechCloud(L,cx,cy,w,txt,size)`, `sparkles(L,n)`→`sparklesAt(a,t)`, `cloudGround(L,y,n)`, `sticker(L,txt,x,y,bg,rot)`; Eva: `ringFn = () => ({ color: '#111', width: 9 })` |
 | T17 Science | `SCN` palette, `sciNetBg`, `bokeh(L,n,seed)`→`bokehAt(o,t)`, `ribbon(L,{y,amp,width,cols,rows})`→`ribbonAt(r,t)`, `pSphere(L,cx,cy,r,{n,land,speed,lon0,tilt})`→`pSphereAt(s,t,fade)` (`land:true` needs `land.js`), `tunnel(L,cx,cy,{rmax,speed})`→`tunnelAt(o,t)`, `sciHead(L,['LINE','[CYAN] WORD'],sub,x,y,size)`→`sciHeadAt(h,t,t0)`; call every `*At` each frame so the networks keep moving |
 | T18 History | `HIS` palette, `histBg('paper'/'wood'/'map')`, `parchment(L,x,y,w,h,{torn,burnt,crumple,ghost,tone,seed})`, `scroll(L,cx,cy,w,h)`→`scrollAt(s,u)`, `squiggles(L,x)`, `inkPot(L,x,y,h)`, `oldMapBg(L,alpha)`, `quill(L,size)`, `hand(L,lines,x,y,size,col,quill)`→`handAt(h,t,t0,cps)`, `oldGlobe(L,cx,cy,r)`→`oldGlobeAt(g,t,fade)` (needs `land.js`), `compass(L,cx,cy,r)`→`compassAt(c,t)`, `mapLines(L,cx,cy)`, `dust(L,n)`→`dustAt(d,t)`, `histTitle(L,txt,x,y,size,col,{no,sub,align,w})`, `timelineH(L,[[num,label]],y)`→`timelineAt(tl,t,t0)` (dates only from what Eva says); Eva: `ringFn = () => ({ color: K.T.HIS.WOOD, width: 12 })` |
-| T09 Wall | 3D tile wall (see `template/t09`), `odometer`, iris wipe + `metal` sparks, title + gold tagline |
+| T09 Wall | 3D tile wall (see `template/demo/t09`), `odometer`, iris wipe + `metal` sparks, title + gold tagline |

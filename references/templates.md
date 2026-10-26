@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Each template's demo shows the same 15-second intro so you can compare styles side by side (see the demo reel in the release).
+Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -10,7 +10,7 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 | T04 | Paper | 纸张 | Pain points, problems, calm explanations, lists |
 | T05 | Red Sunburst | 红色放射 | Key point, call to action, finale |
 | T06 | Brand Purple | 品牌紫 | Product reveal |
-| T07 | Cartoon Eva | 卡通 Eva | 讲故事、里程碑、有趣过渡（需要 Eva 的卡通素材）· Storytelling, milestones, playful transitions (needs Eva's cartoon clips) |
+| T07 | Cartoon Eva | 卡通 Eva | Storytelling, milestones, playful transitions (needs your own cartoon clips) |
 | T08 | Neon Explainer | 霓虹讲解 | Explaining a concept or term, tutorials, analogies |
 | T09 | Showcase Wall Opener | 作品墙开场 | Channel or series openings, launches, portfolio |
 | T10 | HUD Keynote | HUD 发布会 | Announcements, milestones, big news, launches |
@@ -42,6 +42,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** right card or circle, lime or ink ring
 
+![T01 sample a](samples/T01_a.jpg) ![T01 sample b](samples/T01_b.jpg) ![T01 sample c](samples/T01_c.jpg) ![T01 sample d](samples/T01_d.jpg)
+
 ## T02 · Electric Blue Console
 
 *电光蓝控制台* · palette `#2a2cf2` `#070b2e` `#d4ff2e`
@@ -57,6 +59,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** circle top-right or left card
 
+![T02 sample a](samples/T02_a.jpg) ![T02 sample b](samples/T02_b.jpg) ![T02 sample c](samples/T02_c.jpg) ![T02 sample d](samples/T02_d.jpg)
+
 ## T03 · Dark 3D Stage
 
 *暗黑 3D 舞台* · palette `#07070b` `#ff7a1a` `#8a5cff`
@@ -70,6 +74,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - slow push-in
 
 **Presenter window:** small corner circle, never over the screen
+
+![T03 sample a](samples/T03_a.jpg) ![T03 sample b](samples/T03_b.jpg) ![T03 sample c](samples/T03_c.jpg) ![T03 sample d](samples/T03_d.jpg)
 
 ## T04 · Paper
 
@@ -85,6 +91,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** circle top-right, ink ring
 
+![T04 sample a](samples/T04_a.jpg) ![T04 sample b](samples/T04_b.jpg) ![T04 sample c](samples/T04_c.jpg) ![T04 sample d](samples/T04_d.jpg)
+
 ## T05 · Red Sunburst
 
 *红色放射* · palette `#ff2b3d` `#ffffff` `#d4ff2e`
@@ -98,6 +106,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - offer + URL typing
 
 **Presenter window:** big centered circle, white glow ring
+
+![T05 sample a](samples/T05_a.jpg) ![T05 sample b](samples/T05_b.jpg) ![T05 sample c](samples/T05_c.jpg) ![T05 sample d](samples/T05_d.jpg)
 
 ## T06 · Brand Purple
 
@@ -113,11 +123,13 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** circle top-right, white ring
 
+![T06 sample a](samples/T06_a.jpg) ![T06 sample b](samples/T06_b.jpg) ![T06 sample c](samples/T06_c.jpg) ![T06 sample d](samples/T06_d.jpg)
+
 ## T07 · Cartoon Eva
 
 *卡通 Eva* · palette `#6fb7ff` `#d4ff2e` `#ffffff`
 
-**Best for:** 讲故事、里程碑、有趣过渡（需要 Eva 的卡通素材）· Storytelling, milestones, playful transitions (needs Eva's cartoon clips)
+**Best for:** Storytelling, milestones, playful transitions (needs your own cartoon clips)
 
 **Signature beats:**
 - full-bleed or framed, muted
@@ -125,6 +137,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - tool-block tower
 
 **Presenter window:** circle top-left
+
+![T07 sample a](samples/T07_a.jpg) ![T07 sample b](samples/T07_b.jpg) ![T07 sample c](samples/T07_c.jpg) ![T07 sample d](samples/T07_d.jpg)
 
 ## T08 · Neon Explainer
 
@@ -134,7 +148,7 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Signature beats:**
 - full-bleed Eva in a violet/magenta neon grade
-- 发光奶油色斜体标题（侧边两行）· glowing cream italic side headline
+- glowing cream italic side headline
 - pixel-font title
 - echo word stack
 - article highlighter sweep
@@ -143,6 +157,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - dot-grid concept diagram
 
 **Presenter window:** mostly full-bleed; circle with a cream glow ring during diagrams
+
+![T08 sample a](samples/T08_a.jpg) ![T08 sample b](samples/T08_b.jpg) ![T08 sample c](samples/T08_c.jpg) ![T08 sample d](samples/T08_d.jpg)
 
 ## T09 · Showcase Wall Opener
 
@@ -159,6 +175,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - HUD frame, running timecode
 
 **Presenter window:** right portrait card with HUD corner brackets
+
+![T09 sample a](samples/T09_a.jpg) ![T09 sample b](samples/T09_b.jpg) ![T09 sample c](samples/T09_c.jpg) ![T09 sample d](samples/T09_d.jpg)
 
 ## T10 · HUD Keynote
 
@@ -177,6 +195,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - metallic hero title with sparks
 
 **Presenter window:** right card with brackets, then a small circle
+
+![T10 sample a](samples/T10_a.jpg) ![T10 sample b](samples/T10_b.jpg) ![T10 sample c](samples/T10_c.jpg) ![T10 sample d](samples/T10_d.jpg)
 
 ## T11 · HUD Dashboard
 
@@ -198,6 +218,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** right card with brackets, then a small circle
 
+![T11 sample a](samples/T11_a.jpg) ![T11 sample b](samples/T11_b.jpg) ![T11 sample c](samples/T11_c.jpg) ![T11 sample d](samples/T11_d.jpg)
+
 ## T12 · Old Newspaper
 
 *旧报纸* · palette `#e8dcc0` `#1c1814` `#c4232b`
@@ -209,13 +231,15 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - Eva stays in natural colour inside a cream photo frame with tape
 - film strip of real frames
 - torn photos with hand-drawn red X, arrows, bolts
-- 红色毛笔印章（如 重跑一遍）· red brush stamp
+- red brush stamp
 - typewriter text
 - b/w triptych with role labels
 - red book-cover title card
 - film grain throughout
 
-**Presenter window:** 米白相框，Eva 保持原色（只有其他照片是黑白）· cream photo frame, Eva in natural colour (other photos are b/w)
+**Presenter window:** cream photo frame, Eva in natural colour (other photos are b/w)
+
+![T12 sample a](samples/T12_a.jpg) ![T12 sample b](samples/T12_b.jpg) ![T12 sample c](samples/T12_c.jpg) ![T12 sample d](samples/T12_d.jpg)
 
 ## T13 · Tech Blue
 
@@ -224,16 +248,18 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Best for:** Tech, AI and product talks, agendas, chapter titles, comparing options
 
 **Signature beats:**
-- 皇家蓝径向渐变 + 细线 HUD 外框（切角）· royal-blue gradient with a chamfered thin-line frame
+- royal-blue gradient with a chamfered thin-line frame
 - blue tabs, dash ladder, cyan bars, barcode
 - cyan serif title, spaced white subtitle
 - two-column contents with numbered circles
 - chamfered section-title panel
 - real screen band with line-icon cards
-- 三栏描边卡片（步骤 / 方案）· three outlined column cards
+- three outlined column cards
 - slanted corner accents
 
 **Presenter window:** card or circle with a thin cyan ring and corner brackets
+
+![T13 sample a](samples/T13_a.jpg) ![T13 sample b](samples/T13_b.jpg) ![T13 sample c](samples/T13_c.jpg) ![T13 sample d](samples/T13_d.jpg)
 
 ## T14 · Future Style
 
@@ -242,14 +268,16 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Best for:** Big news, rules or key points, AI and future topics, endings
 
 **Signature beats:**
-- 每个画面都有波动的 3D 线框波浪地面（蓝 → 紫粉）· animated 3D wireframe wave floor in every shot
+- animated 3D wireframe wave floor in every shot
 - dotted globe with real continents, grid and orbit ring, slowly rotating
 - glowing white headline, CN line, cyan underline
-- RULE 1 / 2 / 3 列表（青色数字 + 发光分隔线）· rules list with cyan numbers and glowing dividers
+- rules list with cyan numbers and glowing dividers
 - glowing chip with pulses running along circuit traces
-- 旋转的线框光环（Eva 可以放在环中间）· rotating wireframe ring, Eva can sit inside it
+- rotating wireframe ring, Eva can sit inside it
 
 **Presenter window:** circle or rounded card with a cyan glow ring; inside the ring for the finale
+
+![T14 sample a](samples/T14_a.jpg) ![T14 sample b](samples/T14_b.jpg) ![T14 sample c](samples/T14_c.jpg) ![T14 sample d](samples/T14_d.jpg)
 
 ## T15 · Learning Style
 
@@ -258,14 +286,16 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Best for:** Education, study tips, vocabulary and reading, videos for kids and parents
 
 **Signature beats:**
-- 深靛蓝背景 + 闪烁的黄星星 + 飘动的紫色云（每个画面都在动）· indigo sky with twinkling stars and drifting clouds in every shot
-- 圆润白色大字（中英文）· bubbly rounded white lettering, EN + CN
+- indigo sky with twinkling stars and drifting clouds in every shot
+- bubbly rounded white lettering, EN + CN
 - colourful book staircase drops in, paper plane flies a dashed path to the sun
-- 三步图标：读 → 想 → 做（软色块 + 虚线弧 + 光芒）· three icon steps Read → Think → Create with blobs, dashed arcs and rays
+- three icon steps Read → Think → Create with blobs, dashed arcs and rays
 - open book with a pink sunrise glow and planes flying out
 - corner decorations and colourful goal stickers
 
 **Presenter window:** circle or rounded card with a thick white border; can sit inside the book's sunrise
+
+![T15 sample a](samples/T15_a.jpg) ![T15 sample b](samples/T15_b.jpg) ![T15 sample c](samples/T15_c.jpg) ![T15 sample d](samples/T15_d.jpg)
 
 ## T16 · Comic Pop
 
@@ -274,16 +304,18 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Best for:** Fun and playful talks, before-vs-after comparisons, key points, tip lists
 
 **Signature beats:**
-- 旋转的放射光线 + 网点（绿 / 黄 / 蓝 / 紫 / 青）· rotating sunburst rays with halftone dots
+- rotating sunburst rays with halftone dots
 - puffy white comic clouds with thick black outlines that bob
-- 白色闪电折线分屏（VS 对比）· split screen with a white zigzag lightning divider for VS
+- split screen with a white zigzag lightning divider for VS
 - big speech cloud holding the title
 - black action marks and outlined yellow stars popping
 - cyan burst with twinkling sparkles over a cloud ground
-- 黑边贴纸标签（技巧清单）· outlined sticker cards for tips
+- outlined sticker cards for tips
 - comic lettering with black outline and hard shadow
 
 **Presenter window:** circle or rounded card with a thick black outline
+
+![T16 sample a](samples/T16_a.jpg) ![T16 sample b](samples/T16_b.jpg) ![T16 sample c](samples/T16_c.jpg) ![T16 sample d](samples/T16_d.jpg)
 
 ## T17 · Science Network
 
@@ -293,13 +325,15 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Signature beats:**
 - near-black navy with drifting orange and blue bokeh
-- 起伏的网络光带（点 + 连线，一直在波动）· rippling plexus ribbon of connected nodes
+- rippling plexus ribbon of connected nodes
 - plexus globe with real continents, slowly rotating
 - chain of plexus spheres
-- 向镜头流动的网络隧道（Eva 可放中心）· plexus tunnel flowing toward the camera, Eva at its centre
+- plexus tunnel flowing toward the camera, Eva at its centre
 - white heavy headline with a cyan keyword and a short subline
 
 **Presenter window:** circle with a thin glowing cyan ring; can sit at the tunnel centre
+
+![T17 sample a](samples/T17_a.jpg) ![T17 sample b](samples/T17_b.jpg) ![T17 sample c](samples/T17_c.jpg) ![T17 sample d](samples/T17_d.jpg)
 
 ## T18 · History
 
@@ -315,9 +349,11 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - compass rose with a swinging needle, faint old-map lines
 - rust-red wavy timeline with crowned medallions
 - rust serif titles with section numbers
-- 飘浮的灰尘光点（每个画面）· floating dust in every shot
+- floating dust in every shot
 
 **Presenter window:** dark wood frame (natural colour) or circle
+
+![T18 sample a](samples/T18_a.jpg) ![T18 sample b](samples/T18_b.jpg) ![T18 sample c](samples/T18_c.jpg) ![T18 sample d](samples/T18_d.jpg)
 
 ## T19 · Footage Intro
 
@@ -333,6 +369,8 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - end title card: dimmed footage, glowing white-to-cyan italic headline, lime tilted banner, original line drawing, question tags sliding in, cyan-glow presenter circle
 
 **Presenter window:** full cut-out → white-ring circle (bottom-left / top-left) → cyan glow ring at the end; blurred plate behind her inside the circle
+
+![T19 sample a](samples/T19_a.jpg) ![T19 sample b](samples/T19_b.jpg) ![T19 sample c](samples/T19_c.jpg) ![T19 sample d](samples/T19_d.jpg)
 
 ## T20 · Fast-Paced Social Media
 
@@ -350,7 +388,7 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** big rounded white-bordered card (type sits on the shoulders, never the face) → full-bleed for beat cuts
 
-![T20 sample 1](samples/T20_a.jpg) ![T20 sample 2](samples/T20_b.jpg) ![T20 sample 3](samples/T20_c.jpg) ![T20 sample 4](samples/T20_d.jpg) ![T20 sample 5](samples/T20_e.jpg)
+![T20 sample a](samples/T20_a.jpg) ![T20 sample b](samples/T20_b.jpg) ![T20 sample c](samples/T20_c.jpg) ![T20 sample d](samples/T20_d.jpg)
 
 ## T21 · Clean & Minimal
 
@@ -368,7 +406,7 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 **Presenter window:** hairline circle inside the compass circles → small corner circle → square hairline card
 
-![T21 sample 1](samples/T21_a.jpg) ![T21 sample 2](samples/T21_b.jpg) ![T21 sample 3](samples/T21_c.jpg)
+![T21 sample a](samples/T21_a.jpg) ![T21 sample b](samples/T21_b.jpg) ![T21 sample c](samples/T21_c.jpg) ![T21 sample d](samples/T21_d.jpg)
 
 ## T22 · Bold Motion Graphics
 
@@ -380,12 +418,12 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - night-neon stage: scrolling perspective grid, lit skyline, spinning rays, sparks, sweeping light slashes
 - giant 3D extruded Bungee type with gold or cyan gradients, white outline and glow; camera shake and flash on impact
 - giant number counts up and lands with a bounce
-- 三层文字从远到近飞入（模糊 → 清晰）· three depth layers fly in from far to near, blur to sharp
+- three depth layers fly in from far to near, blur to sharp
 - pulsing neon pill call-to-action
 
 **Presenter window:** neon-glow circle (cyan or magenta), bottom-left ↔ top-right
 
-![T22 sample 1](samples/T22_a.jpg) ![T22 sample 2](samples/T22_b.jpg) ![T22 sample 3](samples/T22_c.jpg)
+![T22 sample a](samples/T22_a.jpg) ![T22 sample b](samples/T22_b.jpg) ![T22 sample c](samples/T22_c.jpg) ![T22 sample d](samples/T22_d.jpg)
 
 ## Mixing rules
 
