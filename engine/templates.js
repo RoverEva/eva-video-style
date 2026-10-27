@@ -1,4 +1,4 @@
-/* Eva Video Style · template library for T08–T17. Load after kit.js (and land.js for the T14 globe).
+/* Eva Video Style · template library for T08–T17 and T23. Load after kit.js (and land.js for the T14 globe).
  *   T08 NEON  · 霓虹讲解 Neon Explainer
  *   T09 WALL  · 作品墙开场 Showcase Wall Opener
  *   T10 KEY   · HUD 发布会 HUD Keynote
@@ -9,6 +9,7 @@
  *   T15 LEARN · 学习风 Learning Style
  *   T16 COMIC · 漫画风 Comic Pop
  *   T17 SCI   · 科学风 Science Network
+ *   T23 POP   · 创意波普 Creative Pop (seven-colour card system)
  * Every builder takes (parent, ...) and returns an object; the matching *At(obj, ...) call animates it inside update().
  * Colours, sizes and copy are parameters: never hard-code facts — pass what Eva actually says. */
 (function () {
@@ -540,5 +541,132 @@
   T.sciHead = (L, lines, sub, x, y, size) => { size = size || 92; const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', zIndex: 8 }); d.ls = lines.map(l => el(d, 'div', '', { fontFamily: T.SCN.EN, fontWeight: 900, fontSize: size + 'px', lineHeight: 1.02, color: '#fff', whiteSpace: 'nowrap', textShadow: '0 4px 30px rgba(0,0,0,.6)' }, l.replace(/\[(.+?)\]/g, `<span style="color:${T.SCN.CYAN}">$1</span>`)));
     d.s = el(d, 'div', 'cn', { fontSize: (size * .32) + 'px', fontWeight: 400, color: '#e8f2ff', marginTop: '20px', lineHeight: 1.35, whiteSpace: 'pre' }, sub || ''); return d; };
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
+
+  /* ---------- T23 Creative Pop: seven-colour card system, rounded cards, big keywords, icons, arrows, sparkles, stickers ----------
+   * Every layout takes a list of items { t: label, i: icon name, c: colour (optional) } and returns an object; the matching
+   * *At(obj, t, times) animates it, where times[k] is when item k should land (use the moment the speaker says it). */
+  T.CP = { C: ['#2f6bff', '#12b3c8', '#19b36b', '#62c132', '#ff8a1c', '#f0384b', '#d63fd6'], INK: '#1d1b3a', CREAM: '#fff8ef', YEL: '#ffd23f', PINK: '#ff3d8b',
+    KEY: "'Archivo Black', 'Noto Sans CJK SC', sans-serif", LAB: "'Inter', 'Noto Sans CJK SC', sans-serif" };
+  const CPc = (i, c) => c || T.CP.C[i % 7];
+  const CPshade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v * k))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; };
+  /* soft warm paper with blurred colour splashes in the corners */
+  T.cpBg = `radial-gradient(520px 420px at 0% 0%, rgba(47,107,255,.22), transparent 70%), radial-gradient(560px 460px at 100% 0%, rgba(255,210,63,.32), transparent 70%),
+    radial-gradient(600px 480px at 100% 100%, rgba(214,63,214,.20), transparent 70%), radial-gradient(560px 460px at 0% 100%, rgba(255,61,139,.22), transparent 70%), linear-gradient(160deg, #fffaf3, #f6efff)`;
+  /* paint splashes (soft blobs) that drift slowly. T.cpSplashBgAt(o, t) */
+  T.cpSplashBg = (L, seed) => { const R = C.rng(seed || 3); const o = []; [[-120, -100], [1680, -140], [1700, 840], [-140, 860], [880, -220]].forEach(([x, y], i) => {
+      const b = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: (300 + R() * 160) + 'px', height: (260 + R() * 160) + 'px', borderRadius: '50%', background: T.CP.C[(i * 2 + 1) % 7], opacity: .5, filter: 'blur(4px)' }); b.ph = R() * 6; o.push(b); }); return o; };
+  T.cpSplashBgAt = (o, t) => o.forEach((b, i) => { const r = n => (50 + 14 * Math.sin(t * .9 + b.ph + n)).toFixed(1) + '%'; b.style.borderRadius = `${r(0)} ${r(1)} ${r(2)} ${r(3)} / ${r(4)} ${r(5)} ${r(6)} ${r(7)}`; b.style.transform = `rotate(${Math.sin(t * .4 + i) * 12}deg)`; });
+
+  /* simple expressive line icons (original drawings, 48×48 grid, round strokes) */
+  const CPI = {
+    idea: '<circle cx="24" cy="19" r="11"/><path d="M19 30v5h10v-5M20 40h8M24 13v4M18.5 17.5l3 3"/>',
+    plan: '<rect x="12" y="7" width="24" height="34" rx="4"/><path d="M18 17h12M18 24h12M18 31h8"/>',
+    build: '<circle cx="24" cy="24" r="6"/><path d="M24 8v6M24 34v6M8 24h6M34 24h6M12.7 12.7l4.2 4.2M31.1 31.1l4.2 4.2M12.7 35.3l4.2-4.2M31.1 16.9l4.2-4.2"/>',
+    grow: '<path d="M10 40V30M19 40V24M28 40V28M37 40V16M8 22l10-8 8 6 13-11M33 9h6v6"/>',
+    audience: '<circle cx="17" cy="17" r="6"/><circle cx="32" cy="19" r="5"/><path d="M6 38c1-8 6-12 11-12s10 4 11 12M27 37c1-6 3-9 6-9s7 3 8 9"/>',
+    monetize: '<circle cx="22" cy="26" r="14"/><circle cx="22" cy="26" r="8"/><circle cx="22" cy="26" r="2"/><path d="M24 24l14-14M32 8h6v6"/>',
+    success: '<path d="M15 8h18v9a9 9 0 0 1-18 0zM15 11H8c0 6 3 9 7 9M33 11h7c0 6-3 9-7 9M24 26v7M17 40h14M19 34h10v6H19z"/>',
+    search: '<circle cx="21" cy="21" r="11"/><path d="M29 29l10 10"/>',
+    publish: '<path d="M7 23L41 8 32 40l-9-12zM23 28l18-20"/>',
+    analyze: '<circle cx="24" cy="24" r="15"/><path d="M24 9v15h15"/>',
+    script: '<path d="M14 7h14l8 8v26H14z"/><path d="M28 7v8h8M19 23h12M19 29h12M19 35h8"/>',
+    footage: '<rect x="7" y="14" width="26" height="22" rx="4"/><path d="M33 21l9-5v18l-9-5z"/>',
+    cut: '<circle cx="14" cy="34" r="5"/><circle cx="34" cy="34" r="5"/><path d="M17 30L34 8M31 30L14 8"/>',
+    caption: '<path d="M9 13h16M17 13v24M27 22h13M33.5 22v15"/>',
+    sound: '<path d="M8 19h7l9-8v26l-9-8H8zM31 18c3 3 3 9 0 12M36 13c6 6 6 16 0 22"/>',
+    effects: '<path d="M20 8l3 9 9 3-9 3-3 9-3-9-9-3 9-3zM35 28l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',
+    export: '<path d="M24 30V8M15 17l9-9 9 9M9 28v10h30V28"/>',
+    film: '<rect x="8" y="10" width="32" height="28" rx="3"/><path d="M14 10v28M34 10v28M8 17h6M8 24h6M8 31h6M34 17h6M34 24h6M34 31h6"/>',
+    rocket: '<path d="M24 6c7 5 9 13 7 22H17c-2-9 0-17 7-22zM17 28l-5 6 6 1M31 28l5 6-6 1M21 35l3 7 3-7"/><circle cx="24" cy="17" r="3"/>',
+    chat: '<path d="M8 12h32v20H20l-8 7v-7H8z"/><path d="M15 22h.5M24 22h.5M33 22h.5"/>',
+    minimal: '<rect x="11" y="11" width="26" height="26" rx="2"/><path d="M17 24h14"/>',
+    check: '<path d="M10 25l9 9 19-19"/>', play: '<path d="M16 10l22 14-22 14z"/>', heart: '<path d="M24 39S8 29 8 18a8 8 0 0 1 16-3 8 8 0 0 1 16 3c0 11-16 21-16 21z"/>',
+    star: '<path d="M24 7l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/>', code: '<path d="M17 14L7 24l10 10M31 14l10 10-10 10M27 10l-6 28"/>', github: '<path d="M18 38c-8 2-8-4-11-5M30 42v-6c0-3-1-4-2-5 6-1 11-3 11-12 0-3-1-5-3-7 1-2 1-5 0-7 0 0-3 0-7 3a22 22 0 0 0-12 0c-4-3-7-3-7-3-1 2-1 5 0 7-2 2-3 4-3 7 0 9 5 11 11 12-1 1-2 2-2 5v6"/>',
+  };
+  T.cpIconNames = Object.keys(CPI);
+  T.cpIcon = (p, name, size, color, x, y, sw) => { const s = K.svg(p, size, size, x || 0, y || 0); s.setAttribute('viewBox', '0 0 48 48'); s.style.overflow = 'visible';
+    const g = K.sv(s, 'g', { fill: 'none', stroke: color || '#fff', 'stroke-width': sw || 3.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }); g.innerHTML = CPI[name] || CPI.star; return s; };
+  /* big keyword block (BIG / IDEAS / SIMPLE / STEPS): heavy type on a solid tilted card with a hard shadow */
+  T.cpSticker = (L, txt, x, y, bg, fg, rot, size, extra) => el(L, 'div', 'abs', Object.assign({ left: x + 'px', top: y + 'px', padding: `${(size || 90) * .12}px ${(size || 90) * .32}px ${(size || 90) * .06}px`, fontFamily: T.CP.KEY, fontSize: (size || 90) + 'px', lineHeight: 1.05,
+    color: fg || T.CP.INK, background: bg || T.CP.YEL, borderRadius: ((size || 90) * .18) + 'px', boxShadow: `0 ${(size || 90) * .08}px 0 rgba(29,27,58,.9), 0 18px 34px rgba(29,27,58,.22)`, whiteSpace: 'nowrap', transform: `rotate(${rot || 0}deg)`, transformOrigin: '50% 50%', zIndex: 20 }, extra || {}), txt);
+  T.cpStickerAt = (s, t, t0, rot) => { const q = pop(t, t0, .4, 2.2); tf(s, { s: q.s, o: q.o, r: rot || 0 }); };
+  /* tilted ribbon banner (TURN IDEAS INTO RESULTS) */
+  T.cpBanner = (L, txt, x, y, bg, rot, size) => { const b = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', padding: `${(size || 48) * .3}px ${(size || 48) * .8}px`, fontFamily: T.CP.KEY, fontSize: (size || 48) + 'px', color: '#fff', background: bg || T.CP.C[0],
+      borderRadius: '10px', transform: `rotate(${rot || -4}deg) skewX(-6deg)`, transformOrigin: '0 50%', boxShadow: '0 10px 0 rgba(29,27,58,.85), 0 20px 40px rgba(29,27,58,.25)', whiteSpace: 'nowrap', zIndex: 22, clipPath: 'inset(0 100% 0 0)' }, txt); b.rot = rot || -4; return b; };
+  T.cpBannerAt = (b, t, t0) => { const u = ease.outExpo(P(t, t0, .5)); b.style.clipPath = `inset(0 ${100 - 100 * u}% 0 0)`; };
+  /* four-point sparkles + dots scattered over the frame that twinkle. T.cpSparklesAt(o, t) */
+  T.cpSparkles = (L, n, seed, box) => { const R = C.rng(seed || 7), B = box || [60, 60, 1800, 960], s = NSV(L, 1920, 1080, 0, 0, 25); const o = { s, a: [] };
+    for (let i = 0; i < (n || 14); i++) { const x = B[0] + R() * B[2], y = B[1] + R() * B[3], r = 8 + R() * 16, col = R() < .5 ? T.CP.INK : T.CP.C[Math.floor(R() * 7)];
+      const e = R() < .7 ? K.sv(s, 'path', { d: `M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}z`, fill: col }) : K.sv(s, 'circle', { cx: x, cy: y, r: r * .3, fill: col });
+      e.style.transformOrigin = `${x}px ${y}px`; e.style.transformBox = 'view-box'; o.a.push({ e, ph: R() * 6, sp: 2 + R() * 3 }); } return o; };
+  T.cpSparklesAt = (o, t, fade) => { o.s.style.opacity = fade === undefined ? 1 : fade; o.a.forEach(q => { const k = .55 + .45 * Math.sin(t * q.sp + q.ph); q.e.style.transform = `scale(${k}) rotate(${t * 40 + q.ph * 30}deg)`; }); };
+  /* hand-drawn curved arrow (with arrowhead) that draws itself. pts = [[x,y],...] */
+  T.cpArrow = (L, pts, col, w, z) => { const s = NSV(L, 1920, 1080, 0, 0, z || 21); let d = `M${pts[0][0]} ${pts[0][1]}`; for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += ` Q${pts[i][0]} ${pts[i][1]} ${mx} ${my}`; }
+    const L2 = pts[pts.length - 1], P2 = pts[pts.length - 2]; d += ` L${L2[0]} ${L2[1]}`; const p = K.sv(s, 'path', { d, fill: 'none', stroke: col || T.CP.INK, 'stroke-width': w || 9, 'stroke-linecap': 'round' });
+    const a = Math.atan2(L2[1] - P2[1], L2[0] - P2[0]), hl = (w || 9) * 4; const h = K.sv(s, 'path', { d: `M${L2[0] - hl * Math.cos(a - .5)} ${L2[1] - hl * Math.sin(a - .5)} L${L2[0]} ${L2[1]} L${L2[0] - hl * Math.cos(a + .5)} ${L2[1] - hl * Math.sin(a + .5)}`, fill: 'none', stroke: col || T.CP.INK, 'stroke-width': w || 9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+    const l = p.getTotalLength ? p.getTotalLength() || 1200 : 1200; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); return { s, p, h, l }; };
+  T.cpArrowAt = (a, u) => { a.p.setAttribute('stroke-dashoffset', a.l * (1 - ease.out3(clamp(u)))); a.h.style.opacity = u > .92 ? 1 : 0; };
+  /* one rounded colour card: number, icon, label. Used by row / stack / split layouts */
+  const cpCard = (L, it, k, x, y, w, h, opt) => { const o = opt || {}, col = CPc(k, it.c);
+    const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: (o.r || 28) + 'px', background: `linear-gradient(160deg, ${col}, ${CPshade(col, .82)})`, boxShadow: `0 ${o.depth || 12}px 0 ${CPshade(col, .55)}, 0 24px 40px rgba(29,27,58,.22)`, transformOrigin: o.origin || '50% 100%', zIndex: 10 + k, overflow: o.clip ? 'hidden' : 'visible' });
+    el(d, 'div', 'abs', { left: '10%', top: '6px', width: '80%', height: '10px', borderRadius: '6px', background: 'rgba(255,255,255,.28)' });
+    return d; };
+
+  /* 1 · Color Splash: stacked keyword stickers + idea bulb + arrow. words = [[txt, bg, fg, rot]] */
+  T.cpSplash = (L, words, x, y, size, opt) => { const o = { w: [] }, op = opt || {}; let yy = y; words.forEach(([txt, bg, fg, rot], i) => { const w = T.cpSticker(L, txt, x + (i % 2) * 40, yy, bg, fg, rot, size); w.rot = rot || 0; o.w.push(w); yy += (size || 120) * 1.42; });
+    const bp = op.bulb || [x + 640, y - 60]; o.bulb = el(L, 'div', 'abs', { left: bp[0] + 'px', top: bp[1] + 'px', width: '170px', height: '170px', borderRadius: '50%', background: T.CP.YEL, boxShadow: '0 10px 0 rgba(29,27,58,.85)', zIndex: 21, transformOrigin: '50% 50%' }); T.cpIcon(o.bulb, 'idea', 120, T.CP.INK, 25, 22, 3.6);
+    o.ar = T.cpArrow(L, op.arrow || [[x + 700, yy - 40], [x + 860, yy - 10], [x + 980, yy - 120]], T.CP.INK, 10); return o; };
+  T.cpSplashAt = (o, t, times) => { o.w.forEach((w, i) => T.cpStickerAt(w, t, times[i], w.rot)); const b = pop(t, times[0] + .2, .45, 2.2); tf(o.bulb, { s: b.s * (1 + .04 * Math.sin(t * 5)), o: b.o, r: 8 * Math.sin(t * 2) });
+    T.cpArrowAt(o.ar, P(t, times[times.length - 1] + .1, .5)); };
+  /* 2 · 7-Step Infographic: tall cards in a row, rising heights, icons + labels, sweeping arrow underneath */
+  T.cpRow = (L, items, x, y, w, h) => { const n = items.length, gap = 18, cw = (w - gap * (n - 1)) / n, o = { c: [] };
+    items.forEach((it, k) => { const ch = h * (.72 + .28 * k / Math.max(1, n - 1)), d = cpCard(L, it, k, x + k * (cw + gap), y + (h - ch), cw, ch, { r: 24 });
+      el(d, 'div', 'abs', { left: 0, width: '100%', top: '18px', textAlign: 'center', fontFamily: T.CP.KEY, fontSize: (cw * .42) + 'px', color: '#fff', lineHeight: 1 }, String(k + 1));
+      T.cpIcon(d, it.i, cw * .5, '#fff', cw * .25, ch * .3); el(d, 'div', 'abs', { left: '4px', width: (cw - 8) + 'px', top: (ch * .3 + cw * .58) + 'px', textAlign: 'center', fontFamily: T.CP.LAB, fontWeight: 900, fontSize: Math.min(30, cw * .2) + 'px', color: '#fff', lineHeight: 1.1 }, it.t); o.c.push(d); });
+    o.ar = T.cpArrow(L, [[x + 20, y + h + 70], [x + w * .5, y + h + 110], [x + w - 10, y + h - 20]], 'rgba(47,107,255,.8)', 14, 9); return o; };
+  T.cpRowAt = (o, t, times) => { o.c.forEach((d, k) => { const u = P(t, times[k], .45); tf(d, { y: 120 * (1 - ease.outBack(u, 1.8)), o: clamp(u * 4), s: 1 + .03 * Math.sin(t * 3 + k) * (u >= 1 ? 1 : 0) }); }); T.cpArrowAt(o.ar, P(t, times[0], (times[times.length - 1] - times[0]) + .5)); };
+  /* 3 · Circular Hub: a centre (often the presenter window) with colour nodes around it on dashed spokes */
+  T.cpHub = (L, items, cx, cy, R, node, a0) => { const n = items.length, o = { n: [], cx, cy }, ns = node || 150; o.s = NSV(L, 1920, 1080, 0, 0, 9); o.ring = K.sv(o.s, 'circle', { cx, cy, r: R, fill: 'none', stroke: 'rgba(29,27,58,.18)', 'stroke-width': 4, 'stroke-dasharray': '4 14', 'stroke-linecap': 'round' });
+    items.forEach((it, k) => { const a = (a0 === undefined ? -Math.PI / 2 : a0) + k * 2 * Math.PI / n, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), col = CPc(k, it.c);
+      const sp = K.sv(o.s, 'line', { x1: cx + (R * .45) * Math.cos(a), y1: cy + (R * .45) * Math.sin(a), x2: x, y2: y, stroke: col, 'stroke-width': 5, 'stroke-dasharray': '2 12', 'stroke-linecap': 'round', opacity: 0 });
+      const d = el(L, 'div', 'abs', { left: (x - ns / 2) + 'px', top: (y - ns / 2) + 'px', width: ns + 'px', height: ns + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${CPshade(col, 1.15)}, ${col} 60%, ${CPshade(col, .8)})`, border: '6px solid #fff', boxSizing: 'border-box', boxShadow: '0 10px 0 rgba(29,27,58,.18), 0 18px 34px rgba(29,27,58,.22)', zIndex: 20, transformOrigin: '50% 50%' });
+      T.cpIcon(d, it.i, ns * .42, '#fff', ns * .27, ns * .12); el(d, 'div', 'abs', { left: 0, width: '100%', top: (ns * .58) + 'px', textAlign: 'center', fontFamily: T.CP.LAB, fontWeight: 900, fontSize: (ns * .15) + 'px', color: '#fff' }, it.t);
+      el(d, 'div', 'abs', { left: (ns * .42) + 'px', top: '-12px', width: '26px', height: '26px', borderRadius: '50%', background: '#fff', color: col, fontFamily: T.CP.KEY, fontSize: '16px', lineHeight: '26px', textAlign: 'center' }, String(k + 1)); d.sp = sp; o.n.push(d); }); return o; };
+  T.cpHubAt = (o, t, times) => { o.ring.setAttribute('transform', `rotate(${t * 8} ${o.cx} ${o.cy})`); o.ring.style.opacity = P(t, times[0] - .2, .3);
+    o.n.forEach((d, k) => { const q = pop(t, times[k], .4, 2.4); tf(d, { s: q.s * (1 + .035 * Math.sin(t * 3 + k)), o: q.o, y: 6 * Math.sin(t * 2 + k) }); d.sp.setAttribute('opacity', P(t, times[k], .2)); }); };
+  /* 4 · Vertical Cards: stacked pill cards with an icon disc and a label, sliding in one by one */
+  T.cpStack = (L, items, x, y, w, h, gap) => { const o = { c: [] }; items.forEach((it, k) => { const col = CPc(k, it.c), d = cpCard(L, it, k, x, y + k * (h + (gap || 18)), w, h, { r: h / 2, depth: 8, origin: '0 50%' });
+      const disc = el(d, 'div', 'abs', { left: (h * .1) + 'px', top: (h * .1) + 'px', width: (h * .8) + 'px', height: (h * .8) + 'px', borderRadius: '50%', background: '#fff' }); T.cpIcon(disc, it.i, h * .5, col, h * .15, h * .15, 4);
+      el(d, 'div', 'abs', { left: (h * 1.15) + 'px', top: 0, height: h + 'px', lineHeight: h + 'px', fontFamily: T.CP.KEY, fontSize: (h * .42) + 'px', color: '#fff', whiteSpace: 'nowrap' }, it.t); o.c.push(d); }); return o; };
+  T.cpStackAt = (o, t, times) => o.c.forEach((d, k) => { const u = ease.outBack(P(t, times[k], .45), 1.6); tf(d, { x: -700 * (1 - u), o: clamp(P(t, times[k], .15)), r: (1 - u) * -6 }); });
+  /* 5 · Path Journey: wavy dashed road with numbered colour stops; a paper plane flies along it */
+  T.cpPath = (L, items, pts, stop) => { const o = { st: [] }, ss = stop || 170; o.s = NSV(L, 1920, 1080, 0, 0, 9); let d = `M${pts[0][0]} ${pts[0][1]}`;
+    for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` C${x0 + (x1 - x0) * .5} ${y0} ${x0 + (x1 - x0) * .5} ${y1} ${x1} ${y1}`; }
+    o.road = K.sv(o.s, 'path', { d, fill: 'none', stroke: 'rgba(18,179,200,.25)', 'stroke-width': 56, 'stroke-linecap': 'round' }); o.dash = K.sv(o.s, 'path', { d, fill: 'none', stroke: '#fff', 'stroke-width': 6, 'stroke-dasharray': '14 16', 'stroke-linecap': 'round' });
+    o.len = o.road.getTotalLength ? o.road.getTotalLength() || 2000 : 2000; o.road.setAttribute('stroke-dasharray', o.len); o.road.setAttribute('stroke-dashoffset', o.len);
+    items.forEach((it, k) => { const [x, y] = pts[k], col = CPc(k, it.c); const c = el(L, 'div', 'abs', { left: (x - ss / 2) + 'px', top: (y - ss / 2) + 'px', width: ss + 'px', height: ss + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${CPshade(col, 1.15)}, ${col} 60%, ${CPshade(col, .8)})`, border: '7px solid #fff', boxSizing: 'border-box', boxShadow: '0 10px 0 rgba(29,27,58,.2), 0 18px 30px rgba(29,27,58,.2)', zIndex: 20, transformOrigin: '50% 50%' });
+      el(c, 'div', 'abs', { left: 0, width: '100%', top: (ss * .1) + 'px', textAlign: 'center', fontFamily: T.CP.KEY, fontSize: (ss * .38) + 'px', color: '#fff', lineHeight: 1 }, String(k + 1));
+      el(c, 'div', 'abs', { left: '-40px', width: (ss + 80 - 14) + 'px', top: (ss * .55) + 'px', textAlign: 'center', fontFamily: T.CP.LAB, fontWeight: 900, fontSize: (ss * .15) + 'px', color: '#fff', textShadow: '0 2px 0 rgba(0,0,0,.15)' }, it.t); o.st.push(c); });
+    o.pl = T.cpIcon(L, 'publish', 90, T.CP.INK, 0, 0, 3.6); o.pl.style.zIndex = 24; o.pts = pts; return o; };
+  T.cpPathAt = (o, t, times) => { const u = P(t, times[0] - .3, (times[times.length - 1] - times[0]) + .6); o.road.setAttribute('stroke-dashoffset', o.len * (1 - ease.io3(u)));
+    o.st.forEach((c, k) => { const q = pop(t, times[k], .45, 2.4); tf(c, { s: q.s, o: q.o }); });
+    const pt = o.road.getPointAtLength ? o.road.getPointAtLength(o.len * ease.io3(u)) : { x: 0, y: 0 }; tf(o.pl, { x: pt.x - 45, y: pt.y - 110, o: u > 0 && u < 1 ? 1 : 0, r: -10 + 10 * Math.sin(t * 4) }); };
+  /* 6 · Split Showcase: tilted grid of colour panels; each holds real footage (an <img> you feed) + number + label */
+  T.cpSplit = (L, items, x, y, w, h, cols) => { const n = items.length, cc = cols || Math.min(4, n), rows = Math.ceil(n / cc), gw = 18, pw = (w - gw * (cc - 1)) / cc, ph = (h - gw * (rows - 1)) / rows, o = { p: [] };
+    items.forEach((it, k) => { const col = CPc(k, it.c), cx = x + (k % cc) * (pw + gw), cy = y + Math.floor(k / cc) * (ph + gw);
+      const d = cpCard(L, it, k, cx, cy, pw, ph, { r: 22, clip: true, origin: '50% 50%', depth: 0 }); d.style.boxShadow = `0 12px 0 ${CPshade(col, .55)}, 0 24px 40px rgba(29,27,58,.22)`; d.style.clipPath = 'polygon(4% 0, 100% 0, 96% 100%, 0 100%)';
+      d.img = el(d, 'img', 'abs', { left: (pw * .35) + 'px', top: 0, width: (pw * .65) + 'px', height: ph + 'px', objectFit: 'cover', opacity: .95 });
+      el(d, 'div', 'abs', { left: 0, top: 0, width: (pw * .8) + 'px', height: ph + 'px', background: `linear-gradient(90deg, ${col} 55%, transparent)` });
+      el(d, 'div', 'abs', { left: '22px', top: '14px', fontFamily: T.CP.KEY, fontSize: (ph * .2) + 'px', color: '#fff' }, String(k + 1)); T.cpIcon(d, it.i, ph * .3, '#fff', 22, ph * .32);
+      el(d, 'div', 'abs', { left: '22px', top: (ph * .66) + 'px', fontFamily: T.CP.KEY, fontSize: Math.min(ph * .15, pw * .075) + 'px', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 3px 0 rgba(29,27,58,.35)' }, it.t); o.p.push(d); }); return o; };
+  T.cpSplitAt = (o, t, times) => o.p.forEach((d, k) => { const u = ease.outExpo(P(t, times[k], .45)); d.style.opacity = clamp(P(t, times[k], .12)); tf(d, { x: (k % 2 ? 1 : -1) * 260 * (1 - u), s: .9 + .1 * u }); });
+  /* 7 · Icon Burst: colour icon discs fly out of a centre with burst rays; pair with cpBanner */
+  T.cpBurst = (L, items, cx, cy, R, size) => { const n = items.length, o = { d: [], cx, cy }, sz = size || 130; o.s = NSV(L, 1920, 1080, 0, 0, 9);
+    o.rays = Array.from({ length: 16 }, (_, i) => { const a = i * Math.PI / 8; return K.sv(o.s, 'line', { x1: cx + R * .55 * Math.cos(a), y1: cy + R * .55 * Math.sin(a), x2: cx + R * 1.35 * Math.cos(a), y2: cy + R * 1.35 * Math.sin(a), stroke: i % 2 ? T.CP.INK : T.CP.C[i % 7], 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': '0 40 30 400' }); });
+    items.forEach((it, k) => { const aa = -Math.PI / 2 + (k + .5) * (2 * Math.PI / n), col = CPc(k, it.c);
+      const d = el(L, 'div', 'abs', { left: (cx - sz / 2) + 'px', top: (cy - sz / 2) + 'px', width: sz + 'px', height: sz + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${CPshade(col, 1.15)}, ${col} 60%, ${CPshade(col, .8)})`, border: '6px solid #fff', boxSizing: 'border-box', boxShadow: '0 10px 0 rgba(29,27,58,.18), 0 18px 34px rgba(29,27,58,.22)', zIndex: 20, transformOrigin: '50% 50%' });
+      T.cpIcon(d, it.i, sz * .52, '#fff', sz * .22, sz * .2); d.tx = R * Math.cos(aa); d.ty = R * Math.sin(aa); o.d.push(d); }); return o; };
+  T.cpBurstAt = (o, t, times) => { const u0 = P(t, times[0] - .1, .5); o.rays.forEach((r, i) => { r.setAttribute('stroke-dashoffset', -120 * ease.out3(u0) + 20); r.style.opacity = u0 > 0 ? 1 - P(t, times[0] + .5, .5) * .6 : 0; });
+    o.d.forEach((d, k) => { const u = ease.outBack(P(t, times[k], .5), 1.7); tf(d, { x: d.tx * u, y: d.ty * u + 6 * Math.sin(t * 2.4 + k) * (u >= 1 ? 1 : 0), s: .3 + .7 * clamp(u), o: clamp(P(t, times[k], .1)), r: 12 * Math.sin(t * 2 + k) }); }); };
 
 })();

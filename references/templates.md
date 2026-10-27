@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-one named templates (T18 and T22 were retired; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -24,6 +24,7 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 | T19 | Footage Intro | 真实影像引入 | Bringing in real footage: news clips, product shots, tech and AI news openers |
 | T20 | Fast-Paced Social Media | 快节奏社媒 | High-energy TikTok / Shorts / Reels pieces, launches, quick tips |
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
+| T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
 
 ## T01 · Acid Lime Kinetic
 
@@ -386,10 +387,26 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 ![T21 sample a](samples/T21_a.jpg) ![T21 sample b](samples/T21_b.jpg) ![T21 sample c](samples/T21_c.jpg) ![T21 sample d](samples/T21_d.jpg)
 
+## T23 · Creative Pop
+
+*创意波普* · palette `#2f6bff` `#12b3c8` `#19b36b` `#62c132` `#ff8a1c` `#f0384b` `#d63fd6`
+
+**Best for:** Playful tutorials, step lists and checklists, workflows, creator tips, social content
+
+**Signature beats:**
+- seven-colour card system: one colour per point, thick rounded cards with a hard shadow
+- keyword stickers: big heavy type on tilted colour blocks, popping in one by one
+- seven layouts: colour splash, 7-step row, circular hub, vertical cards, path journey, split showcase with real footage, icon burst
+- simple icons, hand-drawn arrows, dashed connectors, sparkles and stickers over soft drifting paint splashes
+
+**Presenter window:** big rounded card on the right, circle at the centre of the hub, or a circle bottom-left / top-left, thick white ring
+
+![T23 sample a](samples/T23_a.jpg) ![T23 sample b](samples/T23_b.jpg) ![T23 sample c](samples/T23_c.jpg) ![T23 sample d](samples/T23_d.jpg)
+
 ## Mixing rules
 
 - Use the templates the user names for exactly those parts; otherwise pick per section from *Best for*.
 - One template per section; change template at a natural pause so the presenter window can morph between poses.
 - The window pose at the end of a section must equal the pose at the start of the next.
-- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage.
+- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage. T23 Creative Pop suits step lists: give each point the next colour of the seven-colour system, in order.
 - Numbers, dates and facts on screen come only from what the speaker says. Anything conceptual is labelled ILLUSTRATIVE.

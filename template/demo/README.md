@@ -1,6 +1,6 @@
 # Template demos
 
-One section per template (`t01` … `t21`; T18 and T22 were retired). Every demo plays the same 15-second self-introduction, so you can compare the 20 styles line by line. The rendered videos (English, and Chinese + English) are attached to the [latest release](https://github.com/RoverEva/eva-video-style/releases).
+One section per template (`t01` … `t23`; T18 and T22 were retired). Every demo plays the same 15-second self-introduction, so you can compare the 21 styles line by line. The rendered videos (English, and Chinese + English) are attached to the [latest release](https://github.com/RoverEva/eva-video-style/releases).
 
 `intro.js` holds the shared timing: when each spoken line starts (`IN.T`), the four beats (`IN.B`) and the presenter source. Each `tNN/scenes.js` reads those times, so if you record your own intro, update `intro.js` and every demo follows.
 

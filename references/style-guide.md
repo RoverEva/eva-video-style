@@ -58,7 +58,7 @@ Rules:
 - **3D perspective screens** for real footage.
 
 ## Themes → named templates
-The themes are now named templates **T01–T21** (T18 and T22 were retired). See `templates.md` for each one's shots, colors, Eva window and sample images.
+The themes are now named templates **T01–T21 and T23** (T18 and T22 were retired). See `templates.md` for each one's shots, colors, Eva window and sample images.
 - **Bright family:** T01 Acid Lime Kinetic · T02 Electric Blue Console · T04 Paper · T05 Red Sunburst · T06 Brand Purple · T07 Cartoon Eva
 - **Dark:** T03 Dark 3D Stage
 - **Neon:** T08 Neon Explainer (violet/magenta grade, glowing cream type, concept diagrams)
@@ -68,6 +68,7 @@ The themes are now named templates **T01–T21** (T18 and T22 were retired). See
 - **Learning:** T15 Learning Style (flat storybook illustration on indigo: twinkling stars and drifting clouds in every shot, bubbly rounded white lettering, book staircase, paper planes on dashed paths, sun, Read → Think → Create icons on soft blobs, open book with a pink sunrise, corner decorations, goal stickers)
 - **Comic:** T16 Comic Pop (rotating sunburst rays with halftone dots in green/yellow/blue/purple/cyan, puffy white comic clouds with thick black outlines that bob, white zigzag lightning split screens for VS, big speech cloud title, black action marks, outlined yellow stars, sparkles over a cloud ground, outlined sticker cards, comic lettering)
 - **Science:** T17 Science Network (near-black navy with drifting orange/blue bokeh, rippling plexus ribbon of connected nodes, slowly rotating plexus globe with real continents, chain of plexus spheres, plexus tunnel flowing toward the camera, white headlines with a cyan keyword)
+- **Pop:** T23 Creative Pop (seven-colour card system on warm paper with soft paint splashes; thick rounded cards with hard shadows, big keyword stickers, simple line icons, hand-drawn arrows, dashed connectors, sparkles; layouts: colour splash, 7-step row, circular hub, vertical cards, path journey, split showcase, icon burst)
 - **HUD family:** T09 Showcase Wall Opener · T10 HUD Keynote · T11 HUD Dashboard. These share a dark frame with corner brackets, mono labels, a running timecode and a bracketed Eva window. Accents are blue `#4d7cff`, gold `#f5b83d` and green `#34d27b`.
 
 ## Signature beats
