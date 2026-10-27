@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-one named templates (T18 and T22 were retired; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-two named templates (T18 and T22 were retired; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -25,6 +25,7 @@ Twenty-one named templates (T18 and T22 were retired; the other IDs are unchange
 | T20 | Fast-Paced Social Media | 快节奏社媒 | High-energy TikTok / Shorts / Reels pieces, launches, quick tips |
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
 | T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
+| T24 | Luxury Nude Motion | 奢华裸色 | Premium personal-brand talks, frameworks and step-by-step methods, product and service intros |
 
 ## T01 · Acid Lime Kinetic
 
@@ -403,10 +404,26 @@ Twenty-one named templates (T18 and T22 were retired; the other IDs are unchange
 
 ![T23 sample a](samples/T23_a.jpg) ![T23 sample b](samples/T23_b.jpg) ![T23 sample c](samples/T23_c.jpg) ![T23 sample d](samples/T23_d.jpg)
 
+## T24 · Luxury Nude Motion
+
+*奢华裸色* · palette `#D8C5B5` `#f7f2ea` `#ffffff` `#2e2823`
+
+**Best for:** Premium personal-brand talks, frameworks and step-by-step methods, product and service intros
+
+**Signature beats:**
+- solid nude stage (#D8C5B5) with the presenter cut out and naturally integrated, soft contact shadow
+- large 3D white type with layered soft shadows, slow zoom and blur-in entrances
+- floating ivory cards, rounded rectangles, numbered steps, fine line icons and minimalist infographics
+- eight layouts: hero, numbered steps, icon tiles, orbit, statement, feature card, timeline, icon grid, with light-sweep transitions
+
+**Presenter window:** presenter cut-out standing on the nude stage (left or centre), no frame, gentle push-in
+
+![T24 sample a](samples/T24_a.jpg) ![T24 sample b](samples/T24_b.jpg) ![T24 sample c](samples/T24_c.jpg) ![T24 sample d](samples/T24_d.jpg)
+
 ## Mixing rules
 
 - Use the templates the user names for exactly those parts; otherwise pick per section from *Best for*.
 - One template per section; change template at a natural pause so the presenter window can morph between poses.
 - The window pose at the end of a section must equal the pose at the start of the next.
-- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage. T23 Creative Pop suits step lists: give each point the next colour of the seven-colour system, in order.
+- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage. T24 Luxury Nude Motion suits premium, calm sections (frameworks, methods, brand statements); keep it for a whole section and let the type move slowly. T23 Creative Pop suits step lists: give each point the next colour of the seven-colour system, in order.
 - Numbers, dates and facts on screen come only from what the speaker says. Anything conceptual is labelled ILLUSTRATIVE.

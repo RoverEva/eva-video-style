@@ -2,7 +2,7 @@
 
 **An open-source AI video-editing skill for talking-head videos.** Give Claude a raw recording plus its subtitles, pick a style, and get back a finished, motion-designed video with captions in English, or in Chinese and English.
 
-Twenty-one ready-to-use templates cover cinematic, futuristic tech, social media and minimalist looks. Every frame is rendered from code, so results are deterministic and editable.
+Twenty-two ready-to-use templates cover cinematic, futuristic tech, social media and minimalist looks. Every frame is rendered from code, so results are deterministic and editable.
 
 ![Eva Video Style: 21 templates in 8 seconds](docs/montage.gif)
 
@@ -13,7 +13,7 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 - **Demo reel** (a different template on every line): [English](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Demo_Reel_EN.mp4) · [Chinese + English](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Demo_Reel_CN-EN.mp4)
 - **Music montages**: [all 21 templates](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Montage.mp4) · [10-template cut](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Montage_2.mp4)
 
-[![The 21 templates](docs/templates.jpg)](references/templates.md)
+[![The 22 templates](docs/templates.jpg)](references/templates.md)
 
 | ID | Template | Demo | Demo |
 |---|---|---|---|
@@ -38,12 +38,13 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 | T20 | Fast-Paced Social Media | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T20_FastPacedSocial_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T20_FastPacedSocial_CN-EN.mp4) |
 | T21 | Clean & Minimal | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_CN-EN.mp4) |
 | T23 | Creative Pop | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_CN-EN.mp4) |
+| T24 | Luxury Nude Motion | 5-second sample: [video](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T24_LuxuryNude.mp4) | [frames](references/templates.md#t24--luxury-nude-motion) |
 
 ## What it does
 
 - **A presenter window that keeps moving.** Full-bleed → card → circle, with face-safe framing: the speaker's whole head is always visible.
 - **Kinetic graphics timed to the words.** Cards, giant type, stickers, gauges, maps and real screen recordings pop in exactly when they are said.
-- **21 named templates (T01–T21 and T23).** From Acid Lime Kinetic and Electric Blue Console to Old Newspaper, Science Network, Footage Intro, Fast-Paced Social, Clean & Minimal and the new Creative Pop seven-colour card system. (T18 and T22 were retired; the other IDs stay the same.) See [`references/templates.md`](references/templates.md).
+- **22 named templates (T01–T21, T23 and T24).** From Acid Lime Kinetic and Electric Blue Console to Old Newspaper, Science Network, Footage Intro, Fast-Paced Social, Clean & Minimal the Creative Pop seven-colour card system and the new Luxury Nude Motion (3D white type and ivory cards on a nude stage). (T18 and T22 were retired; the other IDs stay the same.) See [`references/templates.md`](references/templates.md).
 - **Captions your way.** English-only, or bilingual (Chinese line on top, English underneath). Machine-translation slips are fixed in the burned captions only, and your SRT is never edited. On footage-heavy shots, captions move to the clearest part of the frame.
 - **Real footage, handled properly (T19).** AI cut-out of the speaker (natural colours), fast swaps through backgrounds you import (your own images or footage; no images are bundled), the clip pushes in, the presenter shrinks into a circle that stays clear of the action.
 - **Clean sound.** No background music: the original voice plus short sound effects, normalised to about -16 LUFS.

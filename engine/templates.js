@@ -1,4 +1,4 @@
-/* Eva Video Style · template library for T08–T17 and T23. Load after kit.js (and land.js for the T14 globe).
+/* Eva Video Style · template library for T08–T17, T23 and T24. Load after kit.js (and land.js for the T14 globe).
  *   T08 NEON  · 霓虹讲解 Neon Explainer
  *   T09 WALL  · 作品墙开场 Showcase Wall Opener
  *   T10 KEY   · HUD 发布会 HUD Keynote
@@ -10,6 +10,7 @@
  *   T16 COMIC · 漫画风 Comic Pop
  *   T17 SCI   · 科学风 Science Network
  *   T23 POP   · 创意波普 Creative Pop (seven-colour card system)
+ *   T24 LUX   · 奢华裸色 Luxury Nude Motion (nude stage, 3D white type, ivory cards)
  * Every builder takes (parent, ...) and returns an object; the matching *At(obj, ...) call animates it inside update().
  * Colours, sizes and copy are parameters: never hard-code facts — pass what Eva actually says. */
 (function () {
@@ -668,5 +669,106 @@
       T.cpIcon(d, it.i, sz * .52, '#fff', sz * .22, sz * .2); d.tx = R * Math.cos(aa); d.ty = R * Math.sin(aa); o.d.push(d); }); return o; };
   T.cpBurstAt = (o, t, times) => { const u0 = P(t, times[0] - .1, .5); o.rays.forEach((r, i) => { r.setAttribute('stroke-dashoffset', -120 * ease.out3(u0) + 20); r.style.opacity = u0 > 0 ? 1 - P(t, times[0] + .5, .5) * .6 : 0; });
     o.d.forEach((d, k) => { const u = ease.outBack(P(t, times[k], .5), 1.7); tf(d, { x: d.tx * u, y: d.ty * u + 6 * Math.sin(t * 2.4 + k) * (u >= 1 ? 1 : 0), s: .3 + .7 * clamp(u), o: clamp(P(t, times[k], .1)), r: 12 * Math.sin(t * 2 + k) }); }); };
+
+  /* ---------- T24 Luxury Nude Motion: solid nude-beige stage, 3D white type, floating ivory cards, refined slow motion ----------
+   * The presenter is integrated on the nude background as an AI cut-out (scripts/matte.py) with a soft contact shadow; without
+   * cut-out frames, keep the normal presenter window. Layouts take items { t: title, d: description, i: icon } and animate with
+   * *At(obj, t, times) — one landing time per item, taken from when the speaker says it. */
+  T.LX = { BG: '#D8C5B5', IVORY: '#fbf7f1', IVORY2: '#f2eae0', INK: '#2e2823', MUTE: '#7a6d62', LINE: 'rgba(255,255,255,.75)', SH: 'rgba(86,60,40,',
+    HEAD: "'Inter', 'Noto Sans CJK SC', sans-serif", SCRIPT: "'Playfair Display', 'Noto Serif CJK SC', serif" };
+  const LXX = T.LX, sh = a => LXX.SH + a + ')';
+  /* the stage: solid nude beige with a very soft top light and a floor falloff */
+  T.lxBg = `radial-gradient(1400px 900px at 55% 25%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%), radial-gradient(1800px 600px at 50% 120%, rgba(120,90,66,.18), rgba(120,90,66,0) 70%), ${LXX.BG}`;
+  /* 3D white type: a stack of warm off-white layers for depth plus two soft drop shadows */
+  T.lxType3D = (depth) => { const n = depth || 6, a = []; for (let i = 1; i <= n; i++) { const c = Math.round(244 - i * (34 / n)); a.push(`${i * .9}px ${i * 1.1}px 0 rgb(${c},${c - 8},${c - 16})`); }
+    a.push(`${n}px ${n * 2 + 6}px 18px ${sh(.32)}`, `4px ${n * 4 + 18}px 46px ${sh(.22)}`); return a.join(', '); };
+  T.lxWord = (L, txt, x, y, size, opt) => { const o = opt || {}; return el(L, 'div', 'abs', Object.assign({ left: x + 'px', top: y + 'px', fontFamily: o.script ? LXX.SCRIPT : LXX.HEAD, fontWeight: o.script ? 400 : 900, fontStyle: o.script || o.italic ? 'italic' : 'normal',
+      fontSize: size + 'px', lineHeight: o.lh || .95, letterSpacing: o.script ? '0' : '-.02em', color: '#fff', textShadow: T.lxType3D(o.depth || Math.max(3, Math.round(size / 26))), whiteSpace: 'nowrap', transform: `rotate(${o.rot || 0}deg)`, transformOrigin: o.origin || '0 50%', zIndex: 20 }, o.css || {}), txt); };
+  /* smooth zoom-in with a short blur: the signature entrance of every T24 element */
+  T.lxIn = (e, t, t0, d, rot, from) => { const u = P(t, t0, d || .7), e3 = ease.out3(u); tf(e, { s: (from || 1.18) - ((from || 1.18) - 1) * e3, o: clamp(u * 2.2), r: rot || 0, y: 18 * (1 - e3) }); e.style.filter = u < 1 ? `blur(${(1 - e3) * 10}px)` : 'none'; };
+  /* gentle float for anything that has landed */
+  const lxFloat = (t, k, amp) => (amp || 5) * Math.sin(t * 1.3 + k * 1.7);
+  /* ivory card with a soft layered shadow and a faint top highlight */
+  T.lxCard = (L, x, y, w, h, r, z) => el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', borderRadius: (r || 22) + 'px', background: `linear-gradient(160deg, #fffdf9, ${LXX.IVORY2})`,
+    boxShadow: `inset 0 2px 0 rgba(255,255,255,.9), 0 4px 10px ${sh(.10)}, 0 22px 44px ${sh(.24)}`, transformOrigin: '50% 50%', zIndex: z || 14 });
+  /* icon disc: ivory circle with a charcoal line icon (reuses the line-icon set) */
+  T.lxDisc = (L, icon, x, y, size, label, z) => { const d = el(L, 'div', 'abs', { left: (x - size / 2) + 'px', top: (y - size / 2) + 'px', width: size + 'px', height: size + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 28%, #ffffff, ${LXX.IVORY2})`,
+      boxShadow: `inset 0 2px 0 rgba(255,255,255,.9), 0 4px 10px ${sh(.12)}, 0 20px 36px ${sh(.24)}`, transformOrigin: '50% 50%', zIndex: z || 16 }); T.cpIcon(d, icon, size * .42, LXX.INK, size * .29, label ? size * .16 : size * .29, 2.6);
+    if (label) el(d, 'div', 'abs', { left: '-20px', width: (size + 40) + 'px', top: (size * .64) + 'px', textAlign: 'center', fontFamily: LXX.HEAD, fontWeight: 800, fontSize: (size * .12) + 'px', letterSpacing: '.04em', color: LXX.INK }, label.toUpperCase()); return d; };
+  /* big outlined-3D numeral */
+  const lxNum = (p, n, x, y, size) => el(p, 'div', 'abs', { left: x + 'px', top: y + 'px', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: size + 'px', lineHeight: 1, color: '#fff', textShadow: T.lxType3D(4) }, String(n));
+  /* thin white connector line / arc that draws itself */
+  T.lxLine = (L, d, w, z) => { const s = NSV(L, 1920, 1080, 0, 0, z || 12); const p = K.sv(s, 'path', { d, fill: 'none', stroke: LXX.LINE, 'stroke-width': w || 5, 'stroke-linecap': 'round', filter: '' });
+    s.style.filter = `drop-shadow(0 6px 8px ${sh(.25)})`; const l = p.getTotalLength ? p.getTotalLength() || 1500 : 1500; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); return { s, p, l }; };
+  T.lxLineAt = (o, u) => o.p.setAttribute('stroke-dashoffset', o.l * (1 - ease.io3(clamp(u))));
+  /* line + arrowhead (the swooping arrow under rows) */
+  T.lxArrow = (L, d, w) => { const o = T.lxLine(L, d, w || 6, 13); const end = o.p.getPointAtLength ? o.p.getPointAtLength(o.l) : { x: 0, y: 0 }, pre = o.p.getPointAtLength ? o.p.getPointAtLength(Math.max(0, o.l - 30)) : { x: 0, y: 0 };
+    const a = Math.atan2(end.y - pre.y, end.x - pre.x), hl = 34; o.h = K.sv(o.s, 'path', { d: `M${end.x - hl * Math.cos(a - .45)} ${end.y - hl * Math.sin(a - .45)} L${end.x} ${end.y} L${end.x - hl * Math.cos(a + .45)} ${end.y - hl * Math.sin(a + .45)}`, fill: 'none', stroke: LXX.LINE, 'stroke-width': w || 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }); return o; };
+  T.lxArrowAt = (o, u) => { T.lxLineAt(o, u); o.h.style.opacity = u > .95 ? 1 : 0; };
+  /* cinematic transition: a soft light sweep + slight exposure lift. T.lxSweepAt(o, t, t0) */
+  T.lxSweep = L => el(L, 'div', 'abs', { left: '-900px', top: '-200px', width: '700px', height: '1480px', background: 'linear-gradient(90deg, rgba(255,250,244,0), rgba(255,250,244,.55), rgba(255,250,244,0))', transform: 'rotate(14deg)', zIndex: 40, opacity: 0, pointerEvents: 'none' });
+  T.lxSweepAt = (o, t, t0) => { const u = P(t, t0, .8); o.style.opacity = u > 0 && u < 1 ? 1 : 0; o.style.left = (-900 + 3300 * ease.io3(u)) + 'px'; };
+
+  /* presenter rig: AI cut-out frames composited on the nude stage, with a soft contact shadow. pose = {x, y, s} (px offset, scale from the bottom-centre) */
+  T.lxPresenter = (L, z) => { const o = {}; o.w = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: z || 10, transformOrigin: '50% 100%' });
+    o.sh = el(o.w, 'div', 'abs', { left: '560px', top: '980px', width: '800px', height: '140px', borderRadius: '50%', background: `radial-gradient(closest-side, ${sh(.35)}, ${sh(0)})`, filter: 'blur(6px)' });
+    o.img = el(o.w, 'img', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', filter: `drop-shadow(18px 24px 30px ${sh(.30)})` }); return o; };
+  T.lxPresenterAt = (o, src, pose, z) => { C.setSrc(o.img, src); tf(o.w, { x: pose.x || 0, y: pose.y || 0, s: pose.s || 1 }); if (z) o.w.style.zIndex = z; };
+  T.lxPose = (t, keys) => { let a = keys[0], b = keys[0]; for (const k2 of keys) { if (t >= k2.t) { a = b; b = k2; } } const u = ease.io3(P(t, b.t, b.d || .8)); const f = n => lerp(a[n] || (n === 's' ? 1 : 0), b[n] || (n === 's' ? 1 : 0), u); return { x: f('x'), y: f('y'), s: f('s') }; };
+
+  /* 1 · Hero: kicker + big 3D words + tilted italic sub, with a few light ticks */
+  T.lxHero = (L, kicker, words, sub, x, y, size) => { const o = { w: [] };
+    o.k = kicker ? el(L, 'div', 'abs', { left: (x + 6) + 'px', top: (y - 56) + 'px', fontFamily: LXX.HEAD, fontWeight: 700, fontSize: '30px', letterSpacing: '.32em', color: '#fff', textShadow: `0 3px 10px ${sh(.3)}`, zIndex: 20 }, kicker) : null;
+    words.forEach((w, i) => o.w.push(T.lxWord(L, w, x + i * 26, y + i * size * .98, size, { rot: -6 }))); const ys = y + words.length * size * .98 + 10;
+    o.s = sub ? T.lxWord(L, sub, x + 110, ys, size * .32, { rot: -8, italic: true, depth: 3 }) : null;
+    o.ticks = el(L, 'div', 'abs', { left: (x - 60) + 'px', top: (y - 70) + 'px', width: '70px', height: '70px', zIndex: 20 }); const s = K.svg(o.ticks, 70, 70, 0, 0); [[10, 40, 30, 50], [22, 18, 38, 36], [44, 6, 50, 28]].forEach(([a, b, c, d]) => K.sv(s, 'line', { x1: a, y1: b, x2: c, y2: d, stroke: '#fff', 'stroke-width': 6, 'stroke-linecap': 'round' })); return o; };
+  T.lxHeroAt = (o, t, times) => { if (o.k) T.lxIn(o.k, t, times[0], .6, 0, 1.06); o.w.forEach((w, i) => T.lxIn(w, t, times[i + 1] ?? times[i], .8, -6)); if (o.s) T.lxIn(o.s, t, times[times.length - 1], .7, -8, 1.1); tf(o.ticks, { o: P(t, times[1] ?? times[0], .4), s: .8 + .2 * ease.outBack(P(t, times[1] ?? times[0], .5), 2) }); };
+  /* 2 · Numbered step cards (vertical): big 3D numeral + ivory card with icon, title, description */
+  T.lxSteps = (L, items, x, y, w, h, gap) => { const o = { c: [] }; items.forEach((it, k) => { const yy = y + k * (h + (gap || 22)); const g = el(L, 'div', 'abs', { left: x + 'px', top: yy + 'px', width: w + 'px', height: h + 'px', transformOrigin: '20% 50%', zIndex: 14 });
+      lxNum(g, k + 1, 0, h * .06, h * .9); const c = T.lxCard(g, h * .62, 0, w - h * .62, h, 22); T.cpIcon(c, it.i, h * .5, LXX.INK, h * .2, h * .25, 2.4);
+      el(c, 'div', 'abs', { left: (h * .9) + 'px', top: (h * .2) + 'px', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: (h * .27) + 'px', color: LXX.INK, letterSpacing: '.02em' }, it.t.toUpperCase());
+      if (it.d) el(c, 'div', 'abs', { left: (h * .9) + 'px', top: (h * .56) + 'px', fontFamily: LXX.HEAD, fontWeight: 500, fontSize: (h * .17) + 'px', color: LXX.MUTE }, it.d); o.c.push(g); }); return o; };
+  T.lxStepsAt = (o, t, times) => o.c.forEach((g, k) => { const u = P(t, times[k], .75), e = ease.out3(u); tf(g, { x: 80 * (1 - e), y: lxFloat(t, k, 3) * (u >= 1 ? 1 : 0), s: 1.06 - .06 * e, o: clamp(u * 2) }); g.style.filter = u < 1 ? `blur(${(1 - e) * 8}px)` : 'none'; });
+  /* 3 · Numbered tiles (row): square ivory tiles with icon + label, 3D numerals above, swooping arrow below */
+  T.lxTiles = (L, items, x, y, size, gap) => { const o = { c: [] }; items.forEach((it, k) => { const xx = x + k * (size + (gap || 26)); const g = el(L, 'div', 'abs', { left: xx + 'px', top: (y - size * .62) + 'px', width: size + 'px', height: (size * 1.62) + 'px', transformOrigin: '50% 100%', zIndex: 14 });
+      lxNum(g, k + 1, size * .32, 0, size * .5); const c = T.lxCard(g, 0, size * .62, size, size, 20); T.cpIcon(c, it.i, size * .42, LXX.INK, size * .29, size * .15, 2.4);
+      el(c, 'div', 'abs', { left: 0, width: size + 'px', top: (size * .64) + 'px', textAlign: 'center', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: (size * .15) + 'px', color: LXX.INK }, it.t.toUpperCase()); o.c.push(g); });
+    const w = items.length * (size + (gap || 26)); o.ar = T.lxArrow(L, `M${x + 30} ${y + size + 70} Q${x + w * .55} ${y + size + 170} ${x + w - 20} ${y + size + 40}`, 6); return o; };
+  T.lxTilesAt = (o, t, times) => { o.c.forEach((g, k) => { const u = P(t, times[k], .7), e = ease.out3(u); tf(g, { y: 60 * (1 - e) + lxFloat(t, k, 3) * (u >= 1 ? 1 : 0), s: 1.1 - .1 * e, o: clamp(u * 2) }); g.style.filter = u < 1 ? `blur(${(1 - e) * 8}px)` : 'none'; });
+    T.lxArrowAt(o.ar, P(t, times[0], (times[times.length - 1] - times[0]) + .8)); };
+  /* 4 · Orbit: icon discs on an arc around the presenter, joined by a thin white arc */
+  T.lxOrbit = (L, items, cx, cy, R, a0, a1, size) => { const n = items.length, o = { d: [] }; const A = k => a0 + (a1 - a0) * (n > 1 ? k / (n - 1) : .5);
+    const p0 = [cx + R * .78 * Math.cos(a0), cy + R * .78 * Math.sin(a0)], p1 = [cx + R * .78 * Math.cos(a1), cy + R * .78 * Math.sin(a1)];
+    o.arc = T.lxLine(L, `M${p0[0]} ${p0[1]} A${R * .78} ${R * .78} 0 ${Math.abs(a1 - a0) > Math.PI ? 1 : 0} 1 ${p1[0]} ${p1[1]}`, 4, 11);
+    items.forEach((it, k) => { const a = A(k); o.d.push(T.lxDisc(L, it.i, cx + R * Math.cos(a), cy + R * Math.sin(a), size || 170, it.t)); }); return o; };
+  T.lxOrbitAt = (o, t, times) => { T.lxLineAt(o.arc, P(t, times[0] - .2, (times[times.length - 1] - times[0]) + .6)); o.d.forEach((d, k) => { const u = P(t, times[k], .6), e = ease.outBack(u, 1.4); tf(d, { s: .6 + .4 * e, o: clamp(u * 2.5), y: lxFloat(t, k, 4) * (u >= 1 ? 1 : 0) }); }); };
+  /* 5 · Statement: script word + big 3D word + 3D phrase + brush underline with arrow (Turn IDEAS INTO RESULTS) */
+  T.lxStatement = (L, script, big, phrase, x, y, size) => { const o = {}; o.a = T.lxWord(L, script, x, y - size * .55, size * .5, { script: true, rot: -8, depth: 2 }); o.b = T.lxWord(L, big, x + 10, y, size, { rot: -8 });
+    o.c = T.lxWord(L, phrase, x + 20, y + size * .95, size * .42, { rot: -8, depth: 4 });
+    o.u = T.lxArrow(L, `M${x + 80} ${y + size * 1.75} Q${x + size * 2.2} ${y + size * 1.45} ${x + size * 3.6} ${y + size * 1.05}`, 9);
+    o.top = T.lxArrow(L, `M${x + size * 1.2} ${y - size * .25} Q${x + size * 2.6} ${y - size * .55} ${x + size * 3.5} ${y - size * .95}`, 5); return o; };
+  T.lxStatementAt = (o, t, times) => { T.lxIn(o.a, t, times[0], .7, -8, 1.1); T.lxIn(o.b, t, times[1] ?? times[0] + .25, .8, -8); T.lxIn(o.c, t, times[2] ?? times[0] + .5, .7, -8, 1.1);
+    T.lxArrowAt(o.u, P(t, (times[2] ?? times[0] + .5) + .2, .7)); T.lxArrowAt(o.top, P(t, (times[1] ?? times[0]) + .3, .6)); };
+  /* 6 · Feature card: one large ivory card with a big numeral, title, description and a large icon */
+  T.lxFeature = (L, it, n, x, y, w, h) => { const o = {}; o.c = T.lxCard(L, x, y, w, h, 34); o.c.style.overflow = 'hidden';
+    o.side = el(o.c, 'div', 'abs', { left: (w * .6) + 'px', top: 0, width: (w * .4) + 'px', height: h + 'px', background: `linear-gradient(90deg, rgba(232,220,206,.6), rgba(247,241,233,.4))`, borderLeft: '1px solid rgba(255,255,255,.8)' });
+    if (n !== null && n !== undefined) el(o.c, 'div', 'abs', { left: (w * .06) + 'px', top: (h * .14) + 'px', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: (h * .4) + 'px', lineHeight: 1, color: LXX.INK }, String(n));
+    el(o.c, 'div', 'abs', { left: (w * (n === null || n === undefined ? .07 : .18)) + 'px', top: (h * .16) + 'px', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: (h * .17) + 'px', color: LXX.INK, whiteSpace: 'nowrap' }, it.t.toUpperCase());
+    el(o.c, 'div', 'abs', { left: (w * (n === null || n === undefined ? .07 : .18)) + 'px', top: (h * .42) + 'px', width: (w * .4) + 'px', fontFamily: LXX.HEAD, fontWeight: 500, fontSize: (h * .085) + 'px', lineHeight: 1.35, color: LXX.MUTE }, it.d || '');
+    o.ic = T.cpIcon(o.c, it.i, h * .5, LXX.INK, w * .66, h * .25, 2.2); return o; };
+  T.lxFeatureAt = (o, t, t0) => { const u = P(t, t0, .8), e = ease.out3(u); tf(o.c, { s: 1.12 - .12 * e, o: clamp(u * 2), y: 30 * (1 - e) + lxFloat(t, 0, 3) * (u >= 1 ? 1 : 0) }); o.c.style.filter = u < 1 ? `blur(${(1 - e) * 10}px)` : 'none'; tf(o.ic, { s: .7 + .3 * ease.outBack(P(t, t0 + .35, .6), 1.6), o: P(t, t0 + .35, .3) }); };
+  /* 7 · Timeline: icon discs along a gentle wave with labels above, connector + arrow */
+  T.lxTimeline = (L, items, x0, x1, y, amp, size) => { const n = items.length, o = { d: [], l: [] }, pts = items.map((_, k) => [x0 + (x1 - x0) * (n > 1 ? k / (n - 1) : .5), y - amp * Math.sin(Math.PI * (n > 1 ? k / (n - 1) : .5))]);
+    const q = [[pts[0][0] - 90, pts[0][1] + size * .9], ...pts.map(([px, py]) => [px, py + size * .72]), [pts[n - 1][0] + 80, pts[n - 1][1] + size * .5]];
+    let d = `M${q[0][0]} ${q[0][1]}`; for (let i = 1; i < q.length - 1; i++) { const mx = (q[i][0] + q[i + 1][0]) / 2, my = (q[i][1] + q[i + 1][1]) / 2; d += ` Q${q[i][0]} ${q[i][1]} ${mx} ${my}`; } d += ` L${q[q.length - 1][0]} ${q[q.length - 1][1]}`;
+    o.ln = T.lxArrow(L, d, 4);
+    pts.forEach(([px, py], k) => { o.d.push(T.lxDisc(L, items[k].i, px, py, size)); o.l.push(el(L, 'div', 'abs', { left: (px - 120) + 'px', width: '240px', top: (py - size / 2 - 52) + 'px', textAlign: 'center', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: '28px', letterSpacing: '.04em', color: '#fff', textShadow: T.lxType3D(2), zIndex: 17 }, items[k].t.toUpperCase())); }); return o; };
+  T.lxTimelineAt = (o, t, times) => { T.lxArrowAt(o.ln, P(t, times[0] - .2, (times[times.length - 1] - times[0]) + .7)); o.d.forEach((d, k) => { const u = P(t, times[k], .6), e = ease.outBack(u, 1.5); tf(d, { s: .6 + .4 * e, o: clamp(u * 2.5), y: lxFloat(t, k, 3) * (u >= 1 ? 1 : 0) }); tf(o.l[k], { o: P(t, times[k] + .15, .4), y: 10 * (1 - ease.out3(P(t, times[k] + .15, .4))) }); }); };
+  /* 8 · Tile grid: tilted ivory tiles floating in 3D depth */
+  T.lxGrid = (L, items, x, y, cols, size, gap) => { const o = { c: [] }, g = gap || 26; o.wrap = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: (cols * (size + g)) + 'px', height: (Math.ceil(items.length / cols) * (size + g)) + 'px', transform: 'perspective(1600px) rotateY(-14deg) rotateX(8deg) rotateZ(-6deg)', transformOrigin: '50% 50%', zIndex: 14 });
+    items.forEach((it, k) => { const r = Math.floor(k / cols), c = k % cols, last = k === items.length - 1 && items.length % cols === 1; const xx = last ? (cols - 1) * (size + g) / 2 : c * (size + g);
+      const t2 = T.lxCard(o.wrap, xx, r * (size + g), size, size, 18); T.cpIcon(t2, it.i, size * .4, LXX.INK, size * .3, size * .16, 2.4);
+      el(t2, 'div', 'abs', { left: 0, width: size + 'px', top: (size * .64) + 'px', textAlign: 'center', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: (size * .13) + 'px', color: LXX.INK, letterSpacing: '.03em' }, it.t.toUpperCase()); o.c.push(t2); }); return o; };
+  T.lxGridAt = (o, t, times) => o.c.forEach((c, k) => { const u = P(t, times[k], .7), e = ease.out3(u); tf(c, { s: 1.2 - .2 * e, o: clamp(u * 2), y: lxFloat(t, k, 4) * (u >= 1 ? 1 : 0), r: (k % 2 ? 2 : -2) * (1 - e) }); c.style.filter = u < 1 ? `blur(${(1 - e) * 8}px)` : 'none'; });
 
 })();
