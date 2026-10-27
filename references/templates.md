@@ -21,11 +21,9 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 | T15 | Learning Style | 学习风 | Education, study tips, vocabulary and reading, videos for kids and parents |
 | T16 | Comic Pop | 漫画风 | Fun and playful talks, before-vs-after comparisons, key points, tip lists |
 | T17 | Science Network | 科学风 | Tech and AI trends, science topics, how learning works, future outlooks |
-| T18 | History | 历史风 | History stories, word origins and culture, look-backs and milestones |
 | T19 | Footage Intro | 真实影像引入 | Bringing in real footage: news clips, product shots, tech and AI news openers |
 | T20 | Fast-Paced Social Media | 快节奏社媒 | High-energy TikTok / Shorts / Reels pieces, launches, quick tips |
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
-| T22 | Bold Motion Graphics | 炫彩大字动效 | Attention-grabbing openers, launches, countdowns, big-number wins |
 
 ## T01 · Acid Lime Kinetic
 
@@ -335,26 +333,6 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 
 ![T17 sample a](samples/T17_a.jpg) ![T17 sample b](samples/T17_b.jpg) ![T17 sample c](samples/T17_c.jpg) ![T17 sample d](samples/T17_d.jpg)
 
-## T18 · History
-
-*历史风* · palette `#ecd6a8` `#9b4a17` `#4a2c17`
-
-**Best for:** History stories, word origins and culture, look-backs and milestones
-
-**Signature beats:**
-- crumpled aged parchment with soft folds, creases, stains, burnt torn edges and faded old handwriting; dark wood variant
-- scroll on turned wooden rollers with rolled paper ends and squiggle side borders
-- red quill writing handwriting line by line
-- aged globe: sepia ocean, real continents in brown with teal patches, graticule, equator band, varnish shine; brass ring with ticks and a wooden base; faded old world map behind
-- compass rose with a swinging needle, faint old-map lines
-- rust-red wavy timeline with crowned medallions
-- rust serif titles with section numbers
-- floating dust in every shot
-
-**Presenter window:** dark wood frame (natural colour) or circle
-
-![T18 sample a](samples/T18_a.jpg) ![T18 sample b](samples/T18_b.jpg) ![T18 sample c](samples/T18_c.jpg) ![T18 sample d](samples/T18_d.jpg)
-
 ## T19 · Footage Intro
 
 *真实影像引入* · palette `#03081e` `#2ee6ff` `#7dff3a`
@@ -362,13 +340,13 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Best for:** Bringing in real footage: news clips, product shots, tech and AI news openers
 
 **Signature beats:**
-- AI cut-out (natural face colour) while backgrounds swap every 0.4–0.6 s with whip, zoom-punch, flash, glitch-slice and iris transitions; every plate keeps a slow push
+- AI cut-out (natural face colour) while the background swaps every 0.4–0.6 s with whip, zoom-punch, flash, glitch-slice and iris transitions; backgrounds are only images or footage frames you import (the template ships no images)
 - the real footage pushes in from the right and starts playing
 - the cut-out shrinks into a white-ring circle, bounces to bottom-left, hops to top-left so it never covers the footage
 - captions move to the clearest zone (bottom-centre, bottom-right, top) with a soft dark plate over busy or bright footage
 - end title card: dimmed footage, glowing white-to-cyan italic headline, lime tilted banner, original line drawing, question tags sliding in, cyan-glow presenter circle
 
-**Presenter window:** full cut-out → white-ring circle (bottom-left / top-left) → cyan glow ring at the end; blurred plate behind her inside the circle
+**Presenter window:** full cut-out → white-ring circle (bottom-left / top-left) → cyan glow ring at the end; your blurred background material behind her inside the circle
 
 ![T19 sample a](samples/T19_a.jpg) ![T19 sample b](samples/T19_b.jpg) ![T19 sample c](samples/T19_c.jpg) ![T19 sample d](samples/T19_d.jpg)
 
@@ -407,23 +385,6 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 **Presenter window:** hairline circle inside the compass circles → small corner circle → square hairline card
 
 ![T21 sample a](samples/T21_a.jpg) ![T21 sample b](samples/T21_b.jpg) ![T21 sample c](samples/T21_c.jpg) ![T21 sample d](samples/T21_d.jpg)
-
-## T22 · Bold Motion Graphics
-
-*炫彩大字动效* · palette `#120a45` `#ffd23f` `#2ef3ff`
-
-**Best for:** Attention-grabbing openers, launches, countdowns, big-number wins
-
-**Signature beats:**
-- night-neon stage: scrolling perspective grid, lit skyline, spinning rays, sparks, sweeping light slashes
-- giant 3D extruded Bungee type with gold or cyan gradients, white outline and glow; camera shake and flash on impact
-- giant number counts up and lands with a bounce
-- three depth layers fly in from far to near, blur to sharp
-- pulsing neon pill call-to-action
-
-**Presenter window:** neon-glow circle (cyan or magenta), bottom-left ↔ top-right
-
-![T22 sample a](samples/T22_a.jpg) ![T22 sample b](samples/T22_b.jpg) ![T22 sample c](samples/T22_c.jpg) ![T22 sample d](samples/T22_d.jpg)
 
 ## Mixing rules
 
