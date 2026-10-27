@@ -430,5 +430,5 @@ Twenty-two named templates. Ask for one by ID or name ("use T10 HUD Keynote for 
 - Use the templates the user names for exactly those parts; otherwise pick per section from *Best for*.
 - One template per section; change template at a natural pause so the presenter window can morph between poses.
 - The window pose at the end of a section must equal the pose at the start of the next.
-- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T22 for openers or big-number moments.
+- Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage.
 - Numbers, dates and facts on screen come only from what the speaker says. Anything conceptual is labelled ILLUSTRATIVE.

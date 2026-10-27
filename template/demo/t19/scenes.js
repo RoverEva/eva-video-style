@@ -1,5 +1,5 @@
 /* T19 Footage Intro — demo on the shared 15 s intro.
- * The presenter is cut out (AI matte, original colours) while background plates swap fast; real footage pushes in and
+ * The presenter is cut out (AI matte, original colours) while backgrounds you import swap fast; real footage pushes in and
  * changes with every style she names; the cut-out shrinks into a circle that lands where it does not cover the footage;
  * end title card. Footage: HatchElite screen recordings and cartoon clips. */
 (function () {
@@ -8,7 +8,9 @@
   C.ringFn = () => ({ color: 'transparent', width: 0, shadow: 0 });
   const CYAN = '#2ee6ff', LIME = '#7dff3a', BIG = "'Inter','Noto Sans CJK SC',sans-serif";
   const CUT = t => `../media/cut/f_${String(Math.min(450, Math.max(0, Math.round(t * 30)))).padStart(5, '0')}.webp`;
-  const PL = i => `../media/plates/p${i}.jpg`;
+  // backgrounds: only material you import — here, single frames from the screen recordings and cartoon clips (no bundled images)
+  const BG = ['../media/web/f_00150.jpg', '../media/fly/f_00100.jpg', '../media/wb/f_01200.jpg', '../media/egg/f_00060.jpg', '../media/sent/f_00800.jpg'];
+  const PL = i => BG[i - 1];
   const SW = [[0, 'flash'], [.9, 'whip'], [1.9, 'zoom'], [2.9, 'glitch'], [3.4, 'iris'], [3.87, 'push']];
   const FOOT = 3.87, MORPH = 4.3, HOP = 7.73, CARD = 12.07;
   // footage per line: [start, folder, frames, label]
@@ -29,8 +31,9 @@
       st.flash = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: '#fff', zIndex: 20, opacity: 0 });
       st.dim = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: 12, background: 'linear-gradient(90deg, rgba(3,8,30,.92) 0%, rgba(3,8,30,.78) 45%, rgba(3,8,30,.66) 75%, rgba(3,8,30,.55))', opacity: 0 });
 
-      // intro lines over the plates (left of the face)
+      // intro lines over the backgrounds (left of the face)
       const lab = (txt, y, size, col) => el(L, 'div', 'abs', { left: '90px', top: y + 'px', zIndex: 35, fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: size + 'px', color: col || '#fff', whiteSpace: 'nowrap', transform: 'skewX(-6deg)', textShadow: '0 4px 0 rgba(0,0,0,.45), 0 0 24px rgba(0,0,0,.55)' }, txt);
+      st.sh = el(L, 'div', 'abs', { left: 0, top: 0, width: '1200px', height: '520px', zIndex: 34, background: 'radial-gradient(120% 100% at 0% 0%, rgba(3,8,30,.82), rgba(3,8,30,.5) 55%, rgba(3,8,30,0) 80%)' });
       st.i1 = lab("HI, I'M EVA", 120, 96); st.i2 = lab('EVA VIDEO STYLE', 230, 84, CYAN); st.i3 = lab('OPEN-SOURCE · AI VIDEO EDITING', 340, 48, LIME);
       // footage label chip (top-right) + step chips
       st.chip = el(L, 'div', 'abs', { right: '70px', top: '60px', zIndex: 35, padding: '10px 30px', fontFamily: BIG, fontWeight: 900, fontSize: '46px', color: '#04121f', background: CYAN, boxShadow: '0 0 30px rgba(46,230,255,.6)', transform: 'skewX(-8deg)', transformOrigin: '100% 50%' }, '');
@@ -53,7 +56,7 @@
       st.wm = el(st.card, 'div', 'abs mono', { right: '70px', top: '60px', fontSize: '28px', letterSpacing: '.3em', color: '#fff' }, 'GITHUB.COM/ROVEREVA');
       const s = k.svg(st.card, 560, 330, 1230, 300); st.bp = [];
       ['M60 250 L500 250 L540 300 L20 300 Z', 'M110 40 L450 40 L450 245 L110 245 Z', 'M140 70 L420 70 L420 215 L140 215 Z', 'M180 110 L300 110 M180 140 L380 140 M180 170 L340 170', 'M230 275 L330 275'].forEach(d => { const p = k.sv(s, 'path', { d, fill: 'none', stroke: 'rgba(120,200,255,.85)', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }); const l = p.getTotalLength ? p.getTotalLength() || 1400 : 1400; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); p.l = l; st.bp.push(p); });
-      st.tags = ['OPEN SOURCE', '22 TEMPLATES', 'EN / CN + EN CAPTIONS', 'MIT LICENSE'].map((tx, i) => { const d = el(st.card, 'div', 'abs', { left: (620 + i * 22) + 'px', top: (650 + i * 74) + 'px', padding: '6px 24px', fontFamily: BIG, fontWeight: 800, fontSize: '36px', color: '#fff', border: '2px solid rgba(46,230,255,.8)', background: 'rgba(5,20,60,.75)', boxShadow: '0 0 16px rgba(46,230,255,.35)', transform: 'skewX(-8deg)', transformOrigin: '0 50%' }, tx);
+      st.tags = ['OPEN SOURCE', '20 TEMPLATES', 'EN / CN + EN CAPTIONS', 'MIT LICENSE'].map((tx, i) => { const d = el(st.card, 'div', 'abs', { left: (620 + i * 22) + 'px', top: (650 + i * 74) + 'px', padding: '6px 24px', fontFamily: BIG, fontWeight: 800, fontSize: '36px', color: '#fff', border: '2px solid rgba(46,230,255,.8)', background: 'rgba(5,20,60,.75)', boxShadow: '0 0 16px rgba(46,230,255,.35)', transform: 'skewX(-8deg)', transformOrigin: '0 50%' }, tx);
         el(d, 'div', 'abs', { left: '-36px', top: '24px', width: '30px', height: '2px', background: 'rgba(46,230,255,.8)' }); return d; });
 
       SW.forEach(([t0, ty], i) => k.sfx(i === 5 ? 'whoosh' : (i % 2 ? 'whoosh' : 'click'), t0 + .02, i === 5 ? .14 : .09));
@@ -81,6 +84,7 @@
       st.flash.style.opacity = Math.max(fl, fc);
 
       // intro lines
+      st.sh.style.display = t < FOOT ? '' : 'none'; st.sh.style.opacity = P(t, .05, .3);
       [st.i1, st.i2, st.i3].forEach((e, i) => { e.style.display = t < FOOT ? '' : 'none'; tf(e, slide(t, [.1, .9, 1.9][i], .35, -120, 0)); e.style.transform += ' skewX(-6deg)'; });
       const c = CLIPS.reduce((m, x) => t >= x[0] ? x : m, CLIPS[0]); st.chip.textContent = c[3]; st.chip.style.display = t >= FOOT && t < HOP ? '' : 'none';
       const cp = pop(t, c[0] + .05, .3, 2); tf(st.chip, { s: cp.s, o: cp.o }); st.chip.style.transform += ' skewX(-8deg)';

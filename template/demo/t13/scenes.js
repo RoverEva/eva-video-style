@@ -24,7 +24,7 @@
 
   // B3 · real screen band + info cards (presenter in a side card)
   C.scene({ t0: 7.73, t1: 12.1, bg: T.techBg, build(L) {
-      const st = {}; st.p = T.panel(L, 120, 120, 1180, 220, 'Ready-to-use Templates', 'T01 – T22 · bilingual captions · no background music');
+      const st = {}; st.p = T.panel(L, 120, 120, 1180, 220, 'Ready-to-use Templates', 'T01 – T21 · bilingual captions · no background music');
       st.b = T.band(L, '../media/web/f_00000.jpg', 0, 380, 1380, 300);
       st.a = T.infoCard(L, 'doc', 'Pick', 'your favorite template', 80, 720, 400); st.c = T.infoCard(L, 'window', 'Apply', 'it to your footage', 500, 720, 400); st.d = T.infoCard(L, 'cloud', 'AI edits', 'motion, captions, sound', 920, 720, 420);
       k.sfx('whoosh', 7.75, .08); [8.97, 9.87, 10.67].forEach((x, i) => k.sfx('pop', x, .1, { f: 900 + i * 120 })); return st; },
@@ -36,7 +36,7 @@
   C.scene({ t0: 12.07, t1: C.end + .05, bg: T.techBg, build(L) {
       const st = {}; st.c1 = T.corner(L, 1240, 70); st.h = T.techTitle(L, 'Less Editing · More Creating', '', 0, 80, 64, 'center'); st.h.b.remove();
       st.cards = [T.colCard(L, 250, 230, 440, 640, 'doc', 'Script', ['your video + SRT', 'EN or CN + EN', 'facts stay yours'], '01'),
-                  T.colCard(L, 740, 230, 440, 640, 'window', 'Template', ['pick T01 – T22', 'mix per section', 'face always visible'], '02'),
+                  T.colCard(L, 740, 230, 440, 640, 'window', 'Template', ['pick T01 – T21', 'mix per section', 'face always visible'], '02'),
                   T.colCard(L, 1230, 230, 440, 640, 'cloud', 'Try it', ['open source · MIT', 'github.com/RoverEva', 'eva-video-style'], '03')];
       k.sfx('whoosh', 12.1, .08); [12.4, 12.9, 13.8].forEach((x, i) => k.sfx('pop', x, .1, { f: 800 + i * 150 })); return st; },
     update(lt, st, t) { tf(st.h, { o: P(lt, .05, .3) }); st.c1.style.opacity = P(lt, 0, .3); st.cards.forEach((c, i) => { const u = ease.outExpo(P(t, [12.4, 12.9, 13.8][i], .5)); tf(c, { y: 60 * (1 - u), o: u }); }); } });

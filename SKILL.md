@@ -8,7 +8,7 @@ description: Edit talking-head videos in Eva Video Style — kinetic motion grap
 A motion-design house style for Eva's talking-head videos (bilingual creator, Chinese + English). The speaker stays on screen the whole time inside a window that keeps changing shape, while bold solid-color cards, giant condensed words and real screen recordings pop in exactly on the words she says.
 
 Read these before building:
-- `references/templates.md` — **the 22 named templates (T01–T22)** with sample images. The user picks them by ID or name ("use T10 HUD Keynote for this part").
+- `references/templates.md` — **the 20 named templates (T01–T21; T18 and T22 were retired)** with sample images. The user picks them by ID or name ("use T10 HUD Keynote for this part").
 - `references/style-guide.md` — the look: palette, type, Eva window, motion vocabulary, themes, signature beats, captions.
 - `references/pipeline.md` — step-by-step production, from raw video to delivered masters.
 - `references/engine-api.md` — how to write a section with the bundled engine (`engine/`, `template/section/`).
@@ -34,13 +34,11 @@ Read these before building:
 | T15 | 学习风 | Learning Style | education, study tips, vocabulary and reading, videos for kids and parents |
 | T16 | 漫画风 | Comic Pop | playful talks, before-vs-after comparisons, key points, tip lists |
 | T17 | 科学风 | Science Network | tech and AI trends, science topics, how learning works, future outlooks |
-| T18 | 历史风 | History | history stories, word origins and culture, look-backs and milestones |
 | T20 | 快节奏社媒 | Fast-Paced Social Media | TikTok / Shorts / Reels energy: kinetic word-by-word captions, stickers, beat cuts (laid out 16:9) |
 | T21 | 简洁极简 | Clean & Minimal | tutorials, business analysis, education: serif headlines, hairlines, slow motion |
-| T22 | 炫彩大字动效 | Bold Motion Graphics | high-impact openers: giant 3D type, giant numbers, neon depth layers |
-| T19 | 真实影像引入 | Footage Intro | bringing in real footage / news clips: cut-out + fast background swaps, footage push-in, presenter circle that keeps the footage clear, captions that move off the footage |
+| T19 | 真实影像引入 | Footage Intro | bringing in real footage / news clips: cut-out + fast swaps through the background images or footage the user imports (no bundled images), footage push-in, presenter circle that keeps the footage clear, captions that move off the footage |
 
-When the user names templates, use exactly those for those parts. When they don't, choose per section from "Best for" and follow the mixing rules in `references/templates.md`. T08–T18 have ready-made helpers in `engine/templates.js`, and every template has a full demo section in `template/demo/t01` … `template/demo/t22` (all on the same 15 s intro, so they are easy to compare and copy from). T19 also uses `scripts/matte.py` (AI cut-out, keeps natural face colour; the GPL-3.0 model downloads on first use) and `scripts/caption_zones.py` (moves each caption to the clearest zone and adds a soft plate on busy footage). Never draw brand logos on a T19 title card; its headline and tags come only from the script. Every template is 16:9 (1920×1080); vertical references are re-laid out for landscape.
+When the user names templates, use exactly those for those parts. When they don't, choose per section from "Best for" and follow the mixing rules in `references/templates.md`. T08–T17 have ready-made helpers in `engine/templates.js`, and every template has a full demo section in `template/demo/t01` … `template/demo/t21` (all on the same 15 s intro, so they are easy to compare and copy from). T19 also uses `scripts/matte.py` (AI cut-out, keeps natural face colour; the GPL-3.0 model downloads on first use) and `scripts/caption_zones.py` (moves each caption to the clearest zone and adds a soft plate on busy footage). T19 never ships or invents background images: it only uses images and clips the user provides (their footage, screen recordings, photos), passed in as frame folders. Never draw brand logos on a T19 title card, and remove logos visible in imported backgrounds; its headline and tags come only from the script. Every template is 16:9 (1920×1080); vertical references are re-laid out for landscape.
 
 ## Non-negotiables
 

@@ -58,7 +58,7 @@ Rules:
 - **3D perspective screens** for real footage.
 
 ## Themes → named templates
-The themes are now named templates **T01–T18**. See `templates.md` for each one's shots, colors, Eva window and sample images.
+The themes are now named templates **T01–T21** (T18 and T22 were retired). See `templates.md` for each one's shots, colors, Eva window and sample images.
 - **Bright family:** T01 Acid Lime Kinetic · T02 Electric Blue Console · T04 Paper · T05 Red Sunburst · T06 Brand Purple · T07 Cartoon Eva
 - **Dark:** T03 Dark 3D Stage
 - **Neon:** T08 Neon Explainer (violet/magenta grade, glowing cream type, concept diagrams)
@@ -68,7 +68,6 @@ The themes are now named templates **T01–T18**. See `templates.md` for each on
 - **Learning:** T15 Learning Style (flat storybook illustration on indigo: twinkling stars and drifting clouds in every shot, bubbly rounded white lettering, book staircase, paper planes on dashed paths, sun, Read → Think → Create icons on soft blobs, open book with a pink sunrise, corner decorations, goal stickers)
 - **Comic:** T16 Comic Pop (rotating sunburst rays with halftone dots in green/yellow/blue/purple/cyan, puffy white comic clouds with thick black outlines that bob, white zigzag lightning split screens for VS, big speech cloud title, black action marks, outlined yellow stars, sparkles over a cloud ground, outlined sticker cards, comic lettering)
 - **Science:** T17 Science Network (near-black navy with drifting orange/blue bokeh, rippling plexus ribbon of connected nodes, slowly rotating plexus globe with real continents, chain of plexus spheres, plexus tunnel flowing toward the camera, white headlines with a cyan keyword)
-- **History:** T18 History (aged parchment with stains, torn and burnt edges, dark wood variant, scroll on wooden rollers, red quill handwriting, antique globe with real continents and a brass stand, compass rose, old-map lines, rust wavy timeline with crowned medallions, rust serif titles, floating dust; Eva in a dark wood frame, natural colour)
 - **HUD family:** T09 Showcase Wall Opener · T10 HUD Keynote · T11 HUD Dashboard. These share a dark frame with corner brackets, mono labels, a running timecode and a bracketed Eva window. Accents are blue `#4d7cff`, gold `#f5b83d` and green `#34d27b`.
 
 ## Signature beats

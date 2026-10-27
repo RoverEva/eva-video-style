@@ -1,4 +1,4 @@
-/* Eva Video Style · template library for T08–T18. Load after kit.js (and land.js for the T14 globe).
+/* Eva Video Style · template library for T08–T17. Load after kit.js (and land.js for the T14 globe).
  *   T08 NEON  · 霓虹讲解 Neon Explainer
  *   T09 WALL  · 作品墙开场 Showcase Wall Opener
  *   T10 KEY   · HUD 发布会 HUD Keynote
@@ -9,7 +9,6 @@
  *   T15 LEARN · 学习风 Learning Style
  *   T16 COMIC · 漫画风 Comic Pop
  *   T17 SCI   · 科学风 Science Network
- *   T18 HIST  · 历史风 History
  * Every builder takes (parent, ...) and returns an object; the matching *At(obj, ...) call animates it inside update().
  * Colours, sizes and copy are parameters: never hard-code facts — pass what Eva actually says. */
 (function () {
@@ -542,122 +541,4 @@
     d.s = el(d, 'div', 'cn', { fontSize: (size * .32) + 'px', fontWeight: 400, color: '#e8f2ff', marginTop: '20px', lineHeight: 1.35, whiteSpace: 'pre' }, sub || ''); return d; };
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
 
-  /* ---------- T18 History: parchment, scroll, quill, antique globe, compass, timeline ---------- */
-  T.HIS = { PAPER: '#ecd6a8', PAPER2: '#d9b77c', INK: '#3b2412', RUST: '#9b4a17', RED: '#a3271c', WOOD: '#4a2c17', BRASS: '#b8893a', SERIF: "'Noto Serif CJK SC','Noto Serif CJK JP',serif", HAND: "'FreeSerif','DejaVu Serif',serif" };
-  T.histBg = kind => kind === 'wood' ? 'repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 3px, transparent 3px 140px), linear-gradient(180deg, #4a2c17, #2e1a0c)' : kind === 'map' ? 'radial-gradient(1300px 900px at 50% 45%, #c89a5c, #8a5a2b 80%, #5c3a1a)' : 'radial-gradient(1300px 900px at 50% 45%, #f1e0ba, #e3c48e 65%, #b98d52 100%)';
-  /* aged-paper texture on a canvas: stains, fibres, darker edges. opts {torn, burnt, seed} → div with clip */
-  T.parchment = (L, x, y, w, h, opts) => { const o = Object.assign({ torn: true, burnt: false, crumple: false, ghost: false, seed: 4, z: 3, tone: null }, opts || {}); const R = C.rng(o.seed);
-    const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', zIndex: o.z, filter: 'drop-shadow(0 18px 30px rgba(40,20,5,.45))' });
-    const cv = el(d, 'canvas', '', { width: w + 'px', height: h + 'px', display: 'block' }); cv.width = Math.round(w / 2); cv.height = Math.round(h / 2); const g = cv.getContext('2d'), W = cv.width, H = cv.height;
-    g.fillStyle = o.tone || T.HIS.PAPER; g.fillRect(0, 0, W, H);
-    for (let i = 0; i < (o.crumple ? 45 : 26); i++) { const sx = R() * W, sy = R() * H, rr = 20 + R() * 140; const gr = g.createRadialGradient(sx, sy, 0, sx, sy, rr); const warm = R() < .5; gr.addColorStop(0, warm ? `rgba(190,95,25,${.06 + R() * .16})` : `rgba(120,70,25,${.05 + R() * .14})`); gr.addColorStop(1, 'rgba(150,90,30,0)'); g.fillStyle = gr; g.fillRect(sx - rr, sy - rr, 2 * rr, 2 * rr); }
-    const im = g.getImageData(0, 0, W, H), D = im.data;
-    let pts = null; if (o.crumple) { pts = []; for (let i = 0; i < 55; i++) pts.push([R() * W, R() * H, (R() - .5) * 30]); }
-    for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) { const i = (yy * W + xx) * 4; let n = (R() - .5) * 20;
-      if (pts) { let b1 = 1e9, b2 = 1e9, sh = 0; for (const [px, py, v] of pts) { const dd = (px - xx) * (px - xx) + (py - yy) * (py - yy); if (dd < b1) { b2 = b1; b1 = dd; sh = v; } else if (dd < b2) b2 = dd; } const edge = Math.sqrt(b2) - Math.sqrt(b1); n += sh * (.4 + .6 * Math.min(1, edge / 18)) + (edge < 1.2 ? -10 : 0); }
-      D[i] += n; D[i + 1] += n * .95; D[i + 2] += n * .8; }
-    g.putImageData(im, 0, 0); if (o.crumple) { const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; tmp.getContext('2d').drawImage(cv, 0, 0); g.filter = 'blur(2.2px)'; g.drawImage(tmp, 0, 0); g.filter = 'none'; }
-    if (o.crumple) { g.lineCap = 'round'; for (let i = 0; i < 22; i++) { let px = R() * W, py = R() * H, a = R() * 6.28; g.beginPath(); g.moveTo(px, py); for (let k2 = 0; k2 < 5; k2++) { a += (R() - .5) * .8; px += Math.cos(a) * (20 + R() * 40); py += Math.sin(a) * (20 + R() * 40); g.lineTo(px, py); } g.strokeStyle = 'rgba(255,248,225,.42)'; g.lineWidth = 1.1; g.stroke(); g.translate(1, 1.2); g.strokeStyle = 'rgba(70,38,12,.38)'; g.lineWidth = 1.3; g.stroke(); g.translate(-1, -1.2); }
-      for (let i = 0; i < 9; i++) { const sx = R() * W, sy = R() * H, rr = 8 + R() * 30; const gr = g.createRadialGradient(sx, sy, 0, sx, sy, rr); gr.addColorStop(0, `rgba(95,45,12,${.18 + R() * .2})`); gr.addColorStop(.7, `rgba(120,60,18,${.08})`); gr.addColorStop(1, 'rgba(120,60,18,0)'); g.fillStyle = gr; g.fillRect(sx - rr, sy - rr, 2 * rr, 2 * rr); } }
-    if (o.ghost) { g.font = `italic ${Math.round(H / 26)}px ${T.HIS.HAND}`; g.fillStyle = 'rgba(70,40,15,.13)'; const words = 'and the letters of old were written slowly by candle light as the ink dried upon the page of the long road home'.split(' '); for (let yy = H * .1; yy < H * .92; yy += H / 18) { let line = ''; while (g.measureText(line).width < W * .32) line += words[Math.floor(R() * words.length)] + ' '; g.fillText(line, W * .06, yy); } }
-    const eg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .62); eg.addColorStop(0, 'rgba(90,50,15,0)'); eg.addColorStop(1, `rgba(${o.burnt ? '70,30,8' : '90,50,15'},${o.burnt ? .85 : .45})`); g.fillStyle = eg; g.fillRect(0, 0, W, H);
-    if (o.torn) { const pts2 = []; const jag = (n, f) => { for (let i = 0; i <= n; i++) pts2.push(f(i / n, (R() - .5))); };
-      jag(36, (u, r) => [u * 100, 1.4 + r * 2.8]); jag(22, (u, r) => [98.6 + r * 1.8, u * 100]); jag(36, (u, r) => [100 - u * 100, 98.6 + r * 2.8]); jag(22, (u, r) => [1.4 + r * 1.8, 100 - u * 100]);
-      d.style.clipPath = `polygon(${pts2.map(([a2, b2]) => `${a2.toFixed(2)}% ${b2.toFixed(2)}%`).join(',')})`; }
-    d.cv = cv; return d; };
-  /* scroll on turned wooden rollers with rolled parchment ends; unrolls horizontally. T.scrollAt(s, u) */
-  T.scroll = (L, cx, cy, w, h) => { const s = { cx, cy, w, h };
-    s.p = T.parchment(L, cx - w / 2, cy - h / 2, w, h, { torn: false, seed: 12, z: 3, tone: '#c99a5e', crumple: true }); s.p.style.filter = 'drop-shadow(0 20px 26px rgba(60,30,8,.4))';
-    s.p.style.clipPath = 'none'; const R = C.rng(5); const tb = []; for (let i = 0; i <= 40; i++) tb.push([i / 40 * 100, 1 + R() * 4 + (R() < .15 ? 4 : 0)]); const bt = []; for (let i = 40; i >= 0; i--) bt.push([i / 40 * 100, 99 - R() * 4 - (R() < .15 ? 4 : 0)]);
-    s.clip = `polygon(${tb.concat(bt).map(([a, b]) => `${a.toFixed(1)}% ${b.toFixed(1)}%`).join(',')})`; s.p.style.clipPath = s.clip;
-    const NS2 = 'http://www.w3.org/2000/svg'; let gid = 0;
-    const roller = () => { const rw = 150, rh = h + 260, r = K.svg(L, rw, rh, 0, cy - rh / 2); r.style.zIndex = 4; const id = 'rl' + (++gid) + Math.floor(R() * 1e6);
-      const defs = K.sv(r, 'defs', {}); const lg = K.sv(defs, 'linearGradient', { id: id + 'p', x1: 0, x2: 1, y1: 0, y2: 0 }); [['0', '#b98a52'], ['.25', '#f0d6a4'], ['.55', '#d8b37a'], ['1', '#8a5e2e']].forEach(([o2, c]) => K.sv(lg, 'stop', { offset: o2, 'stop-color': c }));
-      const wg = K.sv(defs, 'linearGradient', { id: id + 'w', x1: 0, x2: 1, y1: 0, y2: 0 }); [['0', '#2e170a'], ['.35', '#7a4a24'], ['.6', '#5a3214'], ['1', '#24120a']].forEach(([o2, c]) => K.sv(wg, 'stop', { offset: o2, 'stop-color': c }));
-      const cxr = rw / 2, top = 130, bot = rh - 130;
-      K.sv(r, 'rect', { x: cxr - 38, y: top - 6, width: 76, height: bot - top + 12, rx: 10, fill: `url(#${id}p)` });
-      for (let i = 0; i < 6; i++) K.sv(r, 'line', { x1: cxr - 38, y1: top + 30 + i * (bot - top - 60) / 5, x2: cxr + 38, y2: top + 36 + i * (bot - top - 60) / 5, stroke: 'rgba(120,80,40,.25)', 'stroke-width': 2 });
-      const cap = (y, dir) => { const f = `url(#${id}w)`; K.sv(r, 'ellipse', { cx: cxr, cy: y, rx: 62, ry: 16, fill: f }); K.sv(r, 'rect', { x: cxr - 56, y: dir > 0 ? y - 26 : y, width: 112, height: 26, rx: 12, fill: f });
-        K.sv(r, 'rect', { x: cxr - 18, y: dir > 0 ? y - 70 : y + 22, width: 36, height: 48, fill: f }); K.sv(r, 'ellipse', { cx: cxr, cy: dir > 0 ? y - 74 : y + 74, rx: 30, ry: 12, fill: f });
-        K.sv(r, 'path', { d: dir > 0 ? `M${cxr - 26} ${y - 80} Q${cxr - 34} ${y - 120} ${cxr} ${y - 128} Q${cxr + 34} ${y - 120} ${cxr + 26} ${y - 80} Z` : `M${cxr - 26} ${y + 80} Q${cxr - 34} ${y + 120} ${cxr} ${y + 128} Q${cxr + 34} ${y + 120} ${cxr + 26} ${y + 80} Z`, fill: f });
-        K.sv(r, 'ellipse', { cx: cxr - 14, cy: dir > 0 ? y - 104 : y + 104, rx: 6, ry: 14, fill: 'rgba(255,220,170,.25)' }); };
-      cap(top, 1); cap(bot, -1); return r; };
-    s.l = roller(); s.r = roller(); return s; };
-  T.scrollAt = (s, u) => { u = ease.io3(clamp(u)); const ww = Math.max(30, s.w * u); s.p.style.left = (s.cx - ww / 2) + 'px'; s.p.style.width = ww + 'px'; s.p.cv.style.width = s.w + 'px'; s.p.cv.style.marginLeft = (-(s.w - ww) / 2) + 'px'; s.p.style.overflow = 'hidden';
-    s.l.style.left = (s.cx - ww / 2 - 110) + 'px'; s.r.style.left = (s.cx + ww / 2 - 40) + 'px'; };
-  /* side border of hand-drawn squiggles (as on old scroll slides) */
-  T.squiggles = (L, x, col) => { const s = K.svg(L, 60, 1080, x, 0); s.style.zIndex = 2; for (let y = 10; y < 1080; y += 115) { K.sv(s, 'path', { d: `M30 ${y} C14 ${y + 22} 46 ${y + 44} 30 ${y + 66} C18 ${y + 80} 34 ${y + 88} 28 ${y + 96}`, fill: 'none', stroke: col || '#2c1a0c', 'stroke-width': 3, 'stroke-linecap': 'round' }); K.sv(s, 'path', { d: `M14 ${y + 104} H46 M16 ${y + 112} H44`, stroke: col || '#2c1a0c', 'stroke-width': 3, 'stroke-linecap': 'round' }); } return s; };
-  /* red quill feather (SVG) */
-  T.quill = (L, size) => { const z = size || 300, s = K.svg(L, z, z, 0, 0); s.style.zIndex = 9; s.style.overflow = 'visible'; const g = K.sv(s, 'g', {});
-    K.sv(g, 'path', { d: `M0 0 C${z * .1} ${-z * .3} ${z * .35} ${-z * .75} ${z * .62} ${-z * .95} C${z * .55} ${-z * .6} ${z * .4} ${-z * .3} ${z * .06} ${-z * .02} Z`, fill: '#c2412a' });
-    K.sv(g, 'path', { d: `M0 0 C${z * .15} ${-z * .25} ${z * .25} ${-z * .55} ${z * .62} ${-z * .95} C${z * .25} ${-z * .7} ${z * .12} ${-z * .4} ${-z * .02} ${-z * .02} Z`, fill: '#e2703f', opacity: .85 });
-    for (let i = 1; i < 12; i++) { const t2 = i / 12; K.sv(g, 'line', { x1: z * .62 * t2 * .9, y1: -z * .95 * t2 * .9, x2: z * .62 * t2 * .9 + z * .12, y2: -z * .95 * t2 * .9 + z * .05, stroke: 'rgba(90,20,10,.45)', 'stroke-width': 1.5 }); }
-    K.sv(g, 'line', { x1: 0, y1: 0, x2: z * .62, y2: -z * .95, stroke: '#f6e3c0', 'stroke-width': 3 }); K.sv(g, 'path', { d: `M0 0 L${-z * .05} ${z * .08} L${z * .02} ${z * .02} Z`, fill: '#2a1a0c' }); s.g = g; return s; };
-  /* dark glass ink bottle */
-  T.inkPot = (L, x, y, h) => { const w = h * .62, s = K.svg(L, w, h, x, y); s.style.zIndex = 7; const id = 'ink' + Math.floor(Math.random() * 1e6); const lg = K.sv(K.sv(s, 'defs', {}), 'linearGradient', { id, x1: 0, x2: 1, y1: 0, y2: 0 }); [['0', '#120a04'], ['.3', '#4a3018'], ['.45', '#6e4a28'], ['.7', '#2a180a'], ['1', '#0c0602']].forEach(([a2, c2]) => K.sv(lg, 'stop', { offset: a2, 'stop-color': c2 }));
-    K.sv(s, 'path', { d: `M${w * .3} 0 H${w * .7} V${h * .16} Q${w * .98} ${h * .26} ${w * .96} ${h * .5} V${h * .94} Q${w / 2} ${h} ${w * .04} ${h * .94} V${h * .5} Q${w * .02} ${h * .26} ${w * .3} ${h * .16} Z`, fill: `url(#${id})` }); K.sv(s, 'rect', { x: w * .26, y: 0, width: w * .48, height: h * .08, rx: 4, fill: '#8a6a3a' }); K.sv(s, 'rect', { x: w * .2, y: h * .36, width: w * .08, height: h * .45, rx: 4, fill: 'rgba(255,230,190,.18)' }); return s; };
-  /* handwriting that appears letter by letter, with the quill following the pen point. T.handAt(h, t, t0, cps) */
-  T.hand = (L, lines, x, y, size, col, quill) => { const h = { lines: [], q: quill, size, x, y }; const cv = document.createElement('canvas').getContext('2d'); cv.font = `italic ${size}px ${T.HIS.HAND}`;
-    lines.forEach((tx, i) => { const d = el(L, 'div', 'abs', { left: x + 'px', top: (y + i * size * 1.55) + 'px', fontFamily: T.HIS.HAND, fontStyle: 'italic', fontSize: size + 'px', color: col || T.HIS.INK, whiteSpace: 'nowrap', zIndex: 8 }, ''); d.full = tx; d.cv = cv; h.lines.push(d); }); return h; };
-  T.handAt = (h, t, t0, cps) => { let tt = t - t0, px = h.x, py = h.y; cps = cps || 16; h.lines.forEach((d, i) => { const n = Math.max(0, Math.min(d.full.length, Math.floor(tt * cps))); d.textContent = d.full.slice(0, n); if (n > 0) { px = h.x + d.cv.measureText(d.full.slice(0, n)).width * (/[一-鿿]/.test(d.full) ? 1.0 : 1); py = h.y + i * h.size * 1.55 + h.size * .95; } tt -= d.full.length / cps + .3; });
-    if (h.q) { const w = Math.sin(t * 22) * 4; h.q.style.left = px + 'px'; h.q.style.top = (py + w) + 'px'; h.q.style.opacity = t >= t0 - .3 ? 1 : 0; } };
-  /* faded old world map across the background (real land mask), with compass circles */
-  T.oldMapBg = (L, alpha) => { const cv = el(L, 'canvas', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: 1, opacity: alpha ?? .35 }); cv.width = 960; cv.height = 540; const g = cv.getContext('2d'), Lm = window.EVA_LAND; if (!Lm) return cv;
-    const raw = atob(Lm.b), rb = Lm.w / 8, on = (x, y) => (raw.charCodeAt(y * rb + (x >> 3)) >> (7 - (x & 7))) & 1; const im = g.createImageData(960, 540);
-    for (let y = 0; y < 540; y++) for (let x = 0; x < 960; x++) { const mx = Math.floor(x / 960 * Lm.w), my = Math.floor(y / 540 * Lm.h); const v = on(mx, my), e = v && (!on(Math.min(Lm.w - 1, mx + 1), my) || !on(mx, Math.min(Lm.h - 1, my + 1)) || !on(Math.max(0, mx - 1), my) || !on(mx, Math.max(0, my - 1))); const i = (y * 960 + x) * 4;
-      if (e) { im.data[i] = 70; im.data[i + 1] = 38; im.data[i + 2] = 12; im.data[i + 3] = 200; } else if (v) { im.data[i] = 110; im.data[i + 1] = 66; im.data[i + 2] = 26; im.data[i + 3] = 70; } }
-    g.putImageData(im, 0, 0); g.strokeStyle = 'rgba(70,38,12,.5)'; g.lineWidth = 1; [[180, 400, 120], [780, 130, 90]].forEach(([x, y, r]) => { [r, r * .8].forEach(rr => { g.beginPath(); g.arc(x, y, rr, 0, 7); g.stroke(); }); for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * r * 2.2, y + Math.sin(a) * r * 2.2); g.stroke(); } }); return cv; };
-  /* antique globe: textured sepia ocean, mottled teal/brown land, graticule, equator band, age spots, varnish highlight; brass meridian with ticks; turned wooden base. Rotates slowly. */
-  T.oldGlobe = (L, cx, cy, r) => { const o = { cx, cy, r }; const Lm = window.EVA_LAND; const TW = 720, TH = 360, tex = new Uint8ClampedArray(TW * TH * 3); const R = C.rng(31);
-    const raw = Lm ? atob(Lm.b) : '', rb = 720 / 8, on = (x, y) => Lm ? (raw.charCodeAt(y * rb + (x >> 3)) >> (7 - (x & 7))) & 1 : 0;
-    const noise = new Float32Array(TW * TH); for (let k2 = 0; k2 < 140; k2++) { const sx = R() * TW, sy = R() * TH, rr = 10 + R() * 60, v = (R() - .5) * 2; for (let y = Math.max(0, sy - rr | 0); y < Math.min(TH, sy + rr); y++) for (let x = Math.max(0, sx - rr | 0); x < Math.min(TW, sx + rr); x++) { const d = Math.hypot(x - sx, y - sy) / rr; if (d < 1) noise[y * TW + x] += v * (1 - d) * (1 - d); } }
-    for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) { const i = y * TW + x, n = noise[i], gr = (R() - .5) * 14; const land = on(x, y); let c;
-      if (land) { const edge = !on((x + 1) % TW, y) || !on((x + TW - 1) % TW, y) || !on(x, Math.min(TH - 1, y + 1)) || !on(x, Math.max(0, y - 1)); const teal = n > .32; c = edge ? [70, 36, 14] : teal ? [96 + 18 * n, 132 + 12 * n, 104] : [156 + 26 * n, 96 + 18 * n, 46]; }
-      else c = [214 + 20 * n, 160 + 20 * n, 96 + 12 * n];
-      const lon = x / TW * 360 - 180, lat = 90 - y / TH * 180; if (Math.abs(lat) < .9 || Math.abs(Math.abs(lat) - 23.4) < .5) c = [110, 64, 28]; else if (Math.abs(lon % 15) < .45 || Math.abs(lat % 15) < .45) c = c.map(v => v * .82);
-      tex[i * 3] = c[0] + gr; tex[i * 3 + 1] = c[1] + gr; tex[i * 3 + 2] = c[2] + gr * .8; }
-    o.tex = tex; o.TW = TW; o.TH = TH; const S = Math.ceil(r * 2.6); o.cv = el(L, 'canvas', 'abs', { left: (cx - S / 2) + 'px', top: (cy - S / 2) + 'px', width: S + 'px', height: S + 'px', zIndex: 4 }); o.cv.width = Math.ceil(S / 2); o.cv.height = Math.ceil(S / 2); o.S = S;
-    const s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 5; const id = 'gb' + Math.floor(R() * 1e6); const defs = K.sv(s, 'defs', {});
-    const br = K.sv(defs, 'linearGradient', { id: id + 'b', x1: 0, x2: 1, y1: 0, y2: 1 }); [['0', '#f3d58a'], ['.4', '#b8893a'], ['.7', '#7a5418'], ['1', '#d9b25e']].forEach(([a2, c2]) => K.sv(br, 'stop', { offset: a2, 'stop-color': c2 }));
-    const wd = K.sv(defs, 'linearGradient', { id: id + 'w', x1: 0, x2: 1, y1: 0, y2: 0 }); [['0', '#4a250c'], ['.4', '#a8652a'], ['.6', '#8a4e1c'], ['1', '#3a1c08']].forEach(([a2, c2]) => K.sv(wd, 'stop', { offset: a2, 'stop-color': c2 }));
-    const R1 = r * 1.12, a0 = -125 * Math.PI / 180, a1 = 65 * Math.PI / 180; K.sv(s, 'path', { d: `M${cx + R1 * Math.cos(a0)} ${cy + R1 * Math.sin(a0)} A${R1} ${R1} 0 1 0 ${cx + R1 * Math.cos(a1)} ${cy + R1 * Math.sin(a1)}`, fill: 'none', stroke: `url(#${id}b)`, 'stroke-width': 18, 'stroke-linecap': 'round', transform: `rotate(0 ${cx} ${cy})` });
-    for (let k2 = 0; k2 <= 36; k2++) { const a = a0 - k2 / 36 * (2 * Math.PI - (a1 - a0)); K.sv(s, 'line', { x1: cx + (R1 - 6) * Math.cos(a), y1: cy + (R1 - 6) * Math.sin(a), x2: cx + (R1 + (k2 % 3 ? 3 : 7)) * Math.cos(a), y2: cy + (R1 + (k2 % 3 ? 3 : 7)) * Math.sin(a), stroke: '#5a3a10', 'stroke-width': 2 }); }
-    K.sv(s, 'path', { d: `M${cx - 12} ${cy + R1 + 4} H${cx + 12} L${cx + 18} ${cy + r * 1.42} H${cx - 18} Z`, fill: `url(#${id}b)` }); K.sv(s, 'ellipse', { cx, cy: cy + r * 1.3, rx: 26, ry: 10, fill: `url(#${id}b)` });
-    K.sv(s, 'ellipse', { cx, cy: cy + r * 1.62, rx: r * .72, ry: r * .12, fill: '#2a1408' }); K.sv(s, 'rect', { x: cx - r * .72, y: cy + r * 1.48, width: r * 1.44, height: r * .14, fill: `url(#${id}w)` }); K.sv(s, 'ellipse', { cx, cy: cy + r * 1.48, rx: r * .72, ry: r * .12, fill: '#b5702f' }); K.sv(s, 'ellipse', { cx, cy: cy + r * 1.47, rx: r * .5, ry: r * .07, fill: 'rgba(255,220,170,.18)' });
-    K.sv(s, 'ellipse', { cx, cy: cy + r * 1.42, rx: r * .22, ry: r * .05, fill: '#6b3a14' }); return o; };
-  T.oldGlobeAt = (o, t, u) => { const g = o.cv.getContext('2d'), N = o.cv.width, rr = o.r / 2, c = N / 2; o.cv.style.opacity = u === undefined ? 1 : clamp(u); const im = g.createImageData(N, N), D = im.data;
-    const rot = (40 - 7 * t) * Math.PI / 180, ti = 20 * Math.PI / 180, ct = Math.cos(ti), st = Math.sin(ti), lx = -.45, ly = -.5, lz = .74;
-    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const nx = (x - c) / rr, ny = (y - c) / rr, d2 = nx * nx + ny * ny; const i = (y * N + x) * 4; if (d2 > 1) continue; const nz = Math.sqrt(1 - d2);
-      /* tilt the axis by ti (rotate view vector about x), then read lat/lon */ const vy = -ny * ct + nz * st, vz = ny * st + nz * ct; const la = Math.asin(Math.max(-1, Math.min(1, vy))); const lo = Math.atan2(nx, vz) - rot;
-      let tx = Math.floor(((lo / (2 * Math.PI) + .5) % 1 + 1) % 1 * o.TW), ty = Math.floor((.5 - la / Math.PI) * o.TH); ty = Math.max(0, Math.min(o.TH - 1, ty)); const k3 = (ty * o.TW + tx) * 3;
-      let sh = .42 + .7 * Math.max(0, nx * lx + ny * ly + nz * lz); const rim = Math.pow(1 - nz, 2.2); sh *= 1 - .55 * rim; const spec = Math.pow(Math.max(0, nx * lx + ny * ly + nz * lz), 40) * 70;
-      D[i] = o.tex[k3] * sh + spec; D[i + 1] = o.tex[k3 + 1] * sh + spec * .9; D[i + 2] = o.tex[k3 + 2] * sh + spec * .7; D[i + 3] = d2 > .985 ? 255 * (1 - (d2 - .985) / .015) : 255; }
-    g.putImageData(im, 0, 0); g.strokeStyle = 'rgba(60,30,8,.9)'; g.lineWidth = 2; g.beginPath(); g.arc(c, c, rr, 0, 7); g.stroke(); };
-  /* compass rose; needle swings gently. T.compassAt(c, t) */
-  T.compass = (L, cx, cy, r) => { const s = K.svg(L, r * 2.4, r * 2.4, cx - r * 1.2, cy - r * 1.2); s.style.zIndex = 4; const c = r * 1.2, a = { fill: 'none', stroke: 'rgba(80,45,15,.75)', 'stroke-width': 2 };
-    K.sv(s, 'circle', Object.assign({ cx: c, cy: c, r }, a)); K.sv(s, 'circle', Object.assign({ cx: c, cy: c, r: r * .86 }, a));
-    for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4, L1 = i % 2 ? r * .55 : r * .95; K.sv(s, 'polygon', { points: `${c + Math.cos(an) * L1},${c + Math.sin(an) * L1} ${c + Math.cos(an + .22) * r * .16},${c + Math.sin(an + .22) * r * .16} ${c + Math.cos(an - .22) * r * .16},${c + Math.sin(an - .22) * r * .16}`, fill: i % 2 ? 'rgba(80,45,15,.45)' : 'rgba(80,45,15,.8)' }); }
-    const n = K.sv(s, 'g', {}); K.sv(n, 'polygon', { points: `${c},${c - r * .8} ${c + 9},${c} ${c - 9},${c}`, fill: T.HIS.RED }); K.sv(n, 'polygon', { points: `${c},${c + r * .8} ${c + 9},${c} ${c - 9},${c}`, fill: '#3b2412' }); s.n = n; s.c = c; return s; };
-  T.compassAt = (s, t) => s.n.setAttribute('transform', `rotate(${Math.sin(t * 1.3) * 14 + Math.sin(t * 3.1) * 4} ${s.c} ${s.c})`);
-  /* faint old-map rhumb lines + circles in the background */
-  T.mapLines = (L, cx, cy) => { const s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 1; for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8; K.sv(s, 'line', { x1: cx, y1: cy, x2: cx + Math.cos(a) * 2200, y2: cy + Math.sin(a) * 2200, stroke: 'rgba(80,45,15,.18)', 'stroke-width': 1.5 }); } [180, 360, 620].forEach(rr => K.sv(s, 'circle', { cx, cy, r: rr, fill: 'none', stroke: 'rgba(80,45,15,.16)', 'stroke-width': 1.5 })); return s; };
-  /* floating dust motes. T.dustAt(d, t) */
-  T.dust = (L, n, seed) => { const R = C.rng(seed || 2), s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 9; const a = []; for (let i = 0; i < (n || 40); i++) a.push({ c: K.sv(s, 'circle', { r: 1 + R() * 2.5, fill: 'rgba(255,240,200,.7)' }), x: R() * 1920, y: R() * 1080, vx: (R() - .5) * 20, vy: -6 - R() * 14, ph: R() * 6 }); return a; };
-  T.dustAt = (a, t) => a.forEach(q => { q.c.setAttribute('cx', ((q.x + q.vx * t + Math.sin(t + q.ph) * 12) % 1920 + 1920) % 1920); q.c.setAttribute('cy', ((q.y + q.vy * t) % 1080 + 1080) % 1080); q.c.setAttribute('opacity', (.3 + .5 * Math.abs(Math.sin(t * .8 + q.ph))).toFixed(2)); });
-  /* serif title (rust) with optional section number and red rule */
-  T.histTitle = (L, txt, x, y, size, col, opts) => { const o = Object.assign({ no: '', sub: '', align: 'left', w: 1000 }, opts || {}); const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: o.w + 'px', textAlign: o.align, zIndex: 8 });
-    if (o.no) { d.no = el(d, 'div', '', { fontFamily: T.HIS.SERIF, fontWeight: 900, fontSize: (size * .5) + 'px', color: T.HIS.RED }, o.no); el(d, 'div', '', { width: '90px', height: '4px', background: T.HIS.RED, margin: o.align === 'center' ? '6px auto 16px' : '6px 0 16px' }); }
-    d.t = el(d, 'div', '', { fontFamily: T.HIS.SERIF, fontWeight: 900, fontSize: size + 'px', lineHeight: 1.15, color: col || T.HIS.RUST, whiteSpace: 'pre-wrap' }, txt);
-    if (o.sub) d.s = el(d, 'div', 'cn', { fontSize: (size * .36) + 'px', fontWeight: 400, color: T.HIS.INK, marginTop: '18px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }, o.sub); return d; };
-  /* wavy rust timeline with medallions (labels/numbers are parameters — use only real dates Eva gives). T.timelineAt(tl, t, t0) */
-  T.timelineH = (L, items, y0) => { const n = items.length, s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 4; const pts = items.map((_, i) => [230 + i * (1460 / (n - 1)), y0 - i * 70 + (i % 2 ? 30 : 0)]);
-    let d = `M${pts[0][0] - 120} ${pts[0][1] + 30}`; pts.forEach((p, i) => { const pv = i ? pts[i - 1] : [p[0] - 120, p[1] + 30]; d += ` C${(pv[0] + p[0]) / 2} ${pv[1]} ${(pv[0] + p[0]) / 2} ${p[1]} ${p[0]} ${p[1]}`; });
-    const path = K.sv(s, 'path', { d, fill: 'none', stroke: '#b5471a', 'stroke-width': 22, 'stroke-linecap': 'round' }); const l = path.getTotalLength(); path.setAttribute('stroke-dasharray', l); path.setAttribute('stroke-dashoffset', l);
-    const m = items.map(([num, lab], i) => { const [x, y] = pts[i]; const g = el(L, 'div', 'abs', { left: (x - 60) + 'px', top: (y - 60) + 'px', width: '120px', height: '120px', zIndex: 6, transformOrigin: '50% 50%' });
-      el(g, 'div', 'abs', { left: 0, top: 0, width: '120px', height: '120px', borderRadius: '50%', background: '#d9a066' }); el(g, 'div', 'abs', { left: '14px', top: '14px', width: '92px', height: '92px', borderRadius: '50%', background: '#fbf2df', boxShadow: 'inset 0 0 0 3px #b5471a' });
-      el(g, 'div', 'abs', { left: 0, width: '120px', top: '36px', textAlign: 'center', fontFamily: T.HIS.SERIF, fontWeight: 900, fontSize: '38px', color: T.HIS.INK }, num);
-      const cr = K.svg(g, 70, 50, 25, -52); K.sv(cr, 'path', { d: 'M5 45 L10 12 L22 30 L35 5 L48 30 L60 12 L65 45 Z', fill: '#8a3a12' });
-      const lb = el(L, 'div', 'abs cn', { left: (x - 140) + 'px', width: '280px', top: (y + 72) + 'px', textAlign: 'center', fontSize: '34px', fontWeight: 700, color: T.HIS.INK, fontFamily: T.HIS.SERIF, zIndex: 6 }, lab); g.lb = lb; return g; });
-    return { path, l, m, n }; };
-  T.timelineAt = (tl, t, t0) => { const u = ease.io3(P(t, t0, 2.2)); tl.path.setAttribute('stroke-dashoffset', tl.l * (1 - u)); tl.m.forEach((g, i) => { const p = pop(t, t0 + .2 + i * 2.2 / tl.n, .4, 1.8); tf(g, p); g.lb.style.opacity = P(t, t0 + .4 + i * 2.2 / tl.n, .3); }); };
 })();

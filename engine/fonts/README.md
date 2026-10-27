@@ -8,7 +8,6 @@ These font files ship with the engine. All are free under the SIL Open Font Lice
 | `ArchivoBlack-Regular.ttf` | Archivo Black | fallback display type |
 | `PlayfairDisplay.ttf`, `PlayfairDisplay-Italic.ttf` | Playfair Display (variable) | T21 Clean & Minimal |
 | `SpaceMono-Regular.ttf`, `SpaceMono-Bold.ttf` | Space Mono | T20 Fast-Paced Social Media |
-| `Bungee-Regular.ttf` | Bungee | T22 Bold Motion Graphics |
 
 Also install these system-wide (used by the stage and by the burned captions):
 

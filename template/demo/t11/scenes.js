@@ -17,7 +17,7 @@
   // D2 · four styles tick on, grid fills
   C.scene({ t0: 3.87, t1: 7.76, bg: T.hudBg, build(L) {
       const st = {}; st.fr = frame(L); st.h = T.title(L, 'CHOOSE A ', 'STYLE', 110, 110, 54); st.c = T.checks(Z(L, 1.5, 110, 300), 110, 300, ['CINEMATIC', 'FUTURISTIC', 'SOCIAL', 'MINIMAL'], 220);
-      st.s = el(L, 'div', 'abs disp', { left: '110px', top: '480px', fontSize: '80px', color: '#fff' }, `FOUR LOOKS · <span style="color:${T.HUD.GOLD}">22 TEMPLATES</span>`); st.g = T.grid(L, 110, 640, 22, 1, 52);
+      st.s = el(L, 'div', 'abs disp', { left: '110px', top: '480px', fontSize: '80px', color: '#fff' }, `FOUR LOOKS · <span style="color:${T.HUD.GOLD}">20 TEMPLATES</span>`); st.g = T.grid(L, 110, 640, 20, 1, 52);
       [3.9, 4.73, 5.87, 6.6].forEach((x, i) => k.sfx('pop', x, .1, { f: 900 + i * 100 })); k.sfx('ding', 6.9, .08); return st; },
     update(lt, st, t) { T.hudFrameAt(st.fr, t); tf(st.h, slide(lt, .05, .4, -40, 0)); st.c.forEach((c, i) => T.checksAt([c], t, [3.9, 4.73, 5.87, 6.6][i], .35, 6.9));
       tf(st.s, slide(t, 6.9, .4, 0, 30)); T.gridAt(st.g, P(t, 4.0, 3.0)); } });

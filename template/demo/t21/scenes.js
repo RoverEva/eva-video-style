@@ -20,7 +20,7 @@
       st.kick = el(st.A, 'div', 'abs', { left: '128px', top: '150px', fontFamily: M.SANS, fontWeight: 500, fontSize: '22px', letterSpacing: '.22em', color: M.MUTE }, "HI, I'M EVA");
       st.h = ['Meet Eva', 'Video <i>Style.</i>'].map((x, i) => el(st.A, 'div', 'abs', { left: '124px', top: (210 + i * 150) + 'px', fontFamily: M.SERIF, fontWeight: 400, fontSize: '150px', lineHeight: 1.05, color: M.INK, letterSpacing: '-1px' }, x));
       st.par = el(st.A, 'div', 'abs', { left: '128px', top: '560px', width: '760px', fontFamily: M.SANS, fontSize: '36px', lineHeight: 1.5, color: M.MUTE, whiteSpace: 'normal' }, 'An open-source AI video-editing skill.');
-      st.meta = [['16 : 9', 'FORMAT'], ['T01 – T22', 'TEMPLATES'], ['MIT', 'LICENSE']].map(([a, b], i) => { const d = el(st.A, 'div', 'abs', { left: (128 + i * 240) + 'px', top: '760px' }); el(d, 'div', '', { fontFamily: M.SERIF, fontSize: '34px', color: M.INK }, a); el(d, 'div', '', { fontFamily: M.SANS, fontSize: '15px', letterSpacing: '.2em', color: M.MUTE, marginTop: '6px' }, b); return d; });
+      st.meta = [['16 : 9', 'FORMAT'], ['T01 – T21', 'TEMPLATES'], ['MIT', 'LICENSE']].map(([a, b], i) => { const d = el(st.A, 'div', 'abs', { left: (128 + i * 240) + 'px', top: '760px' }); el(d, 'div', '', { fontFamily: M.SERIF, fontSize: '34px', color: M.INK }, a); el(d, 'div', '', { fontFamily: M.SANS, fontSize: '15px', letterSpacing: '.2em', color: M.MUTE, marginTop: '6px' }, b); return d; });
       // B · four styles
       st.B = page(L);
       st.bk = el(st.B, 'div', 'abs', { left: '128px', top: '110px', fontFamily: M.SANS, fontWeight: 500, fontSize: '22px', letterSpacing: '.22em', color: M.MUTE }, 'CHOOSE A STYLE');

@@ -28,8 +28,8 @@
   // K3 · glowing orb → file icon → the real project files
   C.scene({ t0: 7.73, t1: 12.1, bg: T.hudBg, build(L) {
       const st = {}; st.fr = frame(L); st.h = T.title(L, 'READY-TO-USE ', 'TEMPLATES', 110, 110, 54);
-      st.orb = T.orb(L, 400, 560, 140); st.f = T.fileIcon(L, 310, 450, 180, 'T22');
-      st.r = T.rows(Z(L, 1.5, 640, 300), 640, 300, [['👆', 'Pick your favorite', 'T01 – T22'], ['🎞️', 'Apply it to your footage', 'video + SRT'], ['🤖', 'Let AI do the editing', 'motion · captions · SFX']]);
+      st.orb = T.orb(L, 400, 560, 140); st.f = T.fileIcon(L, 310, 450, 180, 'T21');
+      st.r = T.rows(Z(L, 1.5, 640, 300), 640, 300, [['👆', 'Pick your favorite', 'T01 – T21'], ['🎞️', 'Apply it to your footage', 'video + SRT'], ['🤖', 'Let AI do the editing', 'motion · captions · SFX']]);
       k.sfx('riser', 7.8, .08, { d: .6 }); k.sfx('pop', 8.5, .12); [8.97, 9.87, 10.67].forEach((x, i) => k.sfx('pop', x, .1, { f: 900 + i * 120 })); return st; },
     update(lt, st, t) { T.hudFrameAt(st.fr, t); tf(st.h, { o: P(lt, .1, .3) }); const o = P(lt, 0, .3) * (1 - P(lt, .75, .2)); tf(st.orb, { s: .9 + .06 * Math.sin(lt * 9), o });
       const f = P(lt, .8, .3); st.f.s.style.opacity = f; st.f.t.style.opacity = f; st.r.forEach((r, i) => tf(r, slide(t, [8.97, 9.87, 10.67][i], .35, -40, 0))); } });

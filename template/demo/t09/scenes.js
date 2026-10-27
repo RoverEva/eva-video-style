@@ -9,12 +9,12 @@
   C.ringFn = t => t >= 7.9 && t < 12.1 ? { color: 'rgba(255,255,255,.35)', width: 2, shadow: .5 } : { color: 'transparent', width: 0, shadow: .5, hud: 'rgba(255,255,255,.55)' };
   const frame = (L, n) => T.hudFrame(L, 'EVA · VIDEO STYLE', n);
 
-  // W1 · 3D wall of real frames sweeping past; counter rolls to 22 templates
+  // W1 · 3D wall of real frames sweeping past; counter rolls to 20 templates
   C.scene({ t0: 0, t1: 1.93, bg: T.hudBg, quiet: true, build(L) {
       const st = {}; const wrap = el(L, 'div', 'abs', { left: '-400px', top: '-120px', width: '2900px', height: '1400px', transformOrigin: '30% 50%' }); st.wrap = wrap;
       const R = C.rng(4); st.tiles = WALL.map((f, i) => { const c = i % 11, r = Math.floor(i / 11); const tl = el(wrap, 'img', 'abs', { left: (c * 262 + (r % 2) * 60) + 'px', top: (r * 170) + 'px', width: '240px', height: '135px', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 10px 30px rgba(0,0,0,.6)' }); C.setSrc(tl, f); tl.d = R() * 1.2; return tl; });
       st.fr = frame(L, '01'); st.dim = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: 'rgba(5,6,10,.6)' });
-      st.o = T.odometer(L, '22', 820, 380, 240, '#fff', false); st.k = T.kicker(L, 'TEMPLATES · EVA VIDEO STYLE', 760, 660, T.HUD.GOLD);
+      st.o = T.odometer(L, '20', 820, 380, 240, '#fff', false); st.k = T.kicker(L, 'TEMPLATES · EVA VIDEO STYLE', 760, 660, T.HUD.GOLD);
       k.sfx('whoosh', .1, .12); for (let i = 0; i < 8; i++) k.sfx('click', .9 + i * .08, .05); k.sfx('ding', 1.6, .08); return st; },
     update(lt, st, t) { st.wrap.style.transform = `perspective(1400px) rotateY(${-24 + 6 * lt / 2}deg) rotateX(14deg) translateX(${-300 * lt}px)`;
       st.tiles.forEach(tl => tl.style.opacity = clamp((lt - tl.d * .4) * 4)); T.hudFrameAt(st.fr, t);
