@@ -2,7 +2,7 @@
 
 ## 0. Inputs
 - **Raw talking-head video.** 1080p is enough. Ask for a 1080p export if the master is a huge 4K file.
-- **A bilingual SRT:** Chinese cues and English cues for the same speech, in one file.
+- **A bilingual SRT:** Chinese cues and English cues for the same speech, in one file. If there is none, generate it with eva-asr (step 2b).
 - **Optional resources:** real screen recordings (product website, app, tools) and the speaker's own cartoon or B-roll clips.
 - Check what tools are already installed before installing anything.
 
@@ -21,6 +21,14 @@ Inside `s1/index.html`, point the `<link>` and `<script>` paths at `../engine/`.
 
 ## 2. Extract media
 `scripts/extract_frames.sh raw/talk.mp4 media/eva` writes frames at exactly 30 fps, named by absolute frame number. Record the frame count: it is the target length of the final video. Extract each resource clip the same way and note its aspect ratio (screen width ÷ height) for `K.screen`.
+
+## 2b. No SRT? Recognise the speech with eva-asr
+```
+python3 scripts/asr.py raw/talk.mp4 srt/talk --config srt/asr.json   # config: copy config/asr.example.json
+```
+eva-asr transcribes the source language with word-level alignment and, for a non-English source, runs its translate task for the English line. Outputs: `srt/talk.<lang>.srt`, `srt/talk.en.srt`, `srt/talk.bilingual.srt` (source block then English block, the format `captions.py` reads), `srt/talk.asr.json` and `srt/talk.transcript.js`. Treat `talk.bilingual.srt` as the user's SRT from here on: read it in step 4, fix display errors in `display_fix.json` in step 8, never edit it. Tell the user the subtitles are machine-recognised and ask them to check names and numbers.
+
+To land scene elements on spoken words, add `<script src="../srt/talk.transcript.js"></script><script src="../engine/asr.js"></script>` before `scenes.js` and use `T(EV.asr.at('word'))` instead of typing times (see `engine-api.md`).
 
 ## 3. Calibrate the face
 Render or view 3–4 frames from different moments with a grid. Set `EV.face = { x, y, h }` as fractions of the frame: `x` is the face center, `y` is the head center, `h` is the head height from hair top to chin. Then render a still of the smallest circle and the largest card. The whole head must be visible in both. Re-measure for every new shoot or camera position.

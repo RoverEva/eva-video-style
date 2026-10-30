@@ -75,6 +75,17 @@ Everything is created in `build`. In `update`, only transforms, opacity, text an
 | `K.note(L, text, x, y, color)` | `ILLUSTRATIVE` label |
 | `K.sfx(kind, t, gain, args)` | sound cue: whoosh, pop `{f}`, click, impact, riser, ding `{f}`, applause `{d}` |
 
+## Word timings from eva-asr (`engine/asr.js`, optional)
+Load the transcript written by `scripts/asr.py` and the helper before `scenes.js`:
+`<script src="../srt/talk.transcript.js"></script><script src="../engine/asr.js"></script>`.
+| Helper | Returns / does |
+|---|---|
+| `EV.asr.at(text, {from, nth, end})` | absolute time (like SRT times) the text starts being spoken; `end: true` gives when it ends; ignores case, spaces and punctuation; throws if not found |
+| `EV.asr.has(text)` | whether the transcript contains it |
+| `EV.asr.segments`, `EV.asr.en`, `EV.asr.words` | raw eva-asr segments (with words), English translation, flat word list |
+
+Use it with the usual conversion: `k.sfx('pop', T(EV.asr.at('HatchElite')), .14)`.
+
 ## Patterns
 **Odometer that rolls to a real number:** one window per digit, each holding a strip of 0–9 that translates to the digit with `ease.outExpo`.
 **Flip tiles:** cards with `transformOrigin: 50% 50%`, animated with `sy: ease.outBack(P(t, start + i*.4, .45))`.

@@ -44,6 +44,7 @@ if cur: blocks.append(cur)
 if len(blocks) > 1 and any(not any(cjk(r[2]) for r in b) for b in blocks):
     cnl = sorted(r for b in blocks if any(cjk(x[2]) for x in b) for r in b); enl = [r for b in blocks if not any(cjk(x[2]) for x in b) for r in b]
 else: cnl = sorted([r for r in raw if cjk(r[2])]); enl = [r for r in raw if not cjk(r[2])]
+if not cnl: cnl, enl = sorted(enl), []   # English-only SRT (e.g. eva-asr on an English talk): each cue is its own line
 def ov(x, y): return max(0, min(x[1], y[1]) - max(x[0], y[0]))
 used = set(); cues = []
 for c in cnl:

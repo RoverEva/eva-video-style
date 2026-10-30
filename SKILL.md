@@ -13,6 +13,8 @@ Read these before building:
 - `references/pipeline.md` — step-by-step production, from raw video to delivered masters.
 - `references/engine-api.md` — how to write a section with the bundled engine (`engine/`, `template/section/`).
 
+No SRT supplied? Generate one from the video with eva-asr: `python3 scripts/asr.py raw/talk.mp4 srt/talk --config srt/asr.json`, then use `srt/talk.bilingual.srt` as the SRT (pipeline step 2b). Say that the captions are machine-recognised.
+
 ## Templates
 
 | ID | Chinese name | Name | Best for |

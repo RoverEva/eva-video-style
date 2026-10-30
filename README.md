@@ -69,6 +69,20 @@ node scripts/render.mjs template/section/index.html --out sec/s1.mp4            
 python3 scripts/captions.py my_talk.srt 0 99999 out/my_talk config.json          # captions (.srt + .ass)
 ```
 
+### No SRT yet? Recognise the speech with eva-asr
+
+[eva-asr](https://github.com/RoverEva/eva-asr) (WhisperX-based) can produce the subtitles from the raw video. `scripts/asr.py` calls eva-asr's library API (transcription, wav2vec2 word alignment, and its translate task for the English line) and writes a bilingual SRT in exactly the format `captions.py` reads, plus word timings for `scenes.js`.
+
+```bash
+git clone https://github.com/RoverEva/eva-asr && pip install -e eva-asr     # torch, faster-whisper, … (CPU: add --extra-index-url https://download.pytorch.org/whl/cpu)
+cp config/asr.example.json srt/asr.json                                     # model, device, language, translate, align …
+python3 scripts/asr.py raw/talk.mp4 srt/talk --config srt/asr.json          # -> srt/talk.{zh,en,bilingual}.srt, .asr.json, .transcript.js
+python3 scripts/captions.py srt/talk.bilingual.srt 0 99999 out/NAME_CN-EN   # unchanged caption step
+# or both at once: scripts/asr_captions.sh raw/talk.mp4 srt/talk out/NAME_CN-EN srt/asr.json [display_fix.json]
+```
+
+Without a local checkout installed, set `eva_asr_path` in the config (or `EVA_ASR_PATH`). The first run downloads the Whisper and alignment models from Hugging Face; offline machines can point `model` / `model_dir` at local copies and set `model_cache_only`. Exit codes: 1 would overwrite, 2 bad input/config, 3 eva-asr or its dependencies missing, 4 model or inference failure, 5 no speech. Machine-recognised text can be wrong: review the SRT and correct burned lines through `display_fix.json` as usual. Tests: `python3 -m pytest tests` and `node tests/test_asr_js.mjs`.
+
 The full workflow, from raw video to delivered master, is in [`references/pipeline.md`](references/pipeline.md). The engine API is in [`references/engine-api.md`](references/engine-api.md), and the look and rules are in [`references/style-guide.md`](references/style-guide.md).
 
 ## Repository layout
@@ -78,7 +92,9 @@ The full workflow, from raw video to delivered master, is in [`references/pipeli
 | `SKILL.md` | Skill entry point: rules, deliverables, quick start |
 | `engine/` | Small deterministic HTML motion engine: presenter window, scenes, design kit, template helpers, fonts |
 | `template/` | A starter section (`section/`) plus a full demo section for every template (`demo/t01` … `demo/t23`) |
-| `scripts/` | Frame extraction, Playwright renderer, sound effects, captions, caption placement, AI cut-out, assembly, contact sheets |
+| `scripts/` | Frame extraction, Playwright renderer, sound effects, captions, caption placement, AI cut-out, assembly, contact sheets, eva-asr speech recognition (`asr.py`, `asr_captions.sh`) |
+| `config/` | Example eva-asr config (`asr.example.json`) |
+| `tests/` | Tests for the eva-asr integration |
 | `references/` | Style guide, pipeline, engine API, template library with sample frames |
 
 ## Principles

@@ -8,3 +8,5 @@ check/
 *.wav
 .DS_Store
 template/sample5/media
+__pycache__/
+.pytest_cache/
