@@ -2,7 +2,7 @@
 
 The engine is plain HTML, CSS and JS. A section is one page whose picture is a pure function of time `t`. `scripts/render.mjs` steps `t` frame by frame and screenshots each frame, so renders are deterministic and frame-exact.
 
-Files: `engine/engine.js` (core, global `EV`), `engine/kit.js` (design kit, global `K`), `engine/templates.js` (T08–T17, T23 and T24 helpers, `K.T`), `engine/land.js` (world land mask for the T14 globe) and `engine/engine.css`. Start from `template/section/`.
+Files: `engine/engine.js` (core, global `EV`), `engine/cards.js` (optional EVA Card System, `K.EC`, see `references/cards.md`), `engine/kit.js` (design kit, global `K`), `engine/templates.js` (T08–T17, T23 and T24 helpers, `K.T`), `engine/land.js` (world land mask for the T14 globe) and `engine/engine.css`. Start from `template/section/`.
 
 ## Section setup (`scenes.js`)
 ```js
