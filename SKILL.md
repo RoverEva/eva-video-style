@@ -1,6 +1,6 @@
 ---
 name: eva-video-style
-description: Edit talking-head videos in Eva Video Style — kinetic motion graphics, a morphing presenter window, solid high-saturation color cards, bilingual Chinese + English captions, and no background music. Use when asked to edit, design, or animate a talking-head / vlog / product-promo video "in Eva Video Style", or when given a raw video plus a bilingual SRT to turn into a motion-designed video.
+description: Edit talking-head videos in Eva Video Style — kinetic motion graphics, a morphing presenter window, solid high-saturation color cards, bilingual Chinese + English captions, and no background music unless the user turns it on. Use when asked to edit, design, or animate a talking-head / vlog / product-promo video "in Eva Video Style", or when given a raw video plus a bilingual SRT to turn into a motion-designed video.
 ---
 
 # Eva Video Style
@@ -47,7 +47,7 @@ When the user names templates, use exactly those for those parts. When they don'
 ## Non-negotiables
 
 1. **16:9, 1920×1080, 30 fps.** No chapter bars, shot numbers, timecodes or watermarks in the output.
-2. **No background music, ever.** This includes music inside any clip or template, which must be muted. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**.
+2. **No background music unless the user turns it on.** By default (`background_music: none`) there is no music, and music inside any clip or template must be muted. Only when the user sets `background_music` to `auto` or `manual` add one continuous, ducked bed plus at most a few Kenney accents with `scripts/music.py` (pipeline step 9b), preview the audio first and wait for approval. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**.
 3. **The speaker's whole head is always visible**, from hair to chin, in every window shape. Never crop the face; calibrate the face position on every new shoot.
 4. **Never overwrite** source videos, old projects or approved samples. Every output goes to a new versioned folder (`v1_samples/`, `v1_full/`, `v2_full/` ...).
 5. **Never invent facts, numbers or software screens.** Show real UI only from real screen recordings. Label anything conceptual `ILLUSTRATIVE` and draw it without fake numbers. Show stated results (scores, prices, dates) exactly as spoken.
@@ -77,6 +77,12 @@ python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.j
 python3 scripts/sfx.py sec/all_cues.json 73.667 sec/sfx.wav
 python3 scripts/captions.py raw/talk.srt 0 99999 out/NAME_CN-EN display_fix.json
 scripts/assemble.sh raw/talk.mp4 sec/sfx.wav out/NAME_CN-EN.ass out/NAME sec/s1.mp4 sec/s2.mp4
+```
+
+Optional background music (only when the user asks; see pipeline step 9b):
+```bash
+scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --mode auto --cues sec/all_cues.json   # plan + audio preview
+scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --apply                               # after approval
 ```
 
 Requirements: Node 18+ with `playwright` (Chromium), Python 3 with `numpy`, FFmpeg with libass and libx264, and the fonts listed in `engine/fonts/README.md`.

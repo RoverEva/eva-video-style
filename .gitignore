@@ -10,3 +10,14 @@ check/
 template/sample5/media
 __pycache__/
 .pytest_cache/
+# music library: audio and machine-specific analysis stay local (licenses not verified for redistribution)
+music-library/**/*.mp3
+music-library/**/*.ogg
+music-library/**/*.wav
+music-library/**/*.flac
+music-library/**/*.m4a
+music-library/**/*.aac
+music-library/**/*.opus
+music-library/**/SOURCE_LICENSE.txt
+music-library/catalog.json
+*.m4a

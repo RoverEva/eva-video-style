@@ -1,0 +1,5 @@
+{
+  "_comment": "Optional manual tags. Copy to music-library/tags.json; keys are paths relative to music-library/. Tags replace the automatic mood tags; roles replace a jingle's automatic roles (opening, transition, highlight, ending).",
+  "background/open-lofi/cursor-after-midnight.mp3": {"tags": ["tech", "night", "focus", "steady", "medium"]},
+  "jingles/kenney/hit/jingles_HIT00.ogg": {"roles": ["transition"]}
+}

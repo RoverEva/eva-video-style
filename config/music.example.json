@@ -1,0 +1,14 @@
+{
+  "_comment": "Copy next to your project (e.g. project/v1/srt/music.json) and pass with --config. background_music: none (default, no music) | auto (pick + trim from music-library/catalog.json) | manual (use manual.file; manual.start = seconds into the track, null = auto-trim). category: auto | tech | business | product | tutorial | general. Levels are dB relative to the voice.",
+  "background_music": "auto",
+  "category": "auto",
+  "manual": {"file": null, "start": null},
+  "jingles": true,
+  "max_jingles": 3,
+  "duck_db": -21,
+  "gap_db": -14,
+  "jingle_db": -9,
+  "fade_in": 1.5,
+  "fade_out": 2.5,
+  "visual_tags": []
+}

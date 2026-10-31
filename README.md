@@ -47,7 +47,7 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 - **22 named templates (T01–T21, T23 and T24).** From Acid Lime Kinetic and Electric Blue Console to Old Newspaper, Science Network, Footage Intro, Fast-Paced Social, Clean & Minimal the Creative Pop seven-colour card system and the new Luxury Nude Motion (3D white type and ivory cards on a nude stage). (T18 and T22 were retired; the other IDs stay the same.) See [`references/templates.md`](references/templates.md).
 - **Captions your way.** English-only, or bilingual (Chinese line on top, English underneath). Machine-translation slips are fixed in the burned captions only, and your SRT is never edited. On footage-heavy shots, captions move to the clearest part of the frame.
 - **Real footage, handled properly (T19).** AI cut-out of the speaker (natural colours), fast swaps through backgrounds you import (your own images or footage; no images are bundled), the clip pushes in, the presenter shrinks into a circle that stays clear of the action.
-- **Clean sound.** No background music: the original voice plus short sound effects, normalised to about -16 LUFS.
+- **Clean sound.** No background music by default: the original voice plus short sound effects, normalised to about -16 LUFS. Optional: one ducked lo-fi bed plus a few Kenney accents (`background_music: auto | manual`, see `music-library/README.md`).
 
 ## Use it as a Claude skill
 
@@ -100,7 +100,7 @@ The full workflow, from raw video to delivered master, is in [`references/pipeli
 ## Principles
 
 - The speaker's whole head is always visible; the window never crops the face.
-- No background music in talking-head edits: the original voice plus short sound effects. (The music montages above are separate showcase pieces.)
+- No background music in talking-head edits unless it is turned on (`background_music` defaults to `none`). (The music montages above are separate showcase pieces.)
 - No invented facts, numbers or screens. Anything conceptual is labelled **ILLUSTRATIVE**.
 - Source files and earlier versions are never overwritten.
 

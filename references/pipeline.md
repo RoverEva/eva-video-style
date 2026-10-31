@@ -66,7 +66,7 @@ Sections are independent, so they can render in parallel. Verify each section's 
 python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.json:<s2 start seconds> ...
 python3 scripts/sfx.py sec/all_cues.json <total seconds> sec/sfx.wav
 ```
-`assemble.sh` mixes the original voice with this stem and normalizes the result to -16 LUFS. **Never add music.**
+`assemble.sh` mixes the original voice with this stem and normalizes the result to -16 LUFS. **No music here**; music is only ever added in step 9b, when the user turns it on.
 
 ## 8. Captions
 1. Copy the SRT.
@@ -88,6 +88,26 @@ Check:
 - The whole video decodes without errors.
 - The contact sheet looks right.
 - Each join frame shows the same Eva pose on both sides.
+
+## 9b. Optional background music (only when `background_music` is `auto` or `manual`)
+The default is `none`: skip this step and nothing changes. Otherwise, after step 9 (the video is never re-rendered):
+1. Once per machine, import and analyse the library (`music-library/README.md`). Analysis is cached in `music-library/catalog.json`.
+2. Plan and preview (audio only, a few seconds of work):
+```
+scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --config srt/music.json \
+  --cues sec/all_cues.json [--script srt/script.txt] [--storyboard srt/storyboard.json] [--refs refs/]
+```
+   - `--mode auto` works without a config file (copy `config/music.example.json` to tune levels, force a category or pick a track by hand).
+   - The plan reads the SRT and script (video type: tech, business, product, tutorial), the storyboard (`{"sections": [{"start": 0, "template": "T13"}], "highlights": [12.4]}`), the SFX cues (transitions and highlights) and the reference images (brightness and colour).
+   - It picks **one** continuous lo-fi bed, cuts it on a phrase start so the storyboard cuts land on downbeats, ducks it 21 dB under the voice (14 dB in pauses), and fades it in and out.
+   - It adds at most `max_jingles` Kenney accents, only in pauses and never on top of an existing SFX cue.
+   - Read `out/music/music_plan.md` (file, cut points, levels, license, skipped accents and why) and listen to `out/music/music_preview.m4a`.
+3. Show the plan to the user and **wait for approval**. To change it, edit the config and rerun step 2.
+4. `scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --apply` writes `out/music/NAME_CN-EN_Music.mp4`: video copied, audio remixed to -16 LUFS. Run it once more with `out/NAME_Clean.mp4` for the clean master.
+5. `out/music/music_check.json` must show `sync_ok: true` (same frame count and length as the input) and `speech_clear: true` (voice at least 15 dB above the music).
+6. Tell the user the track's license from the plan. Open Lo-Fi is **UNVERIFIED**, so they must check its terms before publishing.
+
+To build masters with music in one pass instead, give `assemble.sh` the stem: `MUSIC_STEM=out/music/music_stem.wav scripts/assemble.sh ...`.
 
 ## 10. Deliver
 - Put the masters in the new version folder, along with the `.srt`, the SFX stem and a zip of the project (without the media frames).
