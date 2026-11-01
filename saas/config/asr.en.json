@@ -1,0 +1,14 @@
+{
+  "_comment": "EVA Video Studio cloud ASR: English talking heads on CPU. large-v3-turbo (int8) is ~6-8x faster than large-v3 at similar English accuracy; no translation needed. Models are baked into the image (model_cache_only).",
+  "model": "large-v3-turbo",
+  "device": "cpu",
+  "compute_type": "int8",
+  "batch_size": 8,
+  "language": "en",
+  "translate_to_en": false,
+  "align": true,
+  "vad_method": "pyannote",
+  "max_line_width": 42,
+  "max_line_count": 2,
+  "model_cache_only": false
+}

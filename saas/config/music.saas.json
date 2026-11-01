@@ -1,0 +1,14 @@
+{
+  "_comment": "EVA Video Studio defaults. background_music is overridden per order (auto | manual | none). Levels keep the voice clearly on top (music -21 dB under speech, -14 dB in pauses).",
+  "background_music": "auto",
+  "category": "auto",
+  "manual": {"file": null, "start": null},
+  "jingles": true,
+  "max_jingles": 3,
+  "duck_db": -21,
+  "gap_db": -14,
+  "jingle_db": -9,
+  "fade_in": 1.5,
+  "fade_out": 2.5,
+  "visual_tags": []
+}
