@@ -4,6 +4,8 @@ The engine is plain HTML, CSS and JS. A section is one page whose picture is a p
 
 Files: `engine/engine.js` (core, global `EV`), `engine/cards.js` (optional EVA Card System, `K.EC`, see `references/cards.md`), `engine/kit.js` (design kit, global `K`), `engine/templates.js` (T08–T17, T23 and T24 helpers, `K.T`), `engine/land.js` (world land mask for the T14 globe) and `engine/engine.css`. Start from `template/section/`.
 
+**16:9 and 9:16:** add `?ar=9:16` (or `--ar 9:16` in `scripts/render.mjs`) for a 1080×1920 stage. Templates place elements with `EV.pick(landscape, portrait)`, the safe zones in `EV.SAFE` / `EV.zone()` and the presenter presets in `EV.pose()`. See `references/responsive-layout.md`.
+
 ## Section setup (`scenes.js`)
 ```js
 (function () {

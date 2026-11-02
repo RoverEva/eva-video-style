@@ -12,7 +12,7 @@
   K.hud = (p, txt, color, x, y, size, extra) => el(p, 'div', 'abs hud', Object.assign({ color, left: x + 'px', top: y + 'px', fontSize: (size || 18) + 'px' }, extra || {}), txt);
   K.card = (p, x, y, w, h, bg, extra) => el(p, 'div', 'card', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', background: bg }, extra || {}));
   K.O = (e, o) => { e.style.transformOrigin = o || '0 50%'; return e; };
-  K.center = e => { e.style.left = '0'; e.style.width = '1920px'; e.style.textAlign = 'center'; return e; };
+  K.center = e => { e.style.left = '0'; e.style.width = C.W + 'px'; e.style.textAlign = 'center'; return e; };
   K.emoji = (p, ch, size, x, y) => el(p, 'div', 'abs', { left: x + 'px', top: y + 'px', fontSize: size + 'px', fontFamily: "'Noto Color Emoji'", transformOrigin: '50% 50%' }, ch);
   const NS = 'http://www.w3.org/2000/svg';
   K.svg = (p, w, h, x, y) => { const s = document.createElementNS(NS, 'svg'); s.setAttribute('width', w); s.setAttribute('height', h); Object.assign(s.style, { position: 'absolute', left: x + 'px', top: y + 'px', overflow: 'visible' }); p.appendChild(s); return s; };
@@ -21,7 +21,7 @@
   /* real screen recordings: K.screen(parent, x, y, width, aspect) then K.play(screen, dir, offsetSeconds, localT, frameCount) */
   K.screen = (p, x, y, w, aspect, extra) => { const s = el(p, 'div', 'screen', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: (w / (aspect || 16 / 9)) + 'px', boxShadow: '0 30px 80px rgba(0,0,0,.55), 0 0 0 3px rgba(255,255,255,.08)' }, extra || {})); s.img = el(s, 'img'); return s; };
   K.play = (s, dir, off, t, count) => C.setSrc(s.img, C.seq(dir, off + Math.max(0, t), count));
-  K.imgLayer = p => el(p, 'img', '', { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', objectFit: 'cover' });
+  K.imgLayer = p => el(p, 'img', '', { position: 'absolute', left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover' });
 
   /* backgrounds */
   K.stageBg = `radial-gradient(1300px 520px at 50% 108%, rgba(255,122,26,.55), rgba(138,92,255,.18) 45%, rgba(0,0,0,0) 70%), radial-gradient(900px 600px at 15% 0%, rgba(138,92,255,.25), rgba(0,0,0,0) 60%), #07070b`;

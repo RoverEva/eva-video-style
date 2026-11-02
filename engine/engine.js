@@ -10,10 +10,19 @@
  *   window.renderAt(t)
  *   window.imgWait()  Promise that resolves when all image-sequence frames for this t are decoded
  *   window.EV.sfx   list of sound cues [kind, t, gain, args] (read by scripts/render.mjs --cues)
+ *   window.EV.W/H   stage size in pixels (1920x1080 landscape, 1080x1920 portrait; scripts/render.mjs sizes the viewport from it)
+ *
+ * Aspect ratio: the stage is 16:9 unless the page URL has ?ar=9:16 (or window.EV_AR = '9:16' is set before this script).
+ * Templates read EV.portrait / EV.pick(landscapeValue, portraitValue) and the zones in EV.SAFE / EV.zone(); landscape output is unchanged.
  */
 (function () {
   'use strict';
   const FPS = 30;
+  /* ---------- Responsive Video Layout: aspect, stage size, source footage ---------- */
+  const Q = new URLSearchParams((typeof location !== 'undefined' && location.search) || '');
+  const AR = String(Q.get('ar') || window.EV_AR || '16:9').replace('x', ':');
+  const PORTRAIT = AR === '9:16';
+  const W = PORTRAIT ? 1080 : 1920, H = PORTRAIT ? 1920 : 1080;
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const lerp = (a, b, u) => a + (b - a) * u;
   const ease = {
@@ -78,7 +87,7 @@
   /* Eva window path: keys [{t, d, L:{x,y,w,h,r,s,o}}]. Each key starts at t and eases (quintic) to L over d seconds,
    * starting from wherever the window is at that moment, so overlapping moves blend without jumps. */
   const GEO = ['x', 'y', 'w', 'h', 'r', 's', 'o'];
-  function norm(L) { return Object.assign({ x: 0, y: 0, w: 1920, h: 1080, r: 0, s: 1, o: 1 }, L); }
+  function norm(L) { return Object.assign({ x: 0, y: 0, w: W, h: H, r: 0, s: 1, o: 1 }, L); }
   function compilePath(keys) {
     const ks = keys.map(k => ({ t: k.t, d: k.d || 0, L: norm(k.L), e: k.ease || 'smooth5' })).sort((a, b) => a.t - b.t);
     const at = (t, upto) => {
@@ -93,8 +102,11 @@
 
   const S = {
     FPS, clamp, lerp, ease, P, rng, el, tf, pop, slide, wipe, setSrc, seq,
+    W, H, AR, portrait: PORTRAIT, params: Q,
     scenes: [], end: 10, src0: 0, evaDir: '../media/eva',
-    /* face calibration of the talking-head footage, as fractions of the 1920x1080 frame:
+    /* size of the presenter footage frames (any orientation: a 9:16 phone clip is { w: 1080, h: 1920 }) */
+    src: { w: 1920, h: 1080 },
+    /* face calibration of the talking-head footage, as fractions of the source frame:
        x = face centre, y = head centre, h = head height (hair to chin). Re-measure for every new shoot. */
     face: { x: .54, y: .35, h: .5 }, headFill: .6,
     evaKeys: [{ t: 0, L: {} }], ringFn: null, sfx: [],
@@ -117,24 +129,31 @@
     Object.assign(box.style, { left: g.x.toFixed(2) + 'px', top: g.y.toFixed(2) + 'px', width: w.toFixed(2) + 'px', height: h.toFixed(2) + 'px', borderRadius: rad.toFixed(2) + 'px', opacity: clamp(g.o).toFixed(3) });
     /* Never crop Eva's head: cap the zoom so the whole head fills at most headFill of the window
        (a little less for circles), and centre the window on her face. */
-    const cover0 = Math.max(w / 1920, h / 1080);
+    const SW = S.src.w, SH = S.src.h, FULL = w >= W - 20 && h >= H - 20;
+    const cover0 = Math.max(w / SW, h / SH);
     const roundness = clamp(rad / (Math.min(w, h) / 2));
     const fill = S.headFill - .08 * roundness;
-    const cap = Math.max(1, fill * h / (S.face.h * 1080 * cover0));
-    const z = Math.min(zoom, cap), cover = cover0 * z, iw = 1920 * cover, ih = 1080 * cover;
+    const cap = Math.max(1, fill * h / (S.face.h * SH * cover0));
+    const z = Math.min(zoom, cap), cover = cover0 * z, iw = SW * cover, ih = SH * cover;
     const ty = lerp(.44, .52, roundness);
     const left = clamp(w / 2 - S.face.x * iw, w - iw, 0), top = clamp(h * ty - S.face.y * ih, h - ih, 0);
     Object.assign(S.evaImg.style, { width: iw.toFixed(2) + 'px', height: ih.toFixed(2) + 'px', left: left.toFixed(2) + 'px', top: top.toFixed(2) + 'px' });
     if (vis) setSrc(S.evaImg, seq(S.evaDir, S.src0 + t));
     const ring = S.ringFn ? S.ringFn(t) : { color: '#fff', width: 0, shadow: 0 };
-    const hb = S.evaHud; hb.style.display = ring.hud && vis && w < 1900 ? 'block' : 'none';
+    const hb = S.evaHud; hb.style.display = ring.hud && vis && !FULL ? 'block' : 'none';
     if (ring.hud) { const m = 12; Object.assign(hb.style, { left: (g.x - m) + 'px', top: (g.y - m) + 'px', width: (w + 2 * m) + 'px', height: (h + 2 * m) + 'px', color: ring.hud, opacity: clamp(g.o) }); }
     box.style.filter = ring.filter || '';
-    box.style.boxShadow = w >= 1900 ? 'none' : `0 0 0 ${ring.width}px ${ring.color}, 0 28px 70px rgba(0,0,0,${ring.shadow ?? .45})` + (ring.glow ? `, 0 0 60px ${ring.glow}` : '');
+    box.style.boxShadow = FULL ? 'none' : `0 0 0 ${ring.width}px ${ring.color}, 0 28px 70px rgba(0,0,0,${ring.shadow ?? .45})` + (ring.glow ? `, 0 0 60px ${ring.glow}` : '');
   }
 
   S.start = function () {
     const stage = document.getElementById('stage');
+    /* per-render overrides (renderer / SaaS worker pass them in the URL): eva=frames dir, srcw/srch=footage size, face=x,y,h */
+    if (Q.get('eva')) S.evaDir = Q.get('eva');
+    if (Q.get('srcw')) S.src = { w: +Q.get('srcw'), h: +(Q.get('srch') || S.src.h) };
+    if (Q.get('face')) { const [x, y, h] = Q.get('face').split(',').map(Number); S.face = { x, y, h }; }
+    if (PORTRAIT) { document.documentElement.classList.add('ar-portrait');
+      for (const e of [document.documentElement, document.body, stage]) Object.assign(e.style, { width: W + 'px', height: H + 'px' }); }
     for (const sc of S.scenes) {
       sc.layer = el(stage, 'div', 'layer', { zIndex: sc.z || 1 });
       if (sc.bg) sc.layer.style.background = sc.bg;
@@ -144,6 +163,7 @@
     /* automatic whoosh on every scene change unless the scene is quiet */
     for (const sc of S.scenes) if (sc.t0 > .05 && !sc.quiet) S.sfx.push(['whoosh', +(sc.t0 - .05).toFixed(3), .14, {}]);
     evaInit(stage);
+    if (Q.get('guides')) S.guides(stage);
     window.END = S.end;
     window.renderAt = function (t) {
       for (const sc of S.scenes) {
@@ -154,7 +174,59 @@
       evaRender(t);
     };
     window.imgWait = () => Promise.all([...pending]);
-    window.READY = document.fonts.ready.then(() => { window.renderAt(0); return window.imgWait(); });
+    window.READY = document.fonts.ready.then(() => { S.fits.forEach(f => f()); window.renderAt(0); return window.imgWait(); });
   };
+  /* ---------- Responsive layout helpers ----------
+   * pick(land, port)       landscape value or portrait value (land is returned unchanged in 16:9, so 16:9 output never moves)
+   * SAFE                   margins that stay clear of phone UI: 9:16 = TikTok / Reels / Shorts overlays (top bar, caption + buttons
+   *                        at the bottom, action rail on the right); 16:9 = broadcast title-safe
+   * zone(name)             named rectangles {x,y,w,h} inside the safe area (see ZONES below)
+   * pose(name, extra)      named Eva-window rectangles for evaKeys, per aspect
+   * fit(el, maxW, minPx)   shrink an element's font so its text fits maxW (measured once after fonts load: deterministic)
+   * faceRect(g)            where the presenter's face is on stage for an Eva window rectangle g (to keep text off it) */
+  S.pick = (land, port) => PORTRAIT ? (port === undefined ? land : port) : land;
+  S.SAFE = PORTRAIT ? { top: 210, bottom: 430, left: 64, right: 150 } : { top: 60, bottom: 110, left: 96, right: 96 };
+  const SF = S.SAFE, IW = W - SF.left - SF.right;
+  S.ZONES = PORTRAIT ? {
+    safe: { x: SF.left, y: SF.top, w: IW, h: H - SF.top - SF.bottom },
+    head: { x: SF.left, y: SF.top, w: IW, h: 470 },               // headline block, above the presenter
+    body: { x: SF.left, y: SF.top + 500, w: IW, h: 560 },         // cards / lists between the headline and the presenter
+    lower: { x: SF.left, y: 1060, w: IW, h: H - SF.bottom - 1060 },// lower third (over full-bleed presenter, below the face)
+    caption: { x: 90, y: H - SF.bottom - 190, w: W - 240, h: 190 },// burned subtitles: above the platform caption + buttons
+  } : {
+    safe: { x: SF.left, y: SF.top, w: W - SF.left - SF.right, h: H - SF.top - SF.bottom },
+    head: { x: SF.left, y: SF.top, w: 1040, h: 330 },
+    body: { x: SF.left, y: 420, w: 1040, h: 520 },
+    lower: { x: SF.left, y: 780, w: 1200, h: 190 },
+    caption: { x: 380, y: 900, w: 1160, h: 150 },
+  };
+  S.zone = name => Object.assign({}, S.ZONES[name] || S.ZONES.safe);
+  /* presenter poses. 9:16: 'card' = framed card in the lower half, 'split' = bottom 45% edge to edge, 'pip' = small circle bottom-left
+     above the UI zone, 'pipTop' = small circle top-right, 'full' = full-bleed. 16:9 keeps the classic right-hand card. */
+  S.POSES = PORTRAIT ? {
+    full: { x: 0, y: 0, w: W, h: H, r: 0, s: 1 },
+    card: { x: 150, y: 960, w: 780, h: 900, r: 44, s: 1.4 },
+    split: { x: 0, y: 1040, w: W, h: H - 1040, r: 0, s: 1.25 },
+    pip: { x: 70, y: 1180, w: 300, h: 300, r: 150, s: 3 },
+    pipTop: { x: 760, y: 70, w: 240, h: 240, r: 120, s: 3 },
+  } : {
+    full: { x: 0, y: 0, w: W, h: H, r: 0, s: 1 },
+    card: { x: 1240, y: 150, w: 600, h: 740, r: 36, s: 1.5 },
+    split: { x: 960, y: 0, w: 960, h: H, r: 0, s: 1.2 },
+    pip: { x: 1580, y: 690, w: 260, h: 260, r: 130, s: 3 },
+    pipTop: { x: 1600, y: 60, w: 240, h: 240, r: 120, s: 3 },
+  };
+  S.pose = (name, extra) => Object.assign({}, S.POSES[name] || S.POSES.card, extra || {});
+  S.fits = [];
+  S.fit = (e, maxW, minPx) => { S.fits.push(() => { let fs = parseFloat(getComputedStyle(e).fontSize); const lo = minPx || fs * .4;
+      for (let i = 0; i < 40 && e.scrollWidth > maxW && fs > lo; i++) { fs = Math.max(lo, fs * Math.min(.97, maxW / e.scrollWidth)); e.style.fontSize = fs.toFixed(1) + 'px'; } }); return e; };
+  S.faceRect = g => { const SW = S.src.w, SH = S.src.h, c = Math.max(g.w / SW, g.h / SH) * Math.max(1, g.s || 1), fh = S.face.h * SH * c;
+    return { x: g.x + g.w / 2 - fh * .45, y: g.y + g.h * .48 - fh / 2, w: fh * .9, h: fh }; };
+  /* ?guides=1 draws the safe area and the phone-UI zones on top (layout checks only, never in a final render) */
+  S.guides = stage => { const g = el(stage, 'div', '', { position: 'absolute', inset: 0, zIndex: 999, pointerEvents: 'none' }), sf = S.SAFE;
+    el(g, 'div', '', { position: 'absolute', left: sf.left + 'px', top: sf.top + 'px', width: (W - sf.left - sf.right) + 'px', height: (H - sf.top - sf.bottom) + 'px', outline: '3px dashed rgba(0,255,140,.85)' });
+    const ui = PORTRAIT ? [[0, 0, W, sf.top, 'TOP BAR'], [0, H - sf.bottom, W, sf.bottom, 'CAPTION + UI'], [W - sf.right, 860, sf.right, H - sf.bottom - 860, 'ACTIONS']] : [];
+    ui.forEach(([x, y, w, h, n]) => el(g, 'div', '', { position: 'absolute', left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', background: 'rgba(255,40,80,.18)', color: 'rgba(255,255,255,.8)', font: '700 22px Inter, sans-serif', padding: '8px', boxSizing: 'border-box' }, n));
+    const c = S.ZONES.caption; el(g, 'div', '', { position: 'absolute', left: c.x + 'px', top: c.y + 'px', width: c.w + 'px', height: c.h + 'px', outline: '2px dashed rgba(255,210,0,.9)' }); };
   window.EV = S;
 })();

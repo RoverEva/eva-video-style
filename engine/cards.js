@@ -72,7 +72,7 @@
     tf(e, m); };
 
   /* ---------- connectors: arrow drawing / curved path reveal ---------- */
-  EC.connector = (L, d, th, w, head, z) => { const s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = z || 12; s.style.overflow = 'visible';
+  EC.connector = (L, d, th, w, head, z) => { const s = K.svg(L, C.W, C.H, 0, 0); s.style.zIndex = z || 12; s.style.overflow = 'visible';
     const p = K.sv(s, 'path', { d, fill: 'none', stroke: th.line, 'stroke-width': w || 5, 'stroke-linecap': 'round' }); const l = p.getTotalLength ? p.getTotalLength() : 1000;
     p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); const o = { s, p, l };
     if (head !== false && p.getPointAtLength) { const a = p.getPointAtLength(l), b = p.getPointAtLength(Math.max(0, l - 24)), ang = Math.atan2(a.y - b.y, a.x - b.x), q = 22 + (w || 5) * 2;
@@ -174,7 +174,7 @@
   EC.layout = (L, name, data, box, th) => { const f = EC.LAYOUTS[name]; if (!f) throw new Error('EVA cards: unknown layout ' + name); return f(L, data, box, th); };
 
   /* ---------- presenter-safe regions: keep cards off the face. win = Eva window rect {x,y,w,h} ---------- */
-  EC.region = (anchor, win, m) => { m = m ?? 70; const W = 1920, H = 1080, w = win || { x: 660, y: 0, w: 600, h: H };
+  EC.region = (anchor, win, m) => { m = m ?? 70; const W = C.W, H = C.H, w = win || { x: 660, y: 0, w: 600, h: H };
     switch (anchor) { case 'left': return { x: m, y: m + 40, w: Math.max(300, w.x - 2 * m), h: H - 2 * m - 80 };
       case 'top': return { x: m, y: m, w: W - 2 * m, h: Math.max(200, w.y - 2 * m) };
       case 'bottom': return { x: m, y: w.y + w.h + m, w: W - 2 * m, h: Math.max(200, H - w.y - w.h - 2 * m) };
@@ -199,7 +199,7 @@
   EC.fromSchema = (L, specs, th0, opt) => { opt = opt || {}; return specs.map(sp => { const bad = EC.validate(sp); if (bad.length) throw new Error('EVA cards: ' + bad.join('; '));
       const th = sp.style && sp.style !== th0.name && EC.THEMES[sp.style] ? EC.theme(sp.style) : Object.assign({}, th0), a = sp.animation || {};
       if (a.preset && EC.MOTIONS.includes(a.preset)) th.motion = a.preset; if (a.duration) th.dur = a.duration;
-      const p = sp.position || {}, box = p.w ? { x: p.x * 1920, y: p.y * 1080, w: p.w * 1920, h: (p.h || .6) * 1080 } : Object.assign(EC.region(p.anchor || 'right', opt.win), p.x != null ? { x: p.x * 1920, y: p.y * 1080 } : {});
+      const p = sp.position || {}, box = p.w ? { x: p.x * C.W, y: p.y * C.H, w: p.w * C.W, h: (p.h || .6) * C.H } : Object.assign(EC.region(p.anchor || 'right', opt.win), p.x != null ? { x: p.x * C.W, y: p.y * C.H } : {});
       const c = sp.content || {}, name = sp.layout || TYPE2LAYOUT[sp.type] || 'steps-v';
       const data = { hero: c.words ? c : { words: [c.title], sub: c.subtitle, kicker: c.kicker }, statement: c.words ? c : { script: c.kicker, words: [c.title], sub: c.subtitle },
         steps: c.items || [{ n: c.number, title: c.title, sub: c.subtitle, icon: c.icon }], items: c.items || [{ title: c.title, icon: c.icon }],

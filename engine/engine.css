@@ -37,5 +37,6 @@ html, body { width: 1920px; height: 1080px; overflow: hidden; background: #000; 
 .hudc.tr { right: 0; top: 0; border-right-width: 2px; border-top-width: 2px; }
 .hudc.bl { left: 0; bottom: 0; border-left-width: 2px; border-bottom-width: 2px; }
 .hudc.br { right: 0; bottom: 0; border-right-width: 2px; border-bottom-width: 2px; }
+html.ar-portrait #stage { width: 1080px; height: 1920px; }
 .mono { font-family: 'DejaVu Sans Mono', 'Noto Sans Mono', monospace; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
 .sans { font-family: 'Inter', 'Noto Sans CJK SC', sans-serif; white-space: nowrap; }
