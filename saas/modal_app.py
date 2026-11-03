@@ -5,13 +5,14 @@
   prepare / render_chunk / finish   the stages (saas/worker/pipeline.py), each with retries; finished stages are skipped
   reconcile      every 10 min: paid renders that failed or went silent are retried once, then refunded automatically
   cleanup        daily: job working folders on the volume older than 2 days are removed (R2 lifecycle deletes media)
-  setup          once per deploy (CI): R2 lifecycle + CORS, Stripe webhook endpoint (secret stored in private R2)
+  setup          once per deploy (CI): R2 lifecycle + CORS when permitted (Stripe webhook: saas/deploy/stripe_webhook.py)
 
   modal deploy saas/modal_app.py                            # CI does this (.github/workflows/mvp-deploy.yml)
   modal run saas/modal_app.py::e2e --video URL_OR_PATH      # one real preview + paid render, with timings and cost
 
-Secrets (created by CI from GitHub secrets): eva-r2 (R2_*), eva-stripe (STRIPE_SECRET_KEY), eva-mail (RESEND_API_KEY,
-EVA_MAIL_FROM; optional), eva-anthropic (ANTHROPIC_API_KEY; optional, deploy with EVA_USE_LLM=1).
+Modal Secrets (created by CI from the GitHub `production` environment): eva-r2 (R2_*), eva-stripe (STRIPE_SECRET_KEY),
+eva-stripe-webhook (STRIPE_WEBHOOK_SECRET, written straight from Stripe by the deploy step), eva-config (EVA_SITE_URL,
+EVA_SITE_ORIGINS), eva-mail (optional RESEND_API_KEY, EVA_MAIL_FROM), eva-anthropic (optional ANTHROPIC_API_KEY).
 """
 import json, os, shutil, sys, time, traceback
 from pathlib import Path
@@ -24,8 +25,14 @@ web_image = (modal.Image.debian_slim(python_version="3.12").pip_install("starlet
              .add_local_dir(str(ROOT / "saas/web"), "/app/saas/web"))
 jobs = modal.Volume.from_name("eva-jobs", create_if_missing=True)
 counters = modal.Dict.from_name("eva-counters", create_if_missing=True)
-SECRETS = [modal.Secret.from_name("eva-r2"), modal.Secret.from_name("eva-stripe"), modal.Secret.from_name("eva-mail")] + \
-          ([modal.Secret.from_name("eva-anthropic")] if os.environ.get("EVA_USE_LLM") == "1" else [])
+# Least privilege per function (Modal Secrets = the secret manager; nothing secret is stored in R2 or the repo):
+#   render stages   → R2 only (+ Anthropic for the planner)      render_job/reconcile → R2 + Stripe key (refunds) + mail + site
+#   api             → R2 + Stripe key + webhook signing secret + site
+_S = lambda n: modal.Secret.from_name(n)
+LLM = [_S("eva-anthropic")] if os.environ.get("EVA_USE_LLM") == "1" else []
+STAGE_SECRETS = [_S("eva-r2")]
+ORCH_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-mail"), _S("eva-config")]
+API_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-stripe-webhook"), _S("eva-config")]
 RETRY = modal.Retries(max_retries=2, backoff_coefficient=2.0, initial_delay=5.0)
 # Modal list prices (USD) used for the per-video cost estimate: CPU per physical core-second, memory per GiB-second
 CPU_S, MEM_GIB_S = 0.0000131, 0.00000222
@@ -58,25 +65,21 @@ def _mail(to, job, token):
 
 
 # ───────────────────────────── web ─────────────────────────────
-_WH = {"t": 0, "v": None}
-
-
-@app.function(image=web_image, secrets=SECRETS, cpu=0.25, memory=512, min_containers=0, timeout=60)
+@app.function(image=web_image, secrets=API_SECRETS, cpu=0.25, memory=512, min_containers=0, timeout=60)
 @modal.concurrent(max_inputs=50)
 @modal.asgi_app(label="eva-api")
 def api():
     _paths(); import api as A, store
     svc = A.Service(store.from_env(), counters, lambda kind, job, opts, attempt=0: render_job.spawn(kind, job, opts, attempt))
 
-    def webhook_secret():   # written by `setup` into the private bucket; cached for a minute
-        if time.time() - _WH["t"] > 60:
-            _WH["v"] = (svc.s.get_json("config/stripe_webhook.json") or {}).get("secret") or os.environ.get("STRIPE_WEBHOOK_SECRET"); _WH["t"] = time.time()
-        return _WH["v"]
+    def webhook_secret():   # Modal secret `eva-stripe-webhook`, set by saas/deploy/stripe_webhook.py ("unset" until then)
+        v = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+        return v if v.startswith("whsec_") else None
     return A.make_app(svc, webhook_secret)
 
 
 # ───────────────────────────── render ─────────────────────────────
-@app.function(image=image, volumes={"/jobs": jobs}, secrets=SECRETS, cpu=3.0, memory=6144, timeout=1200, retries=RETRY)
+@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS + LLM, cpu=3.0, memory=6144, timeout=1200, retries=RETRY)
 def prepare(job: str, opts: dict):
     _paths(); import store, pipeline
     jobs.reload(); d = Path(f"/jobs/{job}"); d.mkdir(parents=True, exist_ok=True); t = time.time()
@@ -87,14 +90,14 @@ def prepare(job: str, opts: dict):
             "stages": {k: v.get("wall_s") for k, v in pipeline.Job(d / "work").stages().items()}}
 
 
-@app.function(image=image, volumes={"/jobs": jobs}, secrets=SECRETS, cpu=1.0, memory=3072, timeout=900, retries=RETRY)
+@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=1.0, memory=3072, timeout=900, retries=RETRY)
 def render_chunk(job: str, i: int):
     _paths(); import pipeline
     jobs.reload(); t = time.time(); pipeline.render(f"/jobs/{job}/work", i); jobs.commit()
     return {"chunk": i, "wall_s": round(time.time() - t, 1)}
 
 
-@app.function(image=image, volumes={"/jobs": jobs}, secrets=SECRETS, cpu=2.0, memory=4096, timeout=900, retries=RETRY)
+@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=2.0, memory=4096, timeout=900, retries=RETRY)
 def finish(job: str, preview: bool):
     _paths(); import store, pipeline
     jobs.reload(); w = Path(f"/jobs/{job}/work"); t = time.time(); pipeline.finish(w, preview); jobs.commit()
@@ -107,7 +110,7 @@ def finish(job: str, preview: bool):
     return rep
 
 
-@app.function(image=image, secrets=SECRETS, cpu=0.25, memory=512, timeout=3600)
+@app.function(image=image, secrets=ORCH_SECRETS, cpu=0.25, memory=512, timeout=3600)
 def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
     """Orchestrates one render and records its state in jobs/<job>/<kind>.json (read by the API)."""
     _paths(); import store
@@ -142,12 +145,12 @@ def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
 
 
 # ───────────────────────────── operations ─────────────────────────────
-@app.function(image=web_image, secrets=SECRETS, schedule=modal.Period(minutes=10), timeout=300)
+@app.function(image=web_image, secrets=ORCH_SECRETS, schedule=modal.Period(minutes=10), timeout=300)
 def reconcile():
     acts = _svc().reconcile(); print("reconcile:", acts); return acts
 
 
-@app.function(image=image, volumes={"/jobs": jobs}, secrets=SECRETS, schedule=modal.Cron("17 3 * * *"), timeout=600)
+@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, schedule=modal.Cron("17 3 * * *"), timeout=600)
 def cleanup():
     """Volume working folders hold copies of customer media: remove after 2 days (R2 lifecycle rules handle the bucket)."""
     jobs.reload(); cut = time.time() - 2 * 86400; gone = 0
@@ -159,15 +162,11 @@ def cleanup():
     print("cleanup: removed", gone, "job folders;", dropped, "expired objects"); return {"folders": gone, "objects": dropped}
 
 
-@app.function(image=web_image, secrets=SECRETS, timeout=120)
-def setup(api_url: str):
+@app.function(image=web_image, secrets=ORCH_SECRETS, timeout=120)
+def setup():
+    """Bucket policy (lifecycle + CORS for the exact site origin) when the R2 token is allowed to set it; with the
+    recommended object-only token these are set once in the Cloudflare dashboard and only verified by CI."""
     _paths(); import store, stripe_lite
-    S = store.from_env(); out = {"bucket": S.setup_bucket(), "stripe_mode": stripe_lite.mode()}
     if stripe_lite.mode() != "test" and os.environ.get("EVA_ALLOW_LIVE") != "1": raise SystemExit("refusing: Stripe key is not a TEST key")
-    cur = S.get_json("config/stripe_webhook.json") or {}
-    url = api_url.rstrip("/") + "/api/stripe/webhook"
-    if cur.get("url") != url: cur = {}
-    new = stripe_lite.ensure_webhook(url, cur.get("id"))
-    if new: S.put_json("config/stripe_webhook.json", dict(new, url=url)); out["webhook"] = "created " + new["id"]
-    else: out["webhook"] = "kept " + cur["id"]
+    out = {"bucket": store.from_env().setup_bucket(), "stripe_mode": stripe_lite.mode()}
     print(json.dumps(out)); return out

@@ -10,6 +10,7 @@ import argparse, functools, http.server, json, os, subprocess, sys, threading, t
 from pathlib import Path
 HERE = Path(__file__).resolve().parent; REPO = HERE.parents[1]
 sys.path[:0] = [str(HERE.parent / "web"), str(HERE.parent / "worker")]
+os.environ.setdefault("EVA_SITE_ORIGINS", r"^http://127\.0\.0\.1:8080$")   # local site only
 import api, store, stripe_lite
 import uvicorn
 from starlette.responses import RedirectResponse

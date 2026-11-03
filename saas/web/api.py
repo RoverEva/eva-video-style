@@ -27,7 +27,9 @@ TEMPLATES = {"T17": "Sci-Fi Network", "T20": "Soft Pop", "T01": "Bold Lime", "T0
 TRACKS = {"bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Inspire", "luxury-ambient": "Luxury Ambient"}
 LIMITS = {"preview_per_ip_day": int(os.environ.get("EVA_PREVIEWS_PER_IP", 3)), "preview_global_day": int(os.environ.get("EVA_PREVIEWS_PER_DAY", 150)),
           "uploads_per_ip_day": 12, "max_final_attempts": 2, "stuck_minutes": 40}
-ORIGIN_OK = re.compile(os.environ.get("EVA_SITE_ORIGINS", r"^https://eva-video-studio[a-z0-9-]*\.vercel\.app$|^http://(localhost|127\.0\.0\.1)(:\d+)?$"))
+# exact site origin(s) only (set by the deploy from the real Vercel domain via Modal secret eva-config)
+ORIGIN_OK = re.compile(os.environ.get("EVA_SITE_ORIGINS", r"^https://eva-video-studio\.vercel\.app$"))
+URL_TTL = 900   # signed R2 links live 15 minutes; the site asks for a fresh one when needed
 JOB_RE = re.compile(r"^[a-z0-9]{12}$")
 
 
@@ -73,7 +75,7 @@ class Service:
         job, token = secrets.token_hex(6), secrets.token_urlsafe(24)
         o = self.save({"id": job, "token_hash": h(token), "created": time.time(), "ip": h(ip)[:16], "stripe_mode": self.stripe.mode(),
                        "upload": {"name": (name or "video.mp4")[:120], "size": size, "type": ctype}, "state": "uploading"})
-        return {"job": job, "token": token, "put_url": self.s.presign_put(f"uploads/{job}/input.mp4", size, ctype), "put_type": ctype}
+        return {"job": job, "token": token, "put_url": self.s.presign_put(f"uploads/{job}/input.mp4", size, ctype, URL_TTL), "put_type": ctype}
 
     def options(self, body):
         aspect = body.get("aspect"); tpls = [t for t in body.get("templates") or [] if t in TEMPLATES]
@@ -172,13 +174,13 @@ class Service:
              "stripe_mode": o.get("stripe_mode")}
         if o.get("state") == "uploading" and self.s.size(f"uploads/{o['id']}/input.mp4"): v["state"] = "uploaded"
         if pv.get("state") == "done":
-            v["preview"]["url"] = self.s.presign_get(f"outputs/{o['id']}/preview.mp4", 3600)
+            v["preview"]["url"] = self.s.presign_get(f"outputs/{o['id']}/preview.mp4", URL_TTL)
             v["preview"]["metrics"] = {"total_s": (pv.get("timing") or {}).get("total_s"), "compute_usd": pv.get("compute_usd")}
         if pv.get("state") in ("failed", "rejected"): v["preview"]["error"] = pv.get("reason") or "We couldn't render this video. Please try another file."
         if o.get("paid"):
             v["final"] = {k: fn.get(k) for k in ("state", "stage", "progress")}
             if o.get("state") == "delivered" or fn.get("state") == "done":
-                v["final"]["url"] = self.s.presign_get(f"outputs/{o['id']}/final.mp4", 3600, f"EVA_{o['id']}.mp4")
+                v["final"]["url"] = self.s.presign_get(f"outputs/{o['id']}/final.mp4", URL_TTL, f"EVA_{o['id']}.mp4")
                 v["final"]["expires"] = (o.get("delivered_at") or time.time()) + 7 * 86400
                 if fn.get("report"): v["final"].update({k: fn["report"].get(k) for k in ("width", "height", "duration", "music")})
                 v["final"]["metrics"] = {"total_s": (fn.get("timing") or {}).get("total_s"), "compute_usd": fn.get("compute_usd")}

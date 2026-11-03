@@ -5,8 +5,7 @@ Bucket layout (all private; customers only ever get short-lived presigned URLs):
     outputs/<job>/{preview,final}.mp4 rendered files, captions, reports   deleted after OUTPUT_DAYS
     jobs/<job>/{preview,final}.json  worker-owned render status           deleted after OUTPUT_DAYS
     orders/<job>.json                order record (API / webhook owned)   deleted after ORDER_DAYS (Stripe keeps payment records)
-    config/stripe_webhook.json       webhook signing secret (written by setup)
-Keys come from env (Modal secret `eva-r2`): R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
+No secrets are stored in the bucket (they live in Modal Secrets). Keys come from env (Modal secret `eva-r2`): R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.
 """
 import json, os, shutil, time
 from pathlib import Path
@@ -78,7 +77,7 @@ class R2:
         rules.append({"ID": "abort-multipart", "Status": "Enabled", "Filter": {"Prefix": ""}, "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 1}})
         out = {}
         for name, fn in (("lifecycle", lambda: self.c.put_bucket_lifecycle_configuration(Bucket=self.b, LifecycleConfiguration={"Rules": rules})),
-                         ("cors", lambda: self.c.put_bucket_cors(Bucket=self.b, CORSConfiguration={"CORSRules": [{"AllowedOrigins": ["*"],
+                         ("cors", lambda: self.c.put_bucket_cors(Bucket=self.b, CORSConfiguration={"CORSRules": [{"AllowedOrigins": [os.environ.get("EVA_SITE_URL", "https://eva-video-studio.vercel.app")],
                              "AllowedMethods": ["PUT", "GET", "HEAD"], "AllowedHeaders": ["*"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600}]}))):
             try: fn(); out[name] = "set"
             except Exception as e:   # bucket-scoped object token: set these once in the Cloudflare dashboard instead

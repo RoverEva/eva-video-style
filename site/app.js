@@ -122,7 +122,9 @@
     const phone = $("#jobPhone"), h1 = $("#jobTitle"), sub = $("#jobSub"), steps = $("#jobSteps"), act = $("#jobAction");
     let shownSrc = null, payBusy = false;
     const show = (src, landscape) => { if (src === shownSrc) return; shownSrc = src; phone.innerHTML = ""; phone.classList.toggle("landscape", landscape);
-      phone.append(Object.assign(el("video", { src, controls: "", playsinline: "", loop: "" }), { autoplay: true })); };
+      const vid = Object.assign(el("video", { src, controls: "", playsinline: "", loop: "" }), { autoplay: true });
+      vid.onerror = () => { shownSrc = null; setTimeout(tick, 500); };   // expired signed link: fetch a fresh one
+      phone.append(vid); };
     const stepList = (items) => { steps.innerHTML = ""; items.forEach(([t, s]) => steps.append(el("li", { class: s, text: t }))); };
 
     async function tick() {
@@ -138,7 +140,10 @@
         if (fn.url) {
           h1.textContent = "Your video is ready"; show(fn.url, land);
           sub.textContent = `Full HD, ${fn.width}×${fn.height}, ${Math.round(fn.duration || 0)} seconds. The download link works until ${new Date(fn.expires * 1000).toLocaleDateString()}.`;
-          act.append(el("a", { class: "btn", href: fn.url, download: `EVA_${id}.mp4`, text: "Download MP4" }));
+          const dl = el("a", { class: "btn", href: fn.url, download: `EVA_${id}.mp4`, text: "Download MP4" });
+          dl.onclick = async e => { e.preventDefault();   // signed links live 15 minutes: always ask for a fresh one
+            try { const f = (await call(`/api/jobs/${id}?t=${encodeURIComponent(token)}`)).final; location.href = f.url; } catch (err) { sub.textContent = err.message; } };
+          act.append(dl);
           stepList([["Payment confirmed", "done"], ["HD video rendered", "done"], ["Ready to download", "done"]]); return;
         }
         h1.textContent = "Payment confirmed. Rendering your HD video"; sub.textContent = "This usually takes about 5 minutes. You can keep this page open or come back later with the same link.";

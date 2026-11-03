@@ -1,8 +1,9 @@
-# EVA Video Studio MVP: test → deploy Modal (API + workers) → setup R2 + Stripe webhook → deploy the site to Vercel
-# → live end-to-end purchase in a real browser (Stripe TEST mode only) with timings and cost.
-# Needs repo secrets (Settings → Secrets and variables → Actions): MODAL_TOKEN_ID, MODAL_TOKEN_SECRET, R2_ACCOUNT_ID,
-# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, STRIPE_SECRET_KEY (sk_test_…), VERCEL_TOKEN; optional R2_BUCKET (default
-# eva-video-studio), RESEND_API_KEY + EVA_MAIL_FROM (delivery email), ANTHROPIC_API_KEY (AI card planner).
+# EVA Video Studio MVP: tests → deploy Modal (API + workers) → deploy the site to Vercel → pin CORS to the real domain →
+# Stripe TEST webhook (signing secret straight into Modal Secrets) → verify R2 privacy/CORS → live browser purchase tests.
+# Credentials: GitHub Environment "production" only (required reviewer + branch rule feat/mvp-launch): MODAL_TOKEN_ID,
+# MODAL_TOKEN_SECRET, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, STRIPE_SECRET_KEY (rk_test_…/sk_test_…),
+# VERCEL_TOKEN; optional R2_BUCKET, ANTHROPIC_API_KEY, RESEND_API_KEY + EVA_MAIL_FROM.
+# Customer videos never pass through GitHub: once deployed, uploads, renders, payments and delivery run on Modal unattended.
 name: mvp · deploy + live e2e
 on:
   workflow_dispatch:
@@ -17,6 +18,8 @@ concurrency: { group: mvp-deploy, cancel-in-progress: false }
 permissions: { contents: read }
 jobs:
   deploy:
+    # trusted workflow only: this repository, this branch, never a fork or another branch's copy of the file
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 90
@@ -39,7 +42,7 @@ jobs:
         with: { python-version: "3.12" }
       - name: Unit tests (planner, API state machine)
         run: |
-          pip install -q starlette httpx requests numpy
+          pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1"
           python saas/tests/test_planner.py && python saas/tests/test_api.py
       - name: Which accounts are configured
         id: have
@@ -53,18 +56,19 @@ jobs:
         if: steps.have.outputs.modal == '1'
         id: modal
         run: |
-          pip install -q "modal~=1.0"
-          modal secret create eva-r2 R2_ACCOUNT_ID="$R2_ACCOUNT_ID" R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" R2_BUCKET="$R2_BUCKET" --force
-          modal secret create eva-stripe STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY" --force
-          modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" EVA_SITE_URL="https://eva-video-studio.vercel.app" --force
-          if [ -n "$ANTHROPIC_API_KEY" ]; then modal secret create eva-anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --force; export EVA_USE_LLM=1; fi
-          t=$(date +%s); modal deploy saas/modal_app.py; echo "deploy_s=$(( $(date +%s) - t ))"
+          pip install -q "modal~=1.0" "requests~=2.32" "boto3~=1.35"
+          SITE_GUESS="https://eva-video-studio.vercel.app"
+          modal secret create eva-r2 R2_ACCOUNT_ID="$R2_ACCOUNT_ID" R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" R2_BUCKET="$R2_BUCKET" --force >/dev/null
+          modal secret create eva-stripe STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY" --force >/dev/null
+          modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" --force >/dev/null
+          modal secret list | grep -q eva-config || modal secret create eva-config EVA_SITE_URL="$SITE_GUESS" EVA_SITE_ORIGINS="^https://eva-video-studio\.vercel\.app$" >/dev/null
+          python saas/deploy/stripe_webhook.py placeholder
+          if [ -n "$ANTHROPIC_API_KEY" ]; then modal secret create eva-anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --force >/dev/null; echo "EVA_USE_LLM=1" >> $GITHUB_ENV; export EVA_USE_LLM=1; fi
+          t=$(date +%s); modal deploy saas/modal_app.py; echo "first deploy: $(( $(date +%s) - t )) s"
           API=$(python -c "import modal; print(modal.Function.from_name('eva-video-studio', 'api').get_web_url())")
           echo "api=$API" >> $GITHUB_OUTPUT; echo "API: $API"
-          modal run saas/modal_app.py::setup --api-url "$API"
-          curl -fsS "$API/api/health"; echo
       - name: Deploy site to Vercel
-        if: steps.have.outputs.vercel == '1'
+        if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
         id: site
         env: { API_URL: "${{ steps.modal.outputs.api }}" }
         run: |
@@ -77,12 +81,32 @@ jobs:
           ORG=$(python -c "import json;print(json.load(open('.vercel/project.json'))['orgId'])")
           D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains?teamId=$ORG" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
           [ -z "$D" ] && D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
-          SITE=${D:+https://$D}; SITE=${SITE:-$URL}
-          echo "site=$SITE" >> $GITHUB_OUTPUT; echo "SITE: $SITE"
-      - name: Point delivery links at the site
+          [ -n "$D" ] || { echo "::error::could not read the production domain of the Vercel project"; exit 1; }
+          echo "site=https://$D" >> $GITHUB_OUTPUT; echo "SITE: https://$D"
+      - name: Pin CORS + links to the real site, Stripe webhook (secret → Modal secret manager), redeploy
+        if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
+        env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
+        run: |
+          ORIG="^$(python -c "import re,os;print(re.escape(os.environ['SITE_URL']))")$"
+          modal secret create eva-config EVA_SITE_URL="$SITE_URL" EVA_SITE_ORIGINS="$ORIG" --force >/dev/null
+          python saas/deploy/stripe_webhook.py sync "$API_URL"
+          modal deploy saas/modal_app.py >/dev/null && echo "redeployed with final secrets"
+          modal run saas/modal_app.py::setup
+          curl -fsS "$API_URL/api/health"; echo
+      - name: Verify R2 is private and its CORS allows only the site
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
         env: { SITE_URL: "${{ steps.site.outputs.site }}" }
-        run: modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" EVA_SITE_URL="$SITE_URL" --force
+        run: |
+          B="https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com/$R2_BUCKET"
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$B/uploads/probe.mp4"); echo "unsigned GET: HTTP $code"; [ "$code" -ge 400 ] || { echo "::error::bucket answered an unsigned request"; exit 1; }
+          pre() { curl -s -o /dev/null -D - -X OPTIONS "$B/uploads/probe.mp4" -H "Origin: $1" -H "Access-Control-Request-Method: PUT" -H "Access-Control-Request-Headers: content-type" | tr -d '\r' | grep -i '^access-control-allow-origin:' || true; }
+          ok=$(pre "$SITE_URL"); bad=$(pre "https://evil.example")
+          echo "site origin  → ${ok:-none}"; echo "other origin → ${bad:-none}"
+          if [ -z "$ok" ] || [ -n "$bad" ]; then
+            echo "::error::Set the R2 bucket CORS policy (Cloudflare → R2 → eva-video-studio → Settings → CORS) to:"
+            echo "[{\"AllowedOrigins\":[\"$SITE_URL\"],\"AllowedMethods\":[\"PUT\",\"GET\",\"HEAD\"],\"AllowedHeaders\":[\"content-type\"],\"ExposeHeaders\":[\"ETag\"],\"MaxAgeSeconds\":3600}]"
+            exit 1
+          fi
       - name: Live end-to-end tests (Stripe TEST mode, real uploads, real cloud renders)
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1' && steps.have.outputs.stripe_test == '1' && (github.event_name == 'push' || inputs.e2e)
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }

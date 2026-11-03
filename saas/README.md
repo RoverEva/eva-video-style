@@ -19,6 +19,11 @@ site/ (Vercel, static) ──► Modal `eva-api` (saas/web/api.py) ──► R2 
 | CI: worker image render with real eva-asr (no accounts needed) | `.github/workflows/mvp-worker-render.yml` |
 | CI: tests → Modal → R2/Stripe setup → Vercel → live browser purchase | `.github/workflows/mvp-deploy.yml` |
 
+Security: credentials only in the GitHub Environment `production` (required reviewer, branch `feat/mvp-launch`) and in
+Modal Secrets per function (stages: R2 only; API: + Stripe key + webhook signing secret). The webhook secret goes from
+Stripe straight into Modal Secrets (`saas/deploy/stripe_webhook.py`). R2 is private; signed links live 15 minutes; CORS
+(API and bucket) allows only the real site origin, verified by CI before tests run.
+
 Limits: MP4/MOV with speech, ≤ 30 s, ≤ 200 MB (size signed into the upload URL). Free previews: 3 per IP per day,
 150 per day in total (`EVA_PREVIEWS_PER_IP`, `EVA_PREVIEWS_PER_DAY`). Live Stripe keys are refused unless `EVA_ALLOW_LIVE=1`.
 
