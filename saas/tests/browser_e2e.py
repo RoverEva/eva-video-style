@@ -36,7 +36,7 @@ def main():
         pg.wait_for_function("() => /preview is ready|couldn't be processed/.test(document.querySelector('#jobTitle').textContent)", timeout=20 * 60_000, polling=2000)
         mark("preview_ready"); pg.screenshot(path=out / "3_preview.png")
         if "couldn't" in pg.inner_text("#jobTitle"): res["error"] = pg.inner_text("#jobSub"); print(json.dumps(res)); sys.exit(1)
-        pg.click("#jobAction button.btn"); pg.wait_for_url(lambda u: "video.html" not in u, timeout=60_000); mark("checkout_open")
+        pg.click("#jobAction button.btn"); pg.wait_for_url(lambda u: "stripe.com" in u or "paid=1" in u, timeout=60_000); mark("checkout_open")
         if "stripe.com" in pg.url:
             pg.wait_for_selector("#cardNumber", timeout=60_000); pg.screenshot(path=out / "4_checkout.png")
             if pg.query_selector("#email"): pg.fill("#email", a.email)
