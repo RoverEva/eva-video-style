@@ -1,0 +1,10 @@
+# worker image context: only what saas/Dockerfile copies (keeps Modal / docker uploads small)
+*
+!engine
+!scripts
+!saas
+!package.json
+!music-library
+saas/tests/media
+saas/music/tracks
+**/__pycache__

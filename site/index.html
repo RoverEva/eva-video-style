@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EVA Video Studio</title>
+<meta name="description" content="Upload a raw talking-head clip. Get it back edited, with captions, motion cards and music, ready for Reels, TikTok and Shorts. Free preview, $9.99 per video.">
+<link rel="stylesheet" href="app.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="/"><i aria-hidden="true"></i>EVA Video Studio</a>
+    <nav><a href="#examples">Examples</a><a href="#studio">Make a video</a><a href="#pricing">Pricing</a></nav>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Your raw clip in. A finished short out.</h1>
+      <p class="lede">Upload a talking-head video from your phone. We add captions, motion cards and music, then cut it for Reels, TikTok or YouTube.</p>
+      <a class="btn" href="#studio">Upload a video</a>
+      <ul class="facts">
+        <li><b>Free</b> 10-second preview</li>
+        <li><b>$9.99</b> per full HD video</li>
+        <li>Ready in about <b>5 minutes</b></li>
+      </ul>
+    </div>
+    <div>
+      <div class="phone" id="heroPhone" data-demo="realestate"></div>
+      <p class="wipe-hint">Drag the handle to compare the raw upload with the edit.</p>
+    </div>
+  </section>
+</div>
+
+<section class="band" id="examples">
+  <div class="wrap cats">
+    <div>
+      <h2>Made from real uploads</h2>
+      <p class="hint" style="font-size:17px;max-width:42ch">Each example is the presenter's original clip on the left and the studio's edit on the right, with nothing touched up by hand.</p>
+      <div class="switch" role="group" aria-label="Example category" id="catSwitch"></div>
+    </div>
+    <div><div class="phone" id="catPhone"></div></div>
+  </div>
+</section>
+
+<section class="studio wrap" id="studio">
+  <h2>Make your video</h2>
+  <p class="hint" style="font-size:17px">MP4 or MOV, up to 30 seconds and 200 MB, with you speaking. The preview is free.</p>
+  <form class="form" id="studioForm" novalidate>
+    <div class="full">
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="video/mp4,video/quicktime,.mp4,.mov">
+        <strong>Choose a video or drop it here</strong>
+        <span class="hint">Portrait or landscape, straight from your phone</span>
+        <span class="picked" id="picked"></span>
+      </label>
+    </div>
+
+    <fieldset>
+      <legend>Format</legend>
+      <div class="chips">
+        <label class="chip"><input type="radio" name="aspect" value="9:16" checked><span>9:16 for Reels, TikTok, Shorts</span></label>
+        <label class="chip"><input type="radio" name="aspect" value="16:9"><span>16:9 for YouTube</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Visual style <span class="hint">pick one, several, or let us choose</span></legend>
+      <div class="chips" id="tplChips"></div>
+    </fieldset>
+
+    <fieldset class="full">
+      <legend>Music <span class="hint">original tracks, licensed for your video</span></legend>
+      <div class="chips" id="musicMode" style="margin-bottom:14px">
+        <label class="chip"><input type="radio" name="music" value="mix" checked><span>AI Auto Mix</span></label>
+        <label class="chip"><input type="radio" name="music" value="track"><span>I'll choose tracks</span></label>
+        <label class="chip"><input type="radio" name="music" value="none"><span>No music</span></label>
+      </div>
+      <div id="trackPick" hidden>
+        <p class="hint" style="margin:0 0 10px">Choose up to three. With more than one, each part of your video gets the next track.</p>
+        <div class="chips" id="trackChips"></div>
+      </div>
+    </fieldset>
+
+    <div class="full submit">
+      <button class="btn" id="go" type="submit">Make my free preview</button>
+      <div style="flex:1;min-width:240px">
+        <div class="meter" id="meter"><i></i></div>
+        <div class="msg" id="msg" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </form>
+</section>
+
+<div class="wrap plain" id="pricing">
+  <div>
+    <h2>One price, per video</h2>
+    <div class="price">$9.99 <small>per video</small></div>
+    <p class="hint" style="font-size:16px;max-width:30ch">No subscription. You see a free watermarked preview first and only pay for the full 1080p MP4.</p>
+  </div>
+  <dl class="faq">
+    <dt>What do I get after paying?</dt>
+    <dd>The full-length video in 1080p (1080×1920 or 1920×1080), no watermark, with burned-in captions. It appears on your video page automatically, usually within 5 minutes.</dd>
+    <dt>What if something goes wrong?</dt>
+    <dd>If your paid video can't be rendered, we retry automatically. If it still fails, your payment is refunded in full without you having to ask.</dd>
+    <dt>What happens to my upload?</dt>
+    <dd>Files are stored privately. Your original upload and preview are deleted after 3 days, and your HD video after 7 days, so download it soon.</dd>
+    <dt>Can I use the music commercially?</dt>
+    <dd>Yes. Every track is an original composition made for EVA Video Studio and is cleared for use in your video.</dd>
+  </dl>
+</div>
+
+<footer><div class="wrap"><a href="legal.html">Terms, privacy and refunds</a><span>EVA Video Studio</span></div></footer>
+<script src="app.js"></script>
+<script>EVA.home();</script>
+</body>
+</html>

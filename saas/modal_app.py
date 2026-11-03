@@ -49,7 +49,7 @@ def _svc():
 def _mail(to, job, token):
     import requests
     key, frm, site = os.environ.get("RESEND_API_KEY"), os.environ.get("EVA_MAIL_FROM"), os.environ.get("EVA_SITE_URL", "")
-    if not (key and frm and site): return False
+    if not (key and frm and site) or "none" in (key, frm): return False
     link = f"{site}/video.html?id={job}#t={token}"
     r = requests.post("https://api.resend.com/emails", headers={"Authorization": f"Bearer {key}"}, timeout=20, json={
         "from": frm, "to": [to], "subject": "Your EVA Video Studio video is ready",

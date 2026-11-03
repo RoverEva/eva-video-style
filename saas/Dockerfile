@@ -27,6 +27,7 @@ RUN npm install --omit=dev --no-audit --no-fund && npx playwright install --with
 COPY engine engine
 COPY scripts scripts
 COPY saas saas
+COPY music-library music-library
 RUN chmod +x scripts/*.sh && python saas/worker/warm_models.py
 # original background beds (rights-cleared, see saas/music/compose.py): composed at build time, nothing downloaded
 RUN python saas/music/compose.py saas/music/tracks

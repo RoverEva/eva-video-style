@@ -246,5 +246,5 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
                 p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(data); return Response(status_code=200)
             return Response(p.read_bytes(), media_type="video/mp4") if p.exists() else err("missing", 404)
         routes.append(Route("/_local/{key:path}", local, methods=["GET", "PUT"]))
-    mw = [Middleware(CORSMiddleware, allow_origin_regex=ORIGIN_OK.pattern, allow_methods=["GET", "POST"], allow_headers=["content-type"])]
+    mw = [Middleware(CORSMiddleware, allow_origin_regex=ORIGIN_OK.pattern, allow_methods=["GET", "POST", "PUT"], allow_headers=["content-type"])]
     return Starlette(routes=routes, middleware=mw)

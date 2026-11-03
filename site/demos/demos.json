@@ -1,0 +1,5 @@
+{"demos": [
+  {"id": "realestate", "title": "Real Estate", "blurb": "Listing tours and market tips", "ready": false},
+  {"id": "beauty", "title": "Beauty", "blurb": "Routines, products and before/afters", "ready": false},
+  {"id": "education", "title": "Education", "blurb": "Lessons, explainers and study tips", "ready": false}
+]}

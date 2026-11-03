@@ -24,3 +24,4 @@ music-library/catalog.json
 
 # composed at build time (saas/music/compose.py)
 saas/music/tracks/
+site/demos/music/

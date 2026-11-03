@@ -1,0 +1,73 @@
+# Proves the production worker image end to end WITHOUT any account: builds saas/Dockerfile (the exact image Modal runs),
+# renders the real demo uploads with real eva-asr (preview + full HD), measures time per stage, and publishes the
+# Before/After demo files for the website (committed to site/demos by the bot).
+name: mvp · worker image render (real eva-asr)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [saas/worker/**, saas/Dockerfile, saas/config/**, saas/music/**, saas/tests/media/**, engine/**, scripts/**, .dockerignore,
+            .github/workflows/mvp-worker-render.yml]
+permissions: { contents: write }
+concurrency: { group: mvp-worker-render, cancel-in-progress: true }
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk for the image (torch + models)
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL && df -h /
+      - name: Build worker image
+        run: |
+          t=$(date +%s); docker build -f saas/Dockerfile -t eva-worker . ; echo "BUILD_S=$(( $(date +%s) - t ))" >> $GITHUB_ENV
+          docker images eva-worker
+      - name: Render demos from the real uploads (preview, then paid full HD reusing it)
+        run: |
+          set -e; mkdir -p /tmp/out; nproc
+          echo '{"aspect":"9:16","templates":["T20","T01"],"template_mode":"multi","music":"track","music_tracks":["luxury-ambient"]}' > /tmp/out/realestate.opts.json
+          echo '{"aspect":"9:16","templates":["T17","T20"],"template_mode":"multi","music":"mix","music_tracks":[]}' > /tmp/out/education.opts.json
+          for d in realestate education; do
+            for kind in preview final; do
+              flag=$([ $kind = preview ] && echo --preview || true)
+              t=$(date +%s)
+              docker run --rm --cpus 4 -v $PWD/saas/tests/media:/in:ro -v /tmp/out:/out eva-worker \
+                python saas/worker/pipeline.py run /in/$d.mp4 /out/$d --options /out/$d.opts.json --workers 4 $flag
+              echo "$d $kind wall_s=$(( $(date +%s) - t ))" | tee -a /tmp/out/timings.txt
+            done
+          done
+      - name: Report (timings, ASR transcript, plan, output checks)
+        if: always()
+        run: |
+          echo "image build: ${BUILD_S}s"; cat /tmp/out/timings.txt || true
+          for d in realestate education; do
+            echo "=== $d"; sudo cat /tmp/out/$d/srt/talk.bilingual.srt 2>/dev/null | head -40
+            sudo python3 -c "import json,sys;j=json.load(open('/tmp/out/$d/job.json'));print('language',j.get('language'),'src',j.get('src_size'),'chunks',j.get('chunks'))" || true
+            for r in preview final; do sudo python3 -c "import json;r=json.load(open('/tmp/out/$d/out/report_$r.json'));print('$r', json.dumps({k:r.get(k) for k in ('ok','width','height','duration','lufs','music','warnings','planner','cpu_s_total')}));print({k:v.get('wall_s') for k,v in r['stages'].items()})" || true; done
+            sudo python3 -c "import json;p=json.load(open('/tmp/out/$d/plan.json'));print('sections',[(s['t0'],s['t1'],s['template']) for s in p['sections']]);print('cards',[(c['t_in'],c['t_out'],c['spec']['content']) for c in p['cards']])" || true
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: worker-render
+          path: |
+            /tmp/out/*/out/
+            /tmp/out/*/logs/
+            /tmp/out/timings.txt
+      - name: Publish Before/After demos to the website
+        run: |
+          set -e; sudo chown -R $USER /tmp/out
+          for d in realestate education; do
+            mkdir -p site/demos/$d
+            ffmpeg -loglevel error -y -i saas/tests/media/$d.mp4 -vf scale=720:-2 -r 30 -c:v libx264 -crf 26 -preset slow -an -movflags +faststart site/demos/$d/before.mp4
+            ffmpeg -loglevel error -y -i /tmp/out/$d/out/final.mp4 -vf scale=720:-2 -c:v libx264 -crf 24 -preset slow -c:a aac -b:a 128k -movflags +faststart site/demos/$d/after.mp4
+          done
+          python3 - <<'EOF'
+          import json; p = "site/demos/demos.json"; j = json.load(open(p))
+          for d in j["demos"]:
+              if d["id"] in ("realestate", "education"): d.update(ready=True, before=f"demos/{d['id']}/before.mp4", after=f"demos/{d['id']}/after.mp4")
+          json.dump(j, open(p, "w"), indent=1)
+          EOF
+          git config user.name "eva-render-bot"; git config user.email "eva-render-bot@users.noreply.github.com"
+          git add -f site/demos && git commit -m "Demos: Before/After rendered by the worker image from real uploads (run ${{ github.run_id }})" || exit 0
+          git pull --rebase origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }}

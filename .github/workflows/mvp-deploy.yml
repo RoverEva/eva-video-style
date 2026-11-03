@@ -1,0 +1,92 @@
+# EVA Video Studio MVP: test → deploy Modal (API + workers) → setup R2 + Stripe webhook → deploy the site to Vercel
+# → live end-to-end purchase in a real browser (Stripe TEST mode only) with timings and cost.
+# Needs repo secrets (Settings → Secrets and variables → Actions): MODAL_TOKEN_ID, MODAL_TOKEN_SECRET, R2_ACCOUNT_ID,
+# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, STRIPE_SECRET_KEY (sk_test_…), VERCEL_TOKEN; optional R2_BUCKET (default
+# eva-video-studio), RESEND_API_KEY + EVA_MAIL_FROM (delivery email), ANTHROPIC_API_KEY (AI card planner).
+name: mvp · deploy + live e2e
+on:
+  workflow_dispatch:
+    inputs:
+      e2e: { description: "Run the live browser purchase test", type: boolean, default: true }
+  push:
+    branches: [feat/mvp-launch]
+    paths: [saas/**, site/**, engine/**, scripts/**, .github/workflows/mvp-deploy.yml]
+concurrency: { group: mvp-deploy, cancel-in-progress: false }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET || 'eva-video-studio' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      EVA_MAIL_FROM: ${{ secrets.EVA_MAIL_FROM }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Unit tests (planner, API state machine)
+        run: |
+          pip install -q starlette httpx requests numpy
+          python saas/tests/test_planner.py && python saas/tests/test_api.py
+      - name: Which accounts are configured
+        id: have
+        run: |
+          echo "modal=$([ -n "$MODAL_TOKEN_ID" ] && [ -n "$R2_ACCOUNT_ID" ] && [ -n "$STRIPE_SECRET_KEY" ] && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          echo "vercel=$([ -n "$VERCEL_TOKEN" ] && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          case "$STRIPE_SECRET_KEY" in sk_test_*|rk_test_*) echo "stripe_test=1" >> $GITHUB_OUTPUT;; *) echo "stripe_test=0" >> $GITHUB_OUTPUT;; esac
+          for v in MODAL_TOKEN_ID MODAL_TOKEN_SECRET R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY STRIPE_SECRET_KEY VERCEL_TOKEN RESEND_API_KEY ANTHROPIC_API_KEY; do
+            [ -n "${!v}" ] && echo "secret $v: set" || echo "secret $v: MISSING"; done
+      - name: Modal secrets + deploy
+        if: steps.have.outputs.modal == '1'
+        id: modal
+        run: |
+          pip install -q modal
+          modal secret create eva-r2 R2_ACCOUNT_ID="$R2_ACCOUNT_ID" R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" R2_BUCKET="$R2_BUCKET" --force
+          modal secret create eva-stripe STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY" --force
+          modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" EVA_SITE_URL="https://eva-video-studio.vercel.app" --force
+          if [ -n "$ANTHROPIC_API_KEY" ]; then modal secret create eva-anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --force; export EVA_USE_LLM=1; fi
+          t=$(date +%s); modal deploy saas/modal_app.py; echo "deploy_s=$(( $(date +%s) - t ))"
+          API=$(python -c "import modal; print(modal.Function.from_name('eva-video-studio', 'api').get_web_url())")
+          echo "api=$API" >> $GITHUB_OUTPUT; echo "API: $API"
+          modal run saas/modal_app.py::setup --api-url "$API"
+          curl -fsS "$API/api/health"; echo
+      - name: Deploy site to Vercel
+        if: steps.have.outputs.vercel == '1'
+        id: site
+        run: |
+          sudo apt-get install -y -qq ffmpeg >/dev/null
+          python saas/music/compose.py /tmp/tracks --mp3 && mkdir -p site/demos/music && cp /tmp/tracks/*.mp3 site/demos/music/
+          echo "window.EVA_API = \"${{ steps.modal.outputs.api }}\";" > site/config.js
+          npm i -g vercel@39 >/dev/null
+          cd site && vercel link --yes --project eva-video-studio --token "$VERCEL_TOKEN"
+          URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN"); echo "deployment: $URL"
+          ORG=$(python -c "import json;print(json.load(open('.vercel/project.json'))['orgId'])")
+          D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains?teamId=$ORG" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
+          [ -z "$D" ] && D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
+          SITE=${D:+https://$D}; SITE=${SITE:-$URL}
+          echo "site=$SITE" >> $GITHUB_OUTPUT; echo "SITE: $SITE"
+      - name: Point delivery links at the site
+        if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
+        run: modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" EVA_SITE_URL="${{ steps.site.outputs.site }}" --force
+      - name: Live purchase test (Stripe test mode, real upload, real cloud render)
+        if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1' && steps.have.outputs.stripe_test == '1' && (github.event_name == 'push' || inputs.e2e)
+        run: |
+          pip install -q playwright && python -m playwright install --with-deps chromium >/dev/null
+          python saas/tests/browser_e2e.py "${{ steps.site.outputs.site }}" saas/tests/media/education.mp4 e2e/education --templates T17,T20 --music mix
+          python saas/tests/browser_e2e.py "${{ steps.site.outputs.site }}" saas/tests/media/realestate.mp4 e2e/realestate --templates T20,T01 --music track:luxury-ambient,inspire
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: live-e2e, path: e2e/, if-no-files-found: ignore }
+      - name: Summary
+        if: always()
+        run: |
+          echo "API:  ${{ steps.modal.outputs.api }}"; echo "SITE: ${{ steps.site.outputs.site }}"
+          for f in e2e/*/summary.json; do [ -f "$f" ] && cat "$f"; done; true

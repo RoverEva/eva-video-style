@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your video · EVA Video Studio</title>
+<link rel="stylesheet" href="app.css">
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><a class="logo" href="/"><i aria-hidden="true"></i>EVA Video Studio</a><nav><a href="/#studio">Make another video</a></nav></header>
+  <main class="job" id="job">
+    <div class="phone" id="jobPhone"><div class="soon">Your preview appears here</div></div>
+    <div>
+      <h1 id="jobTitle">Loading your video…</h1>
+      <p id="jobSub" class="hint" style="font-size:18px;max-width:46ch"></p>
+      <ol class="steps" id="jobSteps"></ol>
+      <div class="submit" id="jobAction"></div>
+      <p class="hint" style="margin-top:28px">Keep this page's link: it is the private key to your video. Uploads and previews are deleted after 3 days, HD videos after 7 days.</p>
+    </div>
+  </main>
+</div>
+<script src="app.js"></script>
+<script>EVA.video();</script>
+</body>
+</html>
