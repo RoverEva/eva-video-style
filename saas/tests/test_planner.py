@@ -6,13 +6,14 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 with tempfile.TemporaryDirectory() as d:
     d = Path(d)
-    subprocess.run([sys.executable, HERE / "make_fixture.py", d / "job", "-", "40"], check=True, capture_output=True)
-    for mode, tpl, n in (("single", "T20", 1), ("multi", "T17,T20,T01,T09", 4), ("auto", "T17", 3)):
+    D = 30   # MVP upload limit: 30 s
+    subprocess.run([sys.executable, HERE / "make_fixture.py", d / "job", "-", str(D)], check=True, capture_output=True)
+    for mode, tpl, n in (("single", "T20", 1), ("multi", "T17,T20,T01", 3), ("auto", "T17", 4)):
         out = d / mode
-        subprocess.run([sys.executable, HERE.parent / "worker/planner.py", d / "job/srt/talk.transcript.js", out, "--duration", "40",
+        subprocess.run([sys.executable, HERE.parent / "worker/planner.py", d / "job/srt/talk.transcript.js", out, "--duration", str(D),
                         "--templates", tpl, "--mode", mode, "--no-llm"], check=True)
         p = json.loads((out / "plan.json").read_text()); secs, cards = p["sections"], p["cards"]
-        assert len(secs) == n, (mode, len(secs)); assert secs[0]["t0"] == 0 and secs[-1]["t1"] == 40
+        assert len(secs) == n, (mode, len(secs)); assert secs[0]["t0"] == 0 and secs[-1]["t1"] == D
         assert all(a["t1"] == b["t0"] for a, b in zip(secs, secs[1:]))
         assert {c["section"] for c in cards} == set(range(n)), f"{mode}: a section has no card"
         assert all(a["t_out"] + .35 <= b["t_in"] for a, b in zip(cards, cards[1:])), "cards overlap"

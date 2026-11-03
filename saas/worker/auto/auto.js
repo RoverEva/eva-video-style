@@ -41,13 +41,15 @@
   const cards = PL.cards || [];
 
   /* presenter window: template window per section; full-bleed in long stretches without cards */
-  const keys = [{ t: 0, d: 0, L: Object.assign({}, skinOf(0).win, { o: 0 }) }, { t: .05, d: .4, L: skinOf(0).win }];
+  /* 9:16: a talking head owns the phone screen, so the presenter is full-bleed whenever no card is up (gaps ≥ 1.2 s) */
+  const W0 = C.portrait ? FULL : skinOf(0).win, GAP = C.portrait ? 1.0 : 3.2;
+  const keys = [{ t: 0, d: 0, L: Object.assign({}, W0, { o: 0 }) }, { t: .05, d: .4, L: W0 }];
   secs.forEach((s, i) => {
-    const sk = skinOf(i); if (i > 0) keys.push({ t: s.t0, d: .45, L: sk.win });
+    const sk = skinOf(i); if (i > 0 && !C.portrait) keys.push({ t: s.t0, d: .45, L: sk.win });
     const inSec = cards.filter(c => c.section === i).sort((a, b) => a.t_in - b.t_in);
-    let free = s.t0 + .6; const gaps = [];
+    let free = s.t0 + (C.portrait ? 0 : .6); const gaps = [];
     inSec.forEach(c => { gaps.push([free, c.t_in]); free = c.t_out + .4; }); gaps.push([free, s.t1]);
-    gaps.forEach(([a, b]) => { if (b - a >= 3.2) { keys.push({ t: a, d: .5, L: FULL }); if (b < s.t1 - .05) keys.push({ t: b - .55, d: .45, L: sk.win }); } });
+    gaps.forEach(([a, b]) => { if (b - a >= GAP) { keys.push({ t: a, d: .5, L: FULL }); if (b < s.t1 - .05) keys.push({ t: b - .55, d: .45, L: sk.win }); } });
   });
   C.evaKeys = keys;
   const secAt = t => { for (let i = secs.length - 1; i >= 0; i--) if (t >= secs[i].t0) return i; return 0; };
@@ -58,10 +60,12 @@
     C.scene({ t0: s.t0, t1: i === secs.length - 1 ? C.end + .05 : s.t1, bg: sk.bg, cls: sk.cls, quiet: i === 0,
       build: L => sk.build(L), update: (lt, st, t) => sk.update(st, t, lt) }); });
 
-  /* cards: each in its own full-frame group so it can leave on time */
-  C.scene({ t0: 0, t1: C.end + .05, z: 60, quiet: true,
+  /* cards: each in its own full-frame group so it can leave on time.
+     9:16 (?ar=9:16): one card scene per section, so EV.portLayout can scale each template's 16:9 card block into the top
+     zone (backgrounds cover the frame, the presenter window is re-laid below the block, full-bleed stays full-bleed). */
+  const cardScene = (t0, t1, only) => C.scene({ t0, t1, z: 60, quiet: true,
     build(L) {
-      return { list: cards.map(c => {
+      return { list: cards.filter(c => only == null || c.section === only).map(c => {
         const sk = skinOf(c.section), g = EC.group(L, 0, 0, 1920, 1080, 15), th = EC.theme(sk.theme);
         const o = EC.fromSchema(g, [c.spec], th, { toLocal: s => s, win: sk.win })[0];
         o.times.forEach((x, j) => k.sfx('pop', +x.toFixed(3), .09, { f: 760 + 120 * (j % 4) }));
@@ -76,4 +80,11 @@
         it.o.o.at(t, it.o.times);
       }
     } });
+  if (!C.portrait) cardScene(0, C.end + .05, null);
+  else {
+    const n = secs.length, at = {}, boxOf = i => secs[i].box || [780, 90, 1070, 780];
+    secs.forEach((s, i) => { cardScene(s.t0, i === n - 1 ? C.end + .05 : s.t1, i); at[n + i] = { box: boxOf(i), maxH: 600 }; });
+    /* talking-head first: the card block gets the top ~600 px, the presenter the larger zone below it */
+    C.portLayout({ box: boxOf(0), maxH: 600, circle: 640, cover: secs.map((_, i) => i), at });
+  }
 })();

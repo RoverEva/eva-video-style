@@ -68,10 +68,10 @@ def find_word(words, text, t_from=0.0, t_to=1e9):
 def choose_templates(mode, templates, dur):
     templates = [t for t in (templates or []) if t in TEMPLATES] or ["T17"]
     if mode == "single": return templates[:1]
-    if mode == "auto":   # AI Auto Mix: about one look per 15 s, at most four
-        n = max(1, min(4, round(dur / 15)))
+    if mode == "auto":   # AI Auto Mix: about one look per 8 s (videos are ≤ 30 s), at most four
+        n = max(1, min(4, round(dur / 8)))
         return ["T17", "T20", "T01", "T09"][:n] if n > 1 else ["T17"]
-    n = max(1, min(len(templates), int(dur // 8)))    # each look gets at least ~8 s
+    n = max(1, min(len(templates), int(dur // 5)))    # each look gets at least ~5 s
     return templates[:n]
 
 
@@ -236,6 +236,7 @@ def main(argv=None):
         source += "+heuristic" if beats else ""
         cards, rejected2 = build_cards(heuristic_beats(segs, dur, secs), segs, words, secs); rejected += rejected2
     face = json.loads(Path(a.face).read_text()) if a.face else None
+    for sec in secs: sec["box"] = list(box_for(sec["template"]))   # card block: 9:16 pages scale it into the top zone (auto.js)
     plan = {"version": 1, "end": round(dur, 3), "evaDir": "../media/eva", "face": face, "sections": secs, "cards": cards,
             "planner": {"source": source, "usage": usage, "rejected": rejected}}
     out = Path(a.out_dir); out.mkdir(parents=True, exist_ok=True)

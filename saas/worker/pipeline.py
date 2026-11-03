@@ -11,9 +11,10 @@ Stages are separate commands so a cloud runner can fan the render chunks out ove
     pipeline.py finish  JOB_DIR [--preview]                        audio, captions, assembly, music, checks
     pipeline.py run     INPUT.mp4 JOB_DIR [--options o.json] [--preview] [--workers N]   everything, locally
 
-options (JSON): {"templates": ["T17","T20"], "template_mode": "single|multi|auto", "music": "auto|manual|none",
-                 "music_track": null, "paid": false, "preview_seconds": 15}
-Outputs in JOB_DIR/out: final.mp4 (1920x1080, 30 fps) or preview.mp4 (watermarked, 1280x720), captions.srt, report.json.
+options (JSON): {"aspect": "9:16|16:9", "templates": ["T17","T20"], "template_mode": "single|multi|auto",
+                 "music": "auto|manual|mix|none", "music_tracks": [], "paid": false, "preview_seconds": 10}
+Input: any orientation (portrait phone video or landscape), ≤ 30 s, ≤ 200 MB, with speech.
+Outputs in JOB_DIR/out: final.mp4 (1080x1920 or 1920x1080, 30 fps) or preview.mp4 (watermarked 720p, ≤ 10 s), captions.srt, report.json.
 Exit codes: 2 input rejected (message in report.json), 3 stage failed (retryable), 0 ok.
 """
 import argparse, json, os, resource, shutil, subprocess, sys, time
@@ -24,9 +25,11 @@ HERE = Path(__file__).resolve().parent
 ENGINE_REPO = Path(os.environ.get("EVA_ENGINE", HERE.parents[1])).resolve()   # eva-video-style checkout
 CFG = HERE.parent / "config"
 FPS, CHUNK_S = 30, 10.0
-LIMITS = {"max_seconds": 60.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
+LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
 ALLOWED_MUSIC_LICENSES = {"CC0-1.0", "CC-BY-4.0", "licensed-commercial", "user-supplied"}
-DEFAULT_OPTS = {"templates": ["T17"], "template_mode": "single", "music": "auto", "music_track": None, "paid": False, "preview_seconds": 15}
+DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 10}
+SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}
+PREVIEW = {"9:16": (720, 1280), "16:9": (1280, 720)}
 PY = sys.executable
 
 
@@ -88,14 +91,19 @@ def prepare(inp, jd, opts):
         dur = float(pr["format"]["duration"])
         if "video" not in st: raise Reject("no video stream")
         if "audio" not in st: raise Reject("no audio track: talking-head videos need the spoken audio")
-        if dur > LIMITS["max_seconds"]: raise Reject(f"video is {dur:.1f} s; the limit is 60 s")
+        if dur > LIMITS["max_seconds"]: raise Reject(f"video is {dur:.1f} s; the limit is 30 s")
         if dur < LIMITS["min_seconds"]: raise Reject("video is too short")
         w, h = int(st["video"]["width"]), int(st["video"]["height"])
-        if w / h < 1.6: raise Reject(f"video is {w}x{h}; landscape 16:9 talking-head videos only for now")
+        for sd in st["video"].get("side_data_list") or []:   # phone videos stored landscape with a rotation flag
+            if abs(int(float(sd.get("rotation", 0)))) in (90, 270): w, h = h, w
+        if o.get("aspect") not in SIZES: raise Reject(f"unknown aspect {o.get('aspect')}")
         J.j["input"] = {"path": str(inp), "duration": dur, "width": w, "height": h, "bytes": inp.stat().st_size, "fps": st["video"]["r_frame_rate"]}
 
     def media():
-        sh([ENGINE_REPO / "scripts/extract_frames.sh", inp, J.d / "media/eva"], J.log)
+        portrait_src = J.j["input"]["height"] > J.j["input"]["width"]
+        sh([ENGINE_REPO / "scripts/extract_frames.sh", inp, J.d / "media/eva", 1080 if portrait_src else 1920], J.log)
+        pr = probe(J.d / "media/eva/f_00000.jpg"); v = next(s for s in pr["streams"] if s["codec_type"] == "video")
+        J.j["src_size"] = [int(v["width"]), int(v["height"])]
         n = len(list((J.d / "media/eva").glob("f_*.jpg")))
         J.j["frames"] = n; J.j["end"] = round(n / FPS, 3)
         # the voice source for assembly: same length as the frames (assemble.sh uses -shortest)
@@ -105,12 +113,14 @@ def prepare(inp, jd, opts):
         (J.d / "srt").mkdir(exist_ok=True)
         for f in (J.d / "srt").glob("talk.*"): f.unlink()     # retry after a partial run
         sh([PY, ENGINE_REPO / "scripts/asr.py", J.d / "src.mp4", J.d / "srt/talk", "--config", CFG / "asr.en.json"], J.log)
+        J.j["language"] = json.loads((J.d / "srt/talk.asr.json").read_text()).get("source", {}).get("language") or "en"
 
     def face(): sh([PY, HERE / "face.py", J.d / "media/eva", J.d / "face.json"], J.log)
 
     def plan():
         sh([PY, HERE / "planner.py", J.d / "srt/talk.transcript.js", J.d, "--duration", J.j["end"],
             "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json"], J.log)
+        (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt")   # music.py speech map
 
     def page():
         if (J.d / "engine").exists(): shutil.rmtree(J.d / "engine")
@@ -119,7 +129,9 @@ def prepare(inp, jd, opts):
         shutil.copytree(HERE / "auto", J.d / "auto")
         shutil.copy(J.d / "srt/talk.transcript.js", J.d / "transcript.js")
         n = J.j["frames"]; step = int(CHUNK_S * FPS)
-        J.j["chunks"] = [[f / FPS, min(n, f + step) / FPS] for f in range(0, n, step)]
+        ch = [[f / FPS, min(n, f + step) / FPS] for f in range(0, n, step)]
+        if len(ch) > 1 and ch[-1][1] - ch[-1][0] < 1.0: tail = ch.pop(); ch[-1][1] = tail[1]   # no 1-frame tail chunk (and its container start)
+        J.j["chunks"] = ch
 
     try:
         J.stage("validate", validate)
@@ -135,10 +147,16 @@ def render(jd, i):
     J = Job(jd, f"render_{i:02}.log"); a, b = J.j["chunks"][i]; out = J.d / f"sec/c{i:02}.mp4"
     def run():
         if out.exists(): out.unlink()   # a half-written chunk from a crashed attempt
-        cmd = ["node", ENGINE_REPO / "scripts/render.mjs", J.d / "auto/index.html", "--out", out, "--from", a, "--to", b]
+        cmd = ["node", ENGINE_REPO / "scripts/render.mjs", J.d / "auto/index.html", "--out", out, "--from", a, "--to", b] + page_args(J)
         if os.environ.get("CHROME"): cmd += ["--browser", os.environ["CHROME"]]
         sh(cmd, J.log, cwd=ENGINE_REPO)   # render.mjs resolves playwright from the cwd
     J.stage(f"render_{i:02}", run)
+
+
+def page_args(J):
+    """aspect + presenter footage size for the engine (EV.portrait, EV.src): see references/responsive-layout.md"""
+    sw, sh_ = J.j.get("src_size", [1920, 1080])
+    return ["--ar", J.j["options"].get("aspect", "16:9"), "--query", f"srcw={sw}&srch={sh_}"]
 
 
 def preview_chunks(J):
@@ -147,6 +165,22 @@ def preview_chunks(J):
 
 
 # ───────────────────────────── finish ─────────────────────────────
+def portrait_ass(p):
+    """captions.py writes a 1920x1080 ASS; for 9:16 masters re-declare the canvas and restyle so lines sit in the engine's
+    caption zone (EV.zone('caption'): above the platform caption, buttons and like rail) instead of being stretched."""
+    t = p.read_text(encoding="utf-8").replace("PlayResX: 1920", "PlayResX: 1080").replace("PlayResY: 1080", "PlayResY: 1920")
+    sty = {"CN": "Noto Sans CJK SC Black,62", "EN": "Inter,38", "ENB": "Inter Black,64"}
+    out = []
+    for ln in t.splitlines():
+        if ln.startswith("Style: "):
+            f = ln[7:].split(","); name = f[0]; font, size = sty.get(name, f"{f[1]},{f[2]}").split(",")
+            f[1], f[2] = font, size; f[19], f[20], f[21] = "110", "170", "440"   # MarginL, MarginR (like rail), MarginV
+            ln = "Style: " + ",".join(f)
+        out.append(ln)
+    p.write_text("\n".join(out) + "\n", encoding="utf-8")
+
+
+
 def finish(jd, preview=False):
     tag = "preview" if preview else "final"; J = Job(jd, f"finish_{tag}.log"); o = J.j["options"]
     W = J.d / tag; W.mkdir(exist_ok=True); (J.d / "out").mkdir(exist_ok=True)
@@ -155,7 +189,7 @@ def finish(jd, preview=False):
     report = {"ok": False, "kind": tag, "warnings": []}
 
     def audio():
-        sh(["node", ENGINE_REPO / "scripts/render.mjs", J.d / "auto/index.html", "--cues", W / "cues.json"]
+        sh(["node", ENGINE_REPO / "scripts/render.mjs", J.d / "auto/index.html", "--cues", W / "cues.json"] + page_args(J)
            + (["--browser", os.environ["CHROME"]] if os.environ.get("CHROME") else []), J.log, cwd=ENGINE_REPO)
         cues = [c for c in json.loads((W / "cues.json").read_text()) if c[1] < end - .05]
         (W / "cues.json").write_text(json.dumps(cues))
@@ -163,7 +197,10 @@ def finish(jd, preview=False):
         sh(["ffmpeg", "-loglevel", "error", "-y", "-i", J.d / "src.mp4", "-t", f"{end:.3f}", "-c", "copy", W / "src.mp4"], J.log)
 
     def captions():
-        sh([PY, ENGINE_REPO / "scripts/captions.py", J.d / "srt/talk.en.srt", 0, end, W / "captions", CFG / "captions.en.json"], J.log)
+        cjk = J.j.get("language", "en") in ("zh", "ja", "ko", "yue")
+        sh([PY, ENGINE_REPO / "scripts/captions.py", J.d / "srt/talk.bilingual.srt", 0, end, W / "captions",
+            CFG / ("captions.cjk.json" if cjk else "captions.en.json")], J.log)
+        if o.get("aspect") == "9:16": portrait_ass(W / "captions.ass")
 
     def assemble():
         for f in W.glob("master_*.mp4"): f.unlink()
@@ -182,7 +219,7 @@ def finish(jd, preview=False):
         if mode == "none":
             shutil.copy(src, final); report["music"] = {"mode": "none"}; return
         try:
-            sh([PY, ENGINE_REPO / "scripts/music.py", "plan", src, J.d / "srt/talk.en.srt", md, "--config", W / "music.json",
+            sh([PY, ENGINE_REPO / "scripts/music.py", "plan", src, J.d / "srt/talk.bilingual.srt", md, "--config", W / "music.json",
                 "--cues", W / "cues.json", "--storyboard", J.d / "storyboard.json"], J.log)
             plan = json.loads((md / "music_plan.json").read_text()); lic = (plan.get("background") or {}).get("license")
             if o.get("paid") and lic not in ALLOWED_MUSIC_LICENSES:
@@ -202,8 +239,9 @@ def finish(jd, preview=False):
             ps = o["preview_seconds"]; out = J.d / "out/preview.mp4"
             if out.exists(): out.unlink()
             font = ENGINE_REPO / "engine/fonts/Anton-Regular.ttf"
-            vf = (f"scale=1280:720,drawtext=fontfile={font}:text='EVA VIDEO STUDIO · PREVIEW':fontsize=64:fontcolor=white@0.42:"
-                  f"x=(w-text_w)/2:y=(h-text_h)/2:shadowcolor=black@0.3:shadowx=2:shadowy=2")
+            pw, ph = PREVIEW[o.get("aspect", "16:9")]; fs = round(pw / 20)
+            mark = f"drawtext=fontfile={font}:text='EVA VIDEO STUDIO · PREVIEW':fontsize={fs}:fontcolor=white@0.45:shadowcolor=black@0.35:shadowx=2:shadowy=2"
+            vf = (f"scale={pw}:{ph},{mark}:x=(w-text_w)/2:y=h*0.30,{mark}:x=(w-text_w)/2:y=h*0.62")
             sh(["ffmpeg", "-loglevel", "error", "-y", "-i", final, "-t", ps, "-vf", vf, "-c:v", "libx264", "-crf", "28", "-preset", "veryfast",
                 "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", out], J.log)
             final.unlink(); final = out

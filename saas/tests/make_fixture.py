@@ -3,7 +3,7 @@
 transcript in exactly the files scripts/asr.py writes (talk.en.srt, talk.transcript.js), and the `asr` stage
 marker, so `pipeline.py prepare` skips ASR and runs everything else for real. NOT a speech-recognition test.
 
-usage: make_fixture.py JOB_DIR VIDEO_OUT|- [SECONDS]   (- = transcript only, no FFmpeg needed)
+usage: make_fixture.py JOB_DIR VIDEO_OUT|- [SECONDS] [SCRIPT TEXT]   (- = transcript only, no FFmpeg needed)
 """
 import json, re, subprocess, sys
 from pathlib import Path
@@ -22,7 +22,8 @@ def fmt(t):
     return f"{h:02}:{m:02}:{s:02},{ms:03}"
 
 
-def main(job, video, seconds=40.0):
+def main(job, video, seconds=40.0, script=None):
+    global SCRIPT; SCRIPT = script or SCRIPT
     job = Path(job); (job / "srt").mkdir(parents=True, exist_ok=True); (job / "stages").mkdir(exist_ok=True)
     if str(video) != "-": subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"testsrc2=size=1920x1080:rate=30:duration={seconds}",
                     "-f", "lavfi", "-i", f"sine=frequency=220:duration={seconds}", "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p",
@@ -44,10 +45,11 @@ def main(job, video, seconds=40.0):
                 if cur: srt.append(f"{i}\n{fmt(cur[0]['start'])} --> {fmt(cur[-1]['end'])}\n{' '.join(x['w'] for x in cur)}\n"); i += 1
                 cur = []
             if w: cur.append(w)
-    (job / "srt/talk.en.srt").write_text("\n".join(srt))
+    (job / "srt/talk.en.srt").write_text("\n".join(srt)); (job / "srt/talk.bilingual.srt").write_text("\n".join(srt))
+    (job / "srt/talk.asr.json").write_text(json.dumps({"source": {"language": "en"}}))
     (job / "stages/asr.json").write_text(json.dumps({"ok": True, "fixture": True, "wall_s": 0, "cpu_s": 0}))
     print(f"fixture: {len(segs)} segments, {nwords} words -> {job}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], float(sys.argv[3]) if len(sys.argv) > 3 else 40.0)
+    main(sys.argv[1], sys.argv[2], float(sys.argv[3]) if len(sys.argv) > 3 else 40.0, sys.argv[4] if len(sys.argv) > 4 else None)
