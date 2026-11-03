@@ -1,5 +1,26 @@
-{"demos": [
-  {"id": "realestate", "title": "Real Estate", "blurb": "Listing tours and market tips", "ready": false},
-  {"id": "beauty", "title": "Beauty", "blurb": "Routines, products and before/afters", "ready": false},
-  {"id": "education", "title": "Education", "blurb": "Lessons, explainers and study tips", "ready": false}
-]}
+{
+ "demos": [
+  {
+   "id": "realestate",
+   "title": "Real Estate",
+   "blurb": "Listing tours and market tips",
+   "ready": true,
+   "before": "demos/realestate/before.mp4",
+   "after": "demos/realestate/after.mp4"
+  },
+  {
+   "id": "beauty",
+   "title": "Beauty",
+   "blurb": "Routines, products and before/afters",
+   "ready": false
+  },
+  {
+   "id": "education",
+   "title": "Education",
+   "blurb": "Lessons, explainers and study tips",
+   "ready": true,
+   "before": "demos/education/before.mp4",
+   "after": "demos/education/after.mp4"
+  }
+ ]
+}
