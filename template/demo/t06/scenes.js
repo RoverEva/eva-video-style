@@ -23,4 +23,6 @@
       st.f.forEach((c, i) => { c.style.display = b[1] ? '' : 'none'; tf(c, pop(t, [3.87, 4.73, 5.87, 6.6][i], .45, 1.6)); });
       [st.lap, st.ai, ...st.s, st.tp].forEach(e => e.style.display = b[2] ? '' : 'none'); tf(st.tp, { o: P(t, 7.75, .3) }); st.s.forEach((d, i) => tf(d, slide(t, [8.97, 9.87, 10.67][i], .4, -600, 0))); tf(st.lap, pop(t, 9.87, .45, 1.5)); C.setSrc(st.lim, C.seq('../media/web', Math.max(0, t - 9.87) * 1.4, 451)); tf(st.ai, { s: pop(t, 10.7, .35, 2.6).s, o: P(t, 10.7, .1), r: t * 30 });
       [st.l, st.m, st.cta, st.url].forEach(e => e.style.display = b[3] ? '' : 'none'); tf(st.l, slide(t, 12.1, .4, -150, 0)); tf(st.m, slide(t, 12.9, .4, -150, 0)); tf(st.cta, pop(t, 13.8, .4, 1.7)); tf(st.url, { o: P(t, 14.1, .3) }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [80, 50, 1460, 800] });
 })();

@@ -41,4 +41,6 @@
       k.sfx('whoosh', 12.1, .1); k.sfx('pop', 12.9, .12); k.sfx('riser', 13.5, .06, { d: .3 }); k.sfx('impact', 13.8, .2); return st; },
     update(lt, st, t) { T.hudFrameAt(st.fr, t); const a = t < 13.77; [st.a, st.b].forEach(e => e.style.display = a ? '' : 'none'); [st.k, st.m.t].forEach(e => e.style.display = a ? 'none' : '');
       tf(st.a, slide(t, 12.1, .4, -40, 0)); tf(st.b, slide(t, 12.9, .4, -40, 0)); T.metalAt(st.m, t - 13.77, .15); tf(st.k, { o: P(t, 14.3, .4) }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [90, 90, 1740, 780] });
 })();

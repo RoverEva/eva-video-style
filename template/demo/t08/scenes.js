@@ -15,14 +15,14 @@
 
   // N2 · full-bleed presenter in a neon grade, glowing side headline
   C.scene({ t0: 1.9, t1: 3.9, z: 60, build(L) {
-      const st = {}; T.neonGrade(L);
+      const st = {}; T.neonGrade(L); [...L.children].forEach(C.portFull);
       st.a = T.glow(L, 'Open-source', 110, 330, 96); st.b = T.glow(L, 'AI video-editing skill', 110, 450, 64, { color: '#fff' });
       k.sfx('pop', 1.95, .12); k.sfx('pop', 2.5, .12, { f: 1100 }); return st; },
     update(lt, st, t) { tf(st.a, slide(t, 1.95, .45, -80, 0)); tf(st.b, slide(t, 2.5, .45, -80, 0)); } });
 
   // N3 · four styles: real screens pop around the presenter
   C.scene({ t0: 3.87, t1: 7.76, z: 60, quiet: true, build(L) {
-      const st = {}; T.neonGrade(L);
+      const st = {}; T.neonGrade(L); [...L.children].forEach(C.portFull);
       st.c = T.collage(L, [I.SHOTS[0], I.SHOTS[6], I.SHOTS[8], I.SHOTS[3]], [[60, 70, 460, -4], [1400, 80, 440, 5], [70, 600, 420, 3], [1430, 620, 420, -5]]);
       st.l = I.STYLES.map((s, i) => T.glow(L, s, [80, 1420, 90, 1450][i], [370, 360, 870, 560][i], 40, { fontStyle: 'normal' }));
       [3.87, 4.73, 5.87, 6.6].forEach((x, i) => k.sfx('pop', x, .1, { f: 800 + i * 120 })); return st; },
@@ -45,4 +45,6 @@
       st.tg = T.tag(L, 'TRY IT TODAY', 120, 640, ['Eva Video Style', 'open source · MIT', 'github.com/RoverEva']);
       k.sfx('pop', 12.1, .12); k.sfx('pop', 12.9, .12, { f: 1100 }); k.sfx('ding', 13.8, .08); return st; },
     update(lt, st, t) { tf(st.ch, slide(t, 12.1, .4, -60, 0)); T.slotsAt(st.s, t, 12.1, [12.1, 12.9]); T.tagAt(st.tg, t, 13.8, .25); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [100, 130, 1300, 700], cover: [], at: { 0: { box: [0, 120, 1920, 840] }, 1: { box: [80, 300, 1500, 260], top: 1040, maxH: 260 }, 2: { box: [40, 50, 1840, 1000], top: 960, maxH: 540 }, 3: { box: [150, 250, 1250, 560] } } });
 })();

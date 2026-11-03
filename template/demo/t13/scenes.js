@@ -40,4 +40,6 @@
                   T.colCard(L, 1230, 230, 440, 640, 'cloud', 'Try it', ['open source · MIT', 'github.com/RoverEva', 'eva-video-style'], '03')];
       k.sfx('whoosh', 12.1, .08); [12.4, 12.9, 13.8].forEach((x, i) => k.sfx('pop', x, .1, { f: 800 + i * 150 })); return st; },
     update(lt, st, t) { tf(st.h, { o: P(lt, .05, .3) }); st.c1.style.opacity = P(lt, 0, .3); st.cards.forEach((c, i) => { const u = ease.outExpo(P(t, [12.4, 12.9, 13.8][i], .5)); tf(c, { y: 60 * (1 - u), o: u }); }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [90, 60, 1740, 940] });
 })();

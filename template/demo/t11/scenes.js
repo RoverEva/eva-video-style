@@ -38,4 +38,6 @@
       st.url = T.kicker(L, 'GITHUB.COM/ROVEREVA/EVA-VIDEO-STYLE', 116, 560, '#fff');
       k.sfx('whoosh', 12.1, .1); k.sfx('ding', 12.9, .07); k.sfx('impact', 13.8, .16); return st; },
     update(lt, st, t) { T.hudFrameAt(st.fr, t); tf(st.q, slide(lt, .05, .4, -40, 0)); tf(st.big, pop(t, 13.8, .4, 1.8)); tf(st.url, { o: P(t, 14.1, .3) }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [80, 80, 1480, 820] });
 })();

@@ -45,4 +45,6 @@
       rise(st.bk, t, 3.9, .7); st.rows.forEach((r, i) => { const t0 = [3.95, 4.73, 5.87, 6.6][i]; rise(r, t, t0, .8); r.ln.style.transform = `scaleX(${ease2(P(t, t0 + .2, 1.0))})`; });
       rise(st.ck, t, 7.8, .7); st.cl.forEach((c, i) => rise(c, t, [8.97, 9.87, 10.67][i], .8));
       rise(st.q, t, 12.1, 1.1); st.ql.style.transform = `scaleX(${ease2(P(t, 13.0, 1.0))})`; rise(st.qs, t, 13.8, .8); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [90, 80, 1300, 800] });
 })();

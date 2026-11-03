@@ -22,4 +22,6 @@
       st.list.forEach((d, i) => { const a = [8.97, 9.87, 10.67][i]; tf(d, slide(t, a, .4, -1000, 0)); tf(d.ck, pop(t, a + .3, .3, 2.6)); });
       [st.l1, st.x, st.l2, st.cta].forEach(e => e.style.display = b[3] ? '' : 'none'); tf(st.l1, slide(t, 12.1, .4, -100, 0)); st.x.style.width = (1000 * ease.out3(P(t, 12.5, .35))) + 'px';
       const q = pop(t, 12.9, .45, 1.8); tf(st.l2, { s: q.s, o: q.o, r: -1.5 * q.s }); const c = pop(t, 13.8, .35, 2.6); tf(st.cta, { s: c.s, o: c.o, r: -5 }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [90, 90, 1140, 770] });
 })();

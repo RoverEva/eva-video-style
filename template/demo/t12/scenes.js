@@ -43,4 +43,6 @@
       st.n1 = el(L, 'div', 'abs', { left: '446px', top: '600px', fontFamily: N.SERIF, fontWeight: 900, fontSize: '56px', color: N.RED }, 'Try Eva Video Style today →'); st.g = T.grain(L, .22);
       k.sfx('impact', 12.1, .14); k.sfx('click', 12.9, .1); k.sfx('pop', 13.8, .12); return st; },
     update(lt, st, t) { T.grainAt(st.g, t); tf(st.cv, { sx: ease.outExpo(P(lt, .05, .6)), o: 1 }); tf(st.k, { o: P(lt, .4, .3) }); tf(st.a, slide(t, 12.1, .45, -40, 0)); tf(st.b, slide(t, 12.9, .45, -40, 0)); tf(st.n1, pop(t, 13.8, .35, 1.5)); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [60, 30, 1260, 980] });
 })();

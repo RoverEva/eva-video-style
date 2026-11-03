@@ -9,4 +9,6 @@
   C.scene({ t0: 0, t1: C.end + .05, z: 60, quiet: true, build(L) { return { h: EC.layout(L, 'hero', { hero: S.HERO, size: 130 }, { x: 840, y: 70, w: 960 }, th),
       s: EC.layout(L, 'stack', { steps: S.STEPS, n: 4 }, { x: 840, y: 400, w: 960, h: 600 }, th) }; },
     update(lt, st, t) { st.h.at(t, [.2, .4]); st.s.at(t, EC.times(.7, 4, .3)); } });
+  /* 9:16: background scene fills the frame, the card block goes in the top zone, the presenter below (16:9 unchanged) */
+  C.portLayout({ box: [830, 60, 980, 960], cover: [0] });
 })();

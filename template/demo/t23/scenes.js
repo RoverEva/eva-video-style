@@ -38,4 +38,6 @@
       s.b = T.cpBanner(L, 'TRY EVA VIDEO STYLE TODAY →', 470, 880, X.C[0], -4, 54); s.g = T.cpSticker(L, 'GITHUB.COM/ROVEREVA', 1240, 120, X.YEL, X.INK, 4, 36);
       k.sfx('impact', 13.8, .16); for (let i = 0; i < 7; i++) k.sfx('pop', 13.85 + i * .07, .06, { f: 900 + i * 120 }); k.sfx('whoosh', 14.3, .1); k.sfx('ding', 14.5, .07); },
     (s, t) => { T.cpBurstAt(s.o, t, Array.from({ length: 7 }, (_, i) => 13.85 + i * .07)); T.cpBannerAt(s.b, t, 14.3); T.cpStickerAt(s.g, t, 14.45, 4); });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [50, 40, 1820, 1000], inbox: [2] });
 })();

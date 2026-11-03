@@ -3,11 +3,12 @@
  * changes with every style she names; the cut-out shrinks into a circle that lands where it does not cover the footage;
  * end title card. Footage: HatchElite screen recordings and cartoon clips. */
 (function () {
-  const C = EV, { el, tf, pop, slide, P, ease, clamp, lerp } = C, k = K, T = K.T, I = IN; I.setup(C);
+  const C = EV, { el, tf, pop, slide, P, ease, clamp, lerp } = C, k = K, T = K.T, I = IN, V = C.portrait, pk = C.pick; I.setup(C);
+  /* Responsive: native 9:16 layout through pk(16:9 value, 9:16 value); 16:9 values are the original ones. ?cut=DIR picks the cut-out frames. */
   C.evaKeys = [{ t: 0, d: 0, L: { x: 0, y: 0, w: 10, h: 10, r: 0, o: 0 } }];   // the presenter is drawn by the cut-out rig below
   C.ringFn = () => ({ color: 'transparent', width: 0, shadow: 0 });
   const CYAN = '#2ee6ff', LIME = '#7dff3a', BIG = "'Inter','Noto Sans CJK SC',sans-serif";
-  const CUT = t => `../media/cut/f_${String(Math.min(450, Math.max(0, Math.round(t * 30)))).padStart(5, '0')}.webp`;
+  const CUT = t => `${C.params.get('cut') || '../media/cut'}/f_${String(Math.min(450, Math.max(0, Math.round(t * 30)))).padStart(5, '0')}.webp`;
   // backgrounds: only material you import — here, single frames from the screen recordings and cartoon clips (no bundled images)
   const BG = ['../media/web/f_00150.jpg', '../media/fly/f_00100.jpg', '../media/wb/f_01200.jpg', '../media/egg/f_00060.jpg', '../media/sent/f_00800.jpg'];
   const PL = i => BG[i - 1];
@@ -15,48 +16,48 @@
   const FOOT = 3.87, MORPH = 4.3, HOP = 7.73, CARD = 12.07;
   // footage per line: [start, folder, frames, label]
   const CLIPS = [[3.87, 'web', 451, 'CINEMATIC'], [4.73, 'fly', 286, 'FUTURISTIC TECH'], [5.87, 'sent', 2088, 'SOCIAL MEDIA'], [6.6, 'whis', 403, 'MINIMALIST'], [7.73, 'wb', 3327, '']];
-  const FACE = [.51 * 1920, .25 * 1080];
-  const BL = [250, 800, 190], TL = [250, 290, 190], BL2 = [270, 800, 210];
+  let FACE = [.51 * 1920, .25 * 1080]; const SL = C.H / 8;
+  const BL = pk([250, 800, 190], [300, 1170, 200]), TL = pk([250, 290, 190], [540, 1160, 180]), BL2 = pk([270, 800, 210], [270, 1180, 200]);
 
   C.scene({ t0: 0, t1: C.end + .05, bg: '#000', quiet: true, build(L) {
-      const st = { L: [] };
+      const st = { L: [] }; if (V) FACE = [C.face.x * C.W, C.face.y * C.H];
       SW.forEach(([t0, ty], i) => {
-        const w = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', overflow: 'hidden', zIndex: 2 + i });
-        const im = el(w, 'img', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', objectFit: 'cover', transformOrigin: '50% 50%' });
+        const w = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden', zIndex: 2 + i });
+        const im = el(w, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', transformOrigin: '50% 50%' });
         if (i < 5) C.setSrc(im, PL(i + 1));
         let sl = null; if (ty === 'glitch') { w.style.overflow = 'visible'; sl = [];
-          for (let j = 0; j < 8; j++) { const s = el(w, 'div', 'abs', { left: 0, top: (j * 135) + 'px', width: '1920px', height: '135px', overflow: 'hidden' }); const si = el(s, 'img', 'abs', { left: 0, top: (-j * 135) + 'px', width: '1920px', height: '1080px', objectFit: 'cover' }); C.setSrc(si, PL(i + 1)); sl.push(s); } im.style.display = 'none'; }
+          for (let j = 0; j < 8; j++) { const s = el(w, 'div', 'abs', { left: 0, top: (j * SL) + 'px', width: C.W + 'px', height: SL + 'px', overflow: 'hidden' }); const si = el(s, 'img', 'abs', { left: 0, top: (-j * SL) + 'px', width: C.W + 'px', height: C.H + 'px', objectFit: 'cover' }); C.setSrc(si, PL(i + 1)); sl.push(s); } im.style.display = 'none'; }
         st.L.push({ w, im, t0, ty, sl, i });
       });
-      st.flash = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: '#fff', zIndex: 20, opacity: 0 });
-      st.dim = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: 12, background: 'linear-gradient(90deg, rgba(3,8,30,.92) 0%, rgba(3,8,30,.78) 45%, rgba(3,8,30,.66) 75%, rgba(3,8,30,.55))', opacity: 0 });
+      st.flash = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: '#fff', zIndex: 20, opacity: 0 });
+      st.dim = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 12, background: 'linear-gradient(90deg, rgba(3,8,30,.92) 0%, rgba(3,8,30,.78) 45%, rgba(3,8,30,.66) 75%, rgba(3,8,30,.55))', opacity: 0 });
 
       // intro lines over the backgrounds (left of the face)
-      const lab = (txt, y, size, col) => el(L, 'div', 'abs', { left: '90px', top: y + 'px', zIndex: 35, fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: size + 'px', color: col || '#fff', whiteSpace: 'nowrap', transform: 'skewX(-6deg)', textShadow: '0 4px 0 rgba(0,0,0,.45), 0 0 24px rgba(0,0,0,.55)' }, txt);
-      st.sh = el(L, 'div', 'abs', { left: 0, top: 0, width: '1200px', height: '520px', zIndex: 34, background: 'radial-gradient(120% 100% at 0% 0%, rgba(3,8,30,.82), rgba(3,8,30,.5) 55%, rgba(3,8,30,0) 80%)' });
-      st.i1 = lab("HI, I'M EVA", 120, 96); st.i2 = lab('EVA VIDEO STYLE', 230, 84, CYAN); st.i3 = lab('OPEN-SOURCE · AI VIDEO EDITING', 340, 48, LIME);
+      const lab = (txt, y, size, col) => el(L, 'div', 'abs', { left: pk(90, 64) + 'px', top: pk(y, y + 150) + 'px', zIndex: 35, fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: size + 'px', color: col || '#fff', whiteSpace: 'nowrap', transform: 'skewX(-6deg)', textShadow: '0 4px 0 rgba(0,0,0,.45), 0 0 24px rgba(0,0,0,.55)' }, txt);
+      st.sh = el(L, 'div', 'abs', { left: 0, top: 0, width: pk(1200, 1080) + 'px', height: pk(520, 760) + 'px', zIndex: 34, background: 'radial-gradient(120% 100% at 0% 0%, rgba(3,8,30,.82), rgba(3,8,30,.5) 55%, rgba(3,8,30,0) 80%)' });
+      st.i1 = lab("HI, I'M EVA", 120, 96); st.i2 = lab('EVA VIDEO STYLE', 230, 84, CYAN); st.i3 = lab('OPEN-SOURCE · AI VIDEO EDITING', 340, 48, LIME); if (V) [st.i1, st.i2, st.i3].forEach(e => C.fit(e, 900));
       // footage label chip (top-right) + step chips
-      st.chip = el(L, 'div', 'abs', { right: '70px', top: '60px', zIndex: 35, padding: '10px 30px', fontFamily: BIG, fontWeight: 900, fontSize: '46px', color: '#04121f', background: CYAN, boxShadow: '0 0 30px rgba(46,230,255,.6)', transform: 'skewX(-8deg)', transformOrigin: '100% 50%' }, '');
-      st.steps = ['① PICK YOUR FAVORITE', '② APPLY IT TO YOUR FOOTAGE', '③ LET AI DO THE EDITING'].map((s, i) => el(L, 'div', 'abs', { right: '70px', top: (170 + i * 86) + 'px', zIndex: 35, padding: '8px 26px', fontFamily: BIG, fontWeight: 900, fontSize: '40px', color: '#fff', background: i === 2 ? 'rgba(10,40,10,.85)' : 'rgba(5,20,60,.85)', border: `3px solid ${i === 2 ? LIME : CYAN}`, transform: 'skewX(-8deg)', transformOrigin: '100% 50%' }, s));
-      st.tpl = el(L, 'div', 'abs', { left: '470px', top: '60px', zIndex: 35, fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: '56px', color: '#fff', background: 'rgba(5,20,60,.88)', padding: '6px 26px', textShadow: '0 0 20px rgba(46,230,255,.6)' }, 'READY-TO-USE TEMPLATES');
+      st.chip = el(L, 'div', 'abs', { right: pk(70, 170) + 'px', top: pk(60, 230) + 'px', zIndex: 35, padding: '10px 30px', fontFamily: BIG, fontWeight: 900, fontSize: '46px', color: '#04121f', background: CYAN, boxShadow: '0 0 30px rgba(46,230,255,.6)', transform: 'skewX(-8deg)', transformOrigin: '100% 50%' }, '');
+      st.steps = ['① PICK YOUR FAVORITE', '② APPLY IT TO YOUR FOOTAGE', '③ LET AI DO THE EDITING'].map((s, i) => el(L, 'div', 'abs', { right: pk(70, 170) + 'px', top: pk(170 + i * 86, 340 + i * 80) + 'px', zIndex: 35, padding: '8px 26px', fontFamily: BIG, fontWeight: 900, fontSize: pk(40, 36) + 'px', color: '#fff', background: i === 2 ? 'rgba(10,40,10,.85)' : 'rgba(5,20,60,.85)', border: `3px solid ${i === 2 ? LIME : CYAN}`, transform: 'skewX(-8deg)', transformOrigin: '100% 50%' }, s));
+      st.tpl = el(L, 'div', 'abs', { left: pk(470, 64) + 'px', top: pk(60, 230) + 'px', zIndex: 35, fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: '56px', color: '#fff', background: 'rgba(5,20,60,.88)', padding: '6px 26px', textShadow: '0 0 20px rgba(46,230,255,.6)' }, 'READY-TO-USE TEMPLATES');
 
       // presenter rig: cut-out that shrinks into a circle
-      st.rig = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: 30, overflow: 'hidden' });
-      st.inner = el(st.rig, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0' });
-      st.pb = el(st.inner, 'img', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', objectFit: 'cover', filter: 'blur(14px) brightness(1.05)', opacity: 0 }); C.setSrc(st.pb, PL(1));
-      st.cut = el(st.inner, 'img', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px' });
+      st.rig = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 30, overflow: 'hidden' });
+      st.inner = el(st.rig, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', transformOrigin: '0 0' });
+      st.pb = el(st.inner, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: 'blur(14px) brightness(1.05)', opacity: 0 }); C.setSrc(st.pb, PL(1));
+      st.cut = el(st.inner, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px' });
       st.ring = el(L, 'div', 'abs', { left: 0, top: 0, borderRadius: '50%', zIndex: 31, boxSizing: 'border-box', border: '8px solid #fff', opacity: 0 });
 
       // end card
-      st.card = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: 25 });
+      st.card = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 25 });
       const hs = (txt, x, y, size, grad, glow) => el(st.card, 'div', 'abs', { left: x + 'px', top: y + 'px', fontFamily: BIG, fontWeight: 900, fontStyle: 'italic', fontSize: size + 'px', lineHeight: 1, letterSpacing: '-2px', whiteSpace: 'nowrap', transformOrigin: '0 50%',
         color: grad ? 'transparent' : '#fff', backgroundImage: grad || 'none', WebkitBackgroundClip: grad ? 'text' : 'border-box', backgroundClip: grad ? 'text' : 'border-box', filter: `drop-shadow(0 0 ${glow || 14}px rgba(46,230,255,.75)) drop-shadow(0 6px 0 rgba(0,0,0,.45))` }, txt);
-      st.h1 = hs('Less time editing,', 110, 70, 88); st.h2 = hs('MORE CREATING', 100, 170, 160, 'linear-gradient(180deg, #ffffff 0%, #bff6ff 35%, #2ee6ff 70%, #1a8cff 100%)', 22); st.h3 = hs('EVA VIDEO STYLE', 104, 350, 110, 'linear-gradient(180deg, #ffffff, #d7dde6 60%, #9aa6b8)', 10);
-      st.bn = el(st.card, 'div', 'abs', { left: '150px', top: '500px', padding: '12px 34px', fontFamily: BIG, fontSize: '48px', fontWeight: 900, color: LIME, border: `3px solid ${LIME}`, background: 'rgba(10,40,10,.55)', boxShadow: `0 0 26px rgba(125,255,58,.6), inset 0 0 18px rgba(125,255,58,.25)`, transform: 'rotate(-4deg)', transformOrigin: '0 50%' }, 'TRY IT TODAY →');
-      st.wm = el(st.card, 'div', 'abs mono', { right: '70px', top: '60px', fontSize: '28px', letterSpacing: '.3em', color: '#fff' }, 'GITHUB.COM/ROVEREVA');
-      const s = k.svg(st.card, 560, 330, 1230, 300); st.bp = [];
+      st.h1 = hs('Less time editing,', pk(110, 70), pk(70, 250), pk(88, 80)); st.h2 = hs('MORE CREATING', pk(100, 60), pk(170, 350), pk(160, 118), 'linear-gradient(180deg, #ffffff 0%, #bff6ff 35%, #2ee6ff 70%, #1a8cff 100%)', 22); st.h3 = hs('EVA VIDEO STYLE', pk(104, 64), pk(350, 500), pk(110, 92), 'linear-gradient(180deg, #ffffff, #d7dde6 60%, #9aa6b8)', 10);
+      st.bn = el(st.card, 'div', 'abs', { left: pk(150, 90) + 'px', top: pk(500, 640) + 'px', padding: '12px 34px', fontFamily: BIG, fontSize: '48px', fontWeight: 900, color: LIME, border: `3px solid ${LIME}`, background: 'rgba(10,40,10,.55)', boxShadow: `0 0 26px rgba(125,255,58,.6), inset 0 0 18px rgba(125,255,58,.25)`, transform: 'rotate(-4deg)', transformOrigin: '0 50%' }, 'TRY IT TODAY →');
+      st.wm = el(st.card, 'div', 'abs mono', { right: pk(70, 170) + 'px', top: pk(60, 200) + 'px', fontSize: pk(28, 22) + 'px', letterSpacing: '.3em', color: '#fff' }, 'GITHUB.COM/ROVEREVA');
+      const s = k.svg(st.card, 560, 330, pk(1230, 470), pk(300, 760)); st.bp = [];
       ['M60 250 L500 250 L540 300 L20 300 Z', 'M110 40 L450 40 L450 245 L110 245 Z', 'M140 70 L420 70 L420 215 L140 215 Z', 'M180 110 L300 110 M180 140 L380 140 M180 170 L340 170', 'M230 275 L330 275'].forEach(d => { const p = k.sv(s, 'path', { d, fill: 'none', stroke: 'rgba(120,200,255,.85)', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }); const l = p.getTotalLength ? p.getTotalLength() || 1400 : 1400; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); p.l = l; st.bp.push(p); });
-      st.tags = ['OPEN SOURCE', '20 TEMPLATES', 'EN / CN + EN CAPTIONS', 'MIT LICENSE'].map((tx, i) => { const d = el(st.card, 'div', 'abs', { left: (620 + i * 22) + 'px', top: (650 + i * 74) + 'px', padding: '6px 24px', fontFamily: BIG, fontWeight: 800, fontSize: '36px', color: '#fff', border: '2px solid rgba(46,230,255,.8)', background: 'rgba(5,20,60,.75)', boxShadow: '0 0 16px rgba(46,230,255,.35)', transform: 'skewX(-8deg)', transformOrigin: '0 50%' }, tx);
+      st.tags = ['OPEN SOURCE', '20 TEMPLATES', 'EN / CN + EN CAPTIONS', 'MIT LICENSE'].map((tx, i) => { const d = el(st.card, 'div', 'abs', { left: pk(620 + i * 22, 520 + i * 18) + 'px', top: pk(650 + i * 74, 1070 + i * 62) + 'px', padding: '6px 24px', fontFamily: BIG, fontWeight: 800, fontSize: pk(36, 32) + 'px', color: '#fff', border: '2px solid rgba(46,230,255,.8)', background: 'rgba(5,20,60,.75)', boxShadow: '0 0 16px rgba(46,230,255,.35)', transform: 'skewX(-8deg)', transformOrigin: '0 50%' }, tx);
         el(d, 'div', 'abs', { left: '-36px', top: '24px', width: '30px', height: '2px', background: 'rgba(46,230,255,.8)' }); return d; });
 
       SW.forEach(([t0, ty], i) => k.sfx(i === 5 ? 'whoosh' : (i % 2 ? 'whoosh' : 'click'), t0 + .02, i === 5 ? .14 : .09));
@@ -72,13 +73,13 @@
         let cu = 0; if (Ly.i === 5) { const c = CLIPS.reduce((m, x) => t >= x[0] ? x : m, CLIPS[0]); cu = P(t, c[0], .3); C.setSrc(Ly.im, C.seq('../media/' + c[1], Math.max(0, t - c[0]) * 1.15 + 1, c[2])); }
         const kb = Ly.i < 5 ? 1.12 - .08 * clamp(life / .9) : 1.0 + .06 * (1 - ease.outExpo(cu));
         let x = Ly.i < 5 ? (Ly.i % 2 ? -1 : 1) * 30 * clamp(life / .9) : 0, s = kb, blur = 0, clip = 'none';
-        if (Ly.ty === 'whip') { x += 1920 * (1 - e); blur = 30 * (1 - e); }
+        if (Ly.ty === 'whip') { x += C.W * (1 - e); blur = 30 * (1 - e); }
         if (Ly.ty === 'zoom') { s *= 1 + .35 * (1 - e); }
         if (Ly.ty === 'iris') clip = `circle(${(1 - Math.pow(1 - u, 3)) * 1250}px at ${FACE[0]}px ${FACE[1]}px)`;
-        if (Ly.ty === 'push') { x = 1920 * (1 - e); blur = 18 * (1 - e); }
+        if (Ly.ty === 'push') { x = C.W * (1 - e); blur = 18 * (1 - e); }
         Ly.w.style.clipPath = clip; tf(Ly.im, { x, s }); Ly.im.style.filter = blur ? `blur(${blur}px)` : 'none';
-        if (Ly.sl) Ly.sl.forEach((sl, j) => { const off = (1 - e) * ((j * 7919) % 11 - 5) * 120; tf(sl, { x: off }); sl.firstChild.style.transform = `scale(${s})`; sl.firstChild.style.transformOrigin = `960px ${540 + j * 135}px`; });
-        const nxt = st.L[i + 1]; if (nxt && t >= nxt.t0 && (nxt.ty === 'push' || nxt.ty === 'whip')) { const ue = ease.outExpo(P(t, nxt.t0, nxt.ty === 'push' ? .45 : .28)); tf(Ly.im, { x: x - (nxt.ty === 'push' ? 700 : 1920) * ue, s }); Ly.im.style.filter = `blur(${20 * ue}px)`; } });
+        if (Ly.sl) Ly.sl.forEach((sl, j) => { const off = (1 - e) * ((j * 7919) % 11 - 5) * 120; tf(sl, { x: off }); sl.firstChild.style.transform = `scale(${s})`; sl.firstChild.style.transformOrigin = `${C.W / 2}px ${C.H / 2 + j * SL}px`; });
+        const nxt = st.L[i + 1]; if (nxt && t >= nxt.t0 && (nxt.ty === 'push' || nxt.ty === 'whip')) { const ue = ease.outExpo(P(t, nxt.t0, nxt.ty === 'push' ? .45 : .28)); tf(Ly.im, { x: x - (nxt.ty === 'push' ? 700 : C.W) * ue, s }); Ly.im.style.filter = `blur(${20 * ue}px)`; } });
       const fl = SW.reduce((m, [t0, ty]) => Math.max(m, (ty === 'flash' || ty === 'zoom' ? .85 : ty === 'glitch' ? .35 : 0) * (1 - P(t, t0, .18)) * (t >= t0 ? 1 : 0)), 0);
       const fc = CLIPS.slice(1, 4).reduce((m, c) => Math.max(m, t >= c[0] ? .5 * (1 - P(t, c[0], .15)) : 0), 0);
       st.flash.style.opacity = Math.max(fl, fc);
@@ -89,7 +90,7 @@
       const c = CLIPS.reduce((m, x) => t >= x[0] ? x : m, CLIPS[0]); st.chip.textContent = c[3]; st.chip.style.display = t >= FOOT && t < HOP ? '' : 'none';
       const cp = pop(t, c[0] + .05, .3, 2); tf(st.chip, { s: cp.s, o: cp.o }); st.chip.style.transform += ' skewX(-8deg)';
       st.steps.forEach((e, i) => { e.style.display = t >= HOP && t < CARD ? '' : 'none'; tf(e, slide(t, [8.97, 9.87, 10.67][i], .35, 140, 0)); e.style.transform += ' skewX(-8deg)'; });
-      st.tpl.style.display = t >= HOP && t < CARD ? '' : 'none'; tf(st.tpl, slide(t, HOP + .4, .4, 0, -40)); st.tpl.style.top = '60px';
+      st.tpl.style.display = t >= HOP && t < CARD ? '' : 'none'; tf(st.tpl, slide(t, HOP + .4, .4, 0, -40)); st.tpl.style.top = pk(60, 230) + 'px';
 
       // presenter rig
       C.setSrc(st.cut, CUT(t));

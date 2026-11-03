@@ -22,4 +22,6 @@
       [st.hi, st.name, st.oss].forEach(e => e.style.display = b[0] ? '' : 'none'); tf(st.hi, slide(t, .1, .4, -100, 0)); tf(st.name, slide(t, .9, .45, -100, 0)); tf(st.oss, { o: P(t, 1.95, .3) }); show(st.s0, b[0], .3);
       st.s.forEach((s, i) => show(s, b[1], [3.87, 4.73, 5.87, 6.6][i])); show(st.big, b[2], 7.73); st.steps.forEach((c, i) => { c.style.display = b[2] ? '' : 'none'; tf(c, pop(t, [8.97, 9.87, 10.67][i], .35, 1.8)); });
       show(st.a, b[3], 12.1); show(st.b, b[3], 12.9); st.a.style.filter = b[3] ? `grayscale(${P(t, 12.9, .4)}) brightness(${1 - .4 * P(t, 12.9, .4)})` : ''; st.cta.style.display = b[3] ? '' : 'none'; tf(st.cta, pop(t, 13.8, .4, 1.8)); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [50, 60, 1520, 830] });
 })();

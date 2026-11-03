@@ -17,6 +17,20 @@ if (V) C.fit(titleEl, 952);                          // shrink long lines to the
 Rules: write `pk(old, new)` instead of editing a 16:9 number; keep text inside `EV.SAFE`; keep the presenter's face above the
 `caption` zone; check with `?guides=1`.
 
+## Zone remap (for templates whose 16:9 scenes are a content block beside the presenter)
+
+```js
+C.portLayout({ box: [x, y, w, h], cover: [sceneIndex], keep: [sceneIndex], at: { i: { box, top, maxH } }, inbox: [keyIndex] });
+C.portFull(el);   // full-frame element (footage, grade) leaves the box and fills 9:16, stretched
+C.portCover(el);  // full-frame drawing (canvas floor, rays, sky) leaves the box and covers 9:16 at its own proportions
+```
+
+In 9:16 each scene is still built in its 1920×1080 coordinates, inside a box that is scaled into the top content zone
+(`box` = the 16:9 rectangle holding the content). The presenter path is then re-laid below the block: full stays full,
+circles become a circle and cards a card in the presenter zone; `inbox` keys stay inside the content (presenter inside a
+globe, sun or hub). `cover` scenes fill the frame; `at` gives one scene its own box (text over a full-bleed presenter goes
+in the lower zone); `keep` leaves a natively 9:16 scene alone. In 16:9 every call is a no-op.
+
 ## API (engine/engine.js)
 
 | Name | What it is |
@@ -40,17 +54,17 @@ and `K.EC.region()` / JSON card positions use the current stage, so the EVA Card
 
 ## Template status (Phase 1)
 
-16:9 regression: all 29 pages (21 demos, 4 card demos, T24 + layouts, section template, layouts index) were rendered at
+16:9 regression (re-run after every port): all 29 pages (21 demos, 4 card demos, T24 + layouts, section template, layouts index) were rendered at
 8 timestamps before and after the change on identical media and pixel-compared. The only differences are a few dozen pixels
 inside the presenter window, the same JPEG-decode jitter seen when the unmodified code is rendered twice.
 
 | Template | 9:16 | Notes |
 |---|---|---|
-| T01 Acid Lime Kinetic | ✅ ported | text stack top, presenter card below |
-| T09 Showcase Wall Opener | ✅ ported | taller 8×12 tile wall, HUD rows / flow scaled to the safe width; `?wall=DIR&wallN=FRAMES` builds the wall from playing slices of one video |
-| T17 Science Network | ✅ ported | circle presenter moves between beats, globe / sphere chain / tunnel recentred |
-| T20 Fast-Paced Social Media | ✅ ported | phone preview inside the style panel follows the source orientation |
-| T02–T08, T10–T16, T19, T21, T23, T24 | ⏳ not ported | render at 1080×1920 without errors only where their helpers allow, but their layouts are still 16:9 coordinates: **not adapted**, do not ship in 9:16 |
-| Card demos (`template/cards/*`) | ⏳ not ported | cards engine is aspect-aware; the demo sections still use 16:9 boxes |
+| T01, T09, T17, T20 | ✅ native 9:16 | hand-placed with `pick()`; T09 `?wall=DIR&wallN=FRAMES` builds the opening wall from playing slices of one video |
+| T19 Footage Intro | ✅ native 9:16 | cut-out rig re-laid with `pick()`; needs `scripts/matte.py` cut-out frames, `?cut=DIR` |
+| T24 Luxury Nude (`template/sample5/t24`) | ✅ native 9:16 | cut-out lower and centred, card groups scaled into the top zone; `?cut=DIR&cutN=FRAMES` |
+| T02–T08, T10–T16, T21, T23 | ✅ zone remap | `portLayout` boxes; backgrounds via `portFull` / `portCover` (T07 footage, T08 neon grade, T14 floor, T15 sky, T16 bursts) |
+| Card demos t01 / t09 / t17 / t20 | ✅ zone remap | background scene `cover`, card block top, presenter below |
+| `template/cards/layouts`, `template/sample5/t24-layouts` | ⏳ reference pages | layout catalogues, still 16:9 only |
 | Burned captions (`scripts/captions.py`, `caption_zones.py`) | ⏳ | still PlayRes 1920×1080; needs a portrait style set using `EV.zone('caption')` |
 | SaaS (`saas/worker/*`) | ⏳ | `pipeline.py` rejects portrait input, `planner.py` / `auto.js` assume 1920×1080; needs an `aspect` job field passed through to `--ar` |

@@ -146,6 +146,43 @@
     box.style.boxShadow = FULL ? 'none' : `0 0 0 ${ring.width}px ${ring.color}, 0 28px 70px rgba(0,0,0,${ring.shadow ?? .45})` + (ring.glow ? `, 0 0 60px ${ring.glow}` : '');
   }
 
+  const LW = 1920, LH = 1080;
+  const asLand = f => { S.W = LW; S.H = LH; try { return f(); } finally { S.W = W; S.H = H; } };
+  /* Zone remap for 9:16, for templates whose 16:9 scenes are a content block beside the presenter.
+   *   EV.portLayout({ box: [x, y, w, h], top, maxH, cover: [sceneIndex...], keep: [sceneIndex...], eva, coverX })
+   * box     the 16:9 rectangle that holds the scene content (titles, cards, lists), in 1920x1080 pixels
+   * top     where the box starts in 9:16 (default SAFE.top + 20); it is scaled to the safe width (max maxH tall)
+   * cover   scenes that are full-frame footage / backgrounds: scaled to fill the 9:16 frame instead (coverX = focus 0..1)
+   * keep    scenes already written for 9:16 (pick/zone): left untouched
+   * eva     true (default): the presenter window path is re-laid below the content block: full stays full, circles become a
+   *         circle and cards a card in the presenter zone. Pass a function (L, i, key) => L to place keys yourself.
+   * In 16:9 this does nothing. Elements still keep their 16:9 design; nothing is cropped. */
+  const fitOf = (box, top, maxH, pad) => { const [x, y, w, h] = box, s = Math.min((W - 2 * pad) / w, maxH / h); return { s, dx: (W - w * s) / 2 - x * s, dy: top - y * s }; };
+  S.portLayout = cfg => { if (!PORTRAIT) return; const [x, y, w, h] = cfg.box, top = cfg.top ?? S.SAFE.top + 20, maxH = cfg.maxH ?? 820;
+    const s = Math.min((W - 2 * (cfg.pad ?? 48)) / w, maxH / h), cs = Math.max(W / LW, H / LH), cx = cfg.coverX ?? .5;
+    /* per-scene boxes: at: { sceneIndex: { box, top, maxH } } (e.g. text over a full-bleed presenter goes in the lower zone) */
+    const per = {}; for (const i in cfg.at || {}) { const a = cfg.at[i]; per[i] = fitOf(a.box || cfg.box, a.top ?? top, a.maxH ?? maxH, a.pad ?? cfg.pad ?? 48); }
+    S.remap = { per, cover: cfg.cover || [], keep: cfg.keep || [], fitXf: { s, dx: (W - w * s) / 2 - x * s, dy: top - y * s },
+      coverXf: { s: cs, dx: Math.min(0, Math.max(W - LW * cs, W / 2 - cx * LW * cs)), dy: (H - LH * cs) / 2 }, bottom: top + h * s };
+    if (cfg.eva === false) return;
+    const y0 = S.remap.bottom + 36, y1 = H - S.SAFE.bottom + 20, zh = Math.max(240, y1 - y0);
+    const place = typeof cfg.eva === 'function' ? cfg.eva : (L0, i, k) => { const L = Object.assign({ x: 0, y: 0, w: LW, h: LH, r: 0, s: 1, o: 1 }, L0);
+      if (L.w >= LW - 20 && L.h >= LH - 20) return Object.assign({}, S.POSES.full, { o: L.o });
+      if (L.r >= Math.min(L.w, L.h) / 2 - 2) { const d = Math.min(cfg.circle ?? 480, Math.max(240, zh)); return { x: (W - d) / 2, y: y0 + Math.max(0, (zh - d) / 2), w: d, h: d, r: d / 2, s: L.s, o: L.o }; }
+      const ch = Math.max(300, zh), cw = Math.min(W - 2 * 110, ch * .82); return { x: (W - cw) / 2, y: y0, w: cw, h: ch, r: Math.min(L.r, 40), s: L.s, o: L.o }; };
+    const fx = S.remap.fitXf, inbox = L0 => { const L = Object.assign({ x: 0, y: 0, w: LW, h: LH, r: 0, s: 1, o: 1 }, L0); return Object.assign({}, L, { x: L.x * fx.s + fx.dx, y: L.y * fx.s + fx.dy, w: L.w * fx.s, h: L.h * fx.s, r: L.r * fx.s }); };
+    S.evaKeys = S.evaKeys.map((k, i) => Object.assign({}, k, { L: (cfg.inbox || []).includes(i) ? inbox(k.L) : place(k.L, i, k) })); };
+  /* portFull(el): in a remapped 9:16 scene, move a full-frame element (footage, sky, grade) out of the content box so it fills
+     the whole 9:16 frame; heights scale with the frame. No-op in 16:9. */
+  /* portCover(el): like portFull, but keeps the element's 16:9 drawing (canvas, rays, floor) and scales it to cover the 9:16
+     frame instead of stretching it. Use for full-frame backgrounds built inside a remapped scene. No-op in 16:9. */
+  S.portCover = (e, fx) => { if (!PORTRAIT || !S.remap) return e; let r = e.parentNode; while (r && r.parentNode && !r.parentNode.classList.contains('layer')) r = r.parentNode;
+    if (!r || !r.parentNode) return e; const c = S.remap.coverXf, dx = fx == null ? c.dx : Math.min(0, Math.max(W - LW * c.s, W / 2 - fx * LW * c.s));
+    const w = el(null, 'div', '', { position: 'absolute', left: 0, top: 0, width: LW + 'px', height: LH + 'px', transformOrigin: '0 0', transform: `translate(${dx.toFixed(2)}px,${c.dy.toFixed(2)}px) scale(${c.s.toFixed(5)})`, zIndex: getComputedStyle(e).zIndex === 'auto' ? '' : e.style.zIndex });
+    r.parentNode.insertBefore(w, r); w.appendChild(e); return e; };
+  S.portFull = e => { if (!PORTRAIT || !S.remap) return e; let r = e.parentNode; while (r && r.parentNode && !r.parentNode.classList.contains('layer')) r = r.parentNode;
+    if (!r || !r.parentNode) return e; r.parentNode.insertBefore(e, r); const h = parseFloat(e.style.height) || LH, tp = parseFloat(e.style.top) || 0;
+    Object.assign(e.style, { left: '0px', width: W + 'px', top: (tp / LH * H) + 'px', height: (h / LH * H) + 'px' }); return e; };
   S.start = function () {
     const stage = document.getElementById('stage');
     /* per-render overrides (renderer / SaaS worker pass them in the URL): eva=frames dir, srcw/srch=footage size, face=x,y,h */
@@ -154,12 +191,18 @@
     if (Q.get('face')) { const [x, y, h] = Q.get('face').split(',').map(Number); S.face = { x, y, h }; }
     if (PORTRAIT) { document.documentElement.classList.add('ar-portrait');
       for (const e of [document.documentElement, document.body, stage]) Object.assign(e.style, { width: W + 'px', height: H + 'px' }); }
-    for (const sc of S.scenes) {
+    S.scenes.forEach((sc, i) => {
       sc.layer = el(stage, 'div', 'layer', { zIndex: sc.z || 1 });
       if (sc.bg) sc.layer.style.background = sc.bg;
       if (sc.cls) sc.layer.className += ' ' + sc.cls;
-      sc.st = sc.build ? sc.build(sc.layer) || {} : {};
-    }
+      /* 9:16 zone remap (see S.portLayout): the scene is built in its original 1920x1080 coordinates inside a box that is
+         scaled into the portrait content zone ('fit') or scaled to fill the frame ('cover', for full-frame footage layers) */
+      const R = PORTRAIT && S.remap ? (S.remap.cover.includes(i) ? S.remap.coverXf : S.remap.keep.includes(i) ? null : S.remap.per[i] || S.remap.fitXf) : null;
+      let root = sc.layer;
+      if (R) { sc.land = true; root = el(sc.layer, 'div', '', { position: 'absolute', left: 0, top: 0, width: LW + 'px', height: LH + 'px', transformOrigin: '0 0', transform: `translate(${R.dx.toFixed(2)}px,${R.dy.toFixed(2)}px) scale(${R.s.toFixed(5)})` }); }
+      sc.root = root;
+      sc.st = sc.build ? (sc.land ? asLand(() => sc.build(root)) : sc.build(root)) || {} : {};
+    });
     /* automatic whoosh on every scene change unless the scene is quiet */
     for (const sc of S.scenes) if (sc.t0 > .05 && !sc.quiet) S.sfx.push(['whoosh', +(sc.t0 - .05).toFixed(3), .14, {}]);
     evaInit(stage);
@@ -169,7 +212,7 @@
       for (const sc of S.scenes) {
         const on = t >= sc.t0 && t < sc.t1;
         sc.layer.style.display = on ? 'block' : 'none';
-        if (on && sc.update) sc.update(t - sc.t0, sc.st, t);
+        if (on && sc.update) { if (sc.land) asLand(() => sc.update(t - sc.t0, sc.st, t)); else sc.update(t - sc.t0, sc.st, t); }
       }
       evaRender(t);
     };

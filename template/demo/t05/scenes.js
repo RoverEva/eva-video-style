@@ -22,4 +22,6 @@
       [st.bub, ...st.p].forEach(e => e.style.display = b[1] ? '' : 'none'); const q = pop(t, 3.87, .4, 1.6); tf(st.bub, { s: q.s, o: q.o }); st.p.forEach((p, i) => { const r = pop(t, [3.95, 4.73, 5.87, 6.6][i], .35, 2.2); tf(p, { s: r.s, o: r.o, r: Math.sin(t * 4 + i) * 1.5 }); });
       [st.kt, st.kt2, ...st.n].forEach(e => e.style.display = b[2] ? '' : 'none'); tf(st.kt, slide(t, 7.73, .4, -200, 0)); tf(st.kt2, pop(t, 8.0, .4, 1.8)); K.O(st.kt2); st.n.forEach((d, i) => tf(d, slide(t, [8.97, 9.87, 10.67][i], .4, -900, 0)));
       [st.l1, st.l2, ...st.c].forEach(e => e.style.display = b[3] ? '' : 'none'); tf(st.l1, slide(t, 12.1, .4, -200, 0)); tf(st.l2, slide(t, 12.9, .4, -200, 0)); st.c.forEach((c, i) => { const r = pop(t, 13.8 + i * .4, .35, 2.2); tf(c, { s: r.s * (1 + .03 * Math.sin(t * 6 + i)), o: r.o }); }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [80, 60, 1180, 900] });
 })();

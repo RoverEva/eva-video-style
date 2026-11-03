@@ -24,4 +24,6 @@
       st.p.forEach((c, i) => { c.style.display = b[1] ? '' : 'none'; const a = [3.87, 4.73, 5.87, 6.6][i]; tf(c, pop(t, a, .4, 1.6)); c.bar.style.width = (616 * ease.out3(P(t, a + .2, .8))) + 'px'; c.bar.style.backgroundPosition = `${t * 60}px 0`; });
       [st.tp, ...st.f, ...st.ar, st.prog, st.pl].forEach(e => e.style.display = b[2] ? '' : 'none'); tf(st.tp, slide(t, 7.73, .4, -150, 0)); st.f.forEach((c, i) => tf(c, pop(t, [8.97, 9.87, 10.67][i], .4, 1.6))); st.ar.forEach((a, i) => tf(a, { o: P(t, [9.7, 10.5][i], .2) })); st.pf.style.width = (1360 * ease.io3(P(t, 10.7, 1.3))) + 'px'; st.pf.style.backgroundImage = `repeating-linear-gradient(110deg, rgba(0,0,0,.12) 0 18px, transparent 18px 36px)`; st.pf.style.backgroundPosition = `${t * 80}px 0`;
       [st.cv.s || st.cv, st.l1, st.l2, st.cta].forEach(e => { if (e && e.style) e.style.display = b[3] ? '' : 'none'; }); TT.curveAt(st.cv, P(t, 12.1, 1.4)); tf(st.l1, slide(t, 12.1, .4, -100, 0)); tf(st.l2, pop(t, 12.9, .4, 1.8)); tf(st.cta, pop(t, 13.8, .4, 1.7)); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [90, 50, 1480, 840] });
 })();

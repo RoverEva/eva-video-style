@@ -7,7 +7,7 @@
 
   // L1 · title + book staircase + paper plane to the sun
   C.scene({ t0: 0, t1: 3.9, bg: T.learnBg, quiet: true, build(L) {
-      const st = {}; st.sky = T.sky(L, 14, 5); st.a = T.bubbly(L, "Hi, I'm Eva!", 110, 160, 150); st.b = T.bubbly(L, 'Eva Video Style', 110, 360, 130, { fill: Lr.STAR });
+      const st = {}; st.sky = T.sky(L, 14, 5); C.portCover(st.sky.s || st.sky); st.a = T.bubbly(L, "Hi, I'm Eva!", 110, 160, 150); st.b = T.bubbly(L, 'Eva Video Style', 110, 360, 130, { fill: Lr.STAR });
       st.c = T.bubbly(L, 'an open-source AI video-editing skill', 116, 580, 52);
       st.bs = T.stairs(L, 1000, 900); st.sun = T.sun(L, 1720, 220, 95);
       st.p = T.plane(L, [[1000, 760], [1100, 580], [1240, 380], [1420, 270]], 100);
@@ -17,7 +17,7 @@
 
   // L2 · four styles: icons on blobs
   C.scene({ t0: 3.87, t1: 7.76, bg: T.learnBg, build(L) {
-      const st = {}; st.sky = T.sky(L, 12, 9, [[300, 30, .8], [1420, 30, .8], [-20, 300, .7]]);
+      const st = {}; st.sky = T.sky(L, 12, 9, [[300, 30, .8], [1420, 30, .8], [-20, 300, .7]]); C.portCover(st.sky.s || st.sky);
       st.h = T.bubbly(L, 'Choose a style', 960, 70, 120, { anchor: 'middle' });
       st.it = [['openbook', 330, Lr.CLOUD, 'Cinematic'], ['bulb', 760, '#b0389a', 'Futuristic'], ['pencil', 1190, Lr.CLOUD, 'Social'], ['openbook', 1620, '#b0389a', 'Minimal']].map(([ic, x, bc, lab], i) => ({ b: T.blob(L, x, 560, 190, bc, 4 + i), i: T.lIcon(L, ic, x, 560, 170), l: T.bubbly(L, lab, x, 790, 64, { anchor: 'middle' }) }));
       [3.9, 4.73, 5.87, 6.6].forEach((x, i) => k.sfx('pop', x, .12, { f: 800 + i * 160 })); return st; },
@@ -26,7 +26,7 @@
 
   // L3 · open-book sunrise, planes fly out (presenter in the sunrise)
   C.scene({ t0: 7.73, t1: 12.1, bg: T.learnBg, build(L) {
-      const st = {}; st.sky = T.sky(L, 16, 13, [[380, 60, .9], [1500, 120, .8], [-30, 620, .9], [1640, 600, .9]]);
+      const st = {}; st.sky = T.sky(L, 16, 13, [[380, 60, .9], [1500, 120, .8], [-30, 620, .9], [1640, 600, .9]]); C.portCover(st.sky.s || st.sky);
       st.h = T.bubbly(L, 'Ready-to-use templates', 960, 60, 110, { anchor: 'middle' });
       st.s = ['Pick', 'Apply', 'AI edits'].map((s, i) => T.bubbly(L, s, [330, 1590, 960][i], [420, 420, 220][i], 84, { anchor: 'middle', fill: [Lr.STAR, Lr.GREEN, '#ff8fb8'][i] }));
       st.bk = T.bigBook(L, 960, 870, 1000); st.b1 = T.book(L, 160, 820, 300, 90, Lr.PURPLE); st.b2 = T.book(L, 180, 730, 280, 90, Lr.ORANGE); st.b3 = T.book(L, 1420, 830, 320, 90, Lr.GREEN);
@@ -37,11 +37,13 @@
 
   // L4 · content page with corner decorations (presenter card + goals)
   C.scene({ t0: 12.07, t1: C.end + .05, bg: T.learnBg, build(L) {
-      const st = {}; st.sky = T.sky(L, 6, 21, [[20, 30, .7], [40, 900, .6]]);
+      const st = {}; st.sky = T.sky(L, 6, 21, [[20, 30, .7], [40, 900, .6]]); C.portCover(st.sky.s || st.sky);
       st.c1 = T.lIcon(L, 'pencil', 1740, 920, 140); st.c2 = T.book(L, 60, 930, 240, 70, Lr.RED); st.c3 = T.book(L, 80, 870, 220, 66, Lr.CLOUD); st.c4 = T.lIcon(L, 'bulb', 190, 790, 70);
       st.h = T.bubbly(L, "Today's goal", 900, 220, 84);
       st.g = [T.goal(L, '✓ Less time editing', 920, 400, Lr.STAR, -2), T.goal(L, '✓ More time creating', 920, 530, Lr.GREEN, 1.5), T.goal(L, 'Try Eva Video Style today →', 920, 660, '#ff8fb8', -1.5)];
       [12.1, 12.9, 13.8].forEach((x, i) => k.sfx('pop', x, .1, { f: 900 + i * 120 })); return st; },
     update(lt, st, t) { T.skyAt(st.sky, t); [st.c1, st.c2, st.c3, st.c4].forEach((e, i) => tf(e, pop(lt, .1 + i * .1, .4, 1.6))); tf(st.h, { o: P(lt, .1, .4) });
       st.g.forEach((g, i) => { const p = pop(t, [12.1, 12.9, 13.8][i], .4, 1.8); tf(g, { s: p.s, o: p.o, r: [-2, 1.5, -1.5][i] }); }); } });
+  /* 9:16: zone remap — the 16:9 content block goes in the top zone, the presenter below it (16:9 output unchanged) */
+  C.portLayout({ box: [40, 20, 1840, 1040], inbox: [3] });
 })();
