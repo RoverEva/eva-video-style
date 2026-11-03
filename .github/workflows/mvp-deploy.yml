@@ -92,7 +92,9 @@ jobs:
           pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
           M=saas/tests/media; mkdir -p e2e
           # 1. the new 30 s 9:16 customer video: full purchase, HD delivered automatically
-          V=$M/new30.mp4; [ -f $V ] || { echo "::warning::saas/tests/media/new30.mp4 missing; using the 20 s real-upload pair"; ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[a];[1:v]fps=30,scale=720:1280,setsar=1[b];[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][au]" -map "[v]" -map "[au]" -c:v libx264 -crf 20 -c:a aac e2e/fallback.mp4; V=e2e/fallback.mp4; }
+          # private test clip: R2 testdata/new30.mp4 (upload it in the Cloudflare dashboard) or saas/tests/media/new30.mp4
+          pip install -q "boto3~=1.35" && python -c "import sys; sys.path.insert(0,'saas/web'); import store; s=store.R2(); s.size('testdata/new30.mp4') and s.download('testdata/new30.mp4','e2e/new30.mp4')" || true
+          V=e2e/new30.mp4; [ -f $V ] || V=$M/new30.mp4; [ -f $V ] || { echo "::warning::saas/tests/media/new30.mp4 missing; using the 20 s real-upload pair"; ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[a];[1:v]fps=30,scale=720:1280,setsar=1[b];[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][au]" -map "[v]" -map "[au]" -c:v libx264 -crf 20 -c:a aac e2e/fallback.mp4; V=e2e/fallback.mp4; }
           python saas/tests/browser_e2e.py "$SITE_URL" $V e2e/purchase --aspect 9:16 --templates T17,T20,T01 --music mix
           # 2. paid render that fails (test-mode fault hook) → automatic retry → automatic full refund through Stripe
           cp $M/education.mp4 e2e/e2e-fail-final.mp4
