@@ -89,7 +89,26 @@ def sections(words, dur, tpls):
 
 # ───────────────────────── beats (what the cards say) ─────────────────────────
 def segments_list(d):
-    return [{"id": i, "start": s["start"], "end": s["end"], "text": s["text"].strip()} for i, s in enumerate(d["segments"]) if s["text"].strip()]
+    """Sentence-sized segments. eva-asr's VAD segments can hold several sentences (one 8 s segment for a 10 s clip), which
+    leaves too few card anchors; long segments are split at sentence ends (then commas) using the aligned word times."""
+    out = []
+    for s in d["segments"]:
+        if not s["text"].strip(): continue
+        ws = [w for w in (s.get("words") or []) if "start" in w and "end" in w]
+        if s["end"] - s["start"] <= 4.5 or len(ws) < 4:
+            out.append({"start": s["start"], "end": s["end"], "text": s["text"].strip()}); continue
+        def split(ws, marks):
+            parts, cur = [], []
+            for w in ws:
+                cur.append(w)
+                if w["w"].strip()[-1:] in marks: parts.append(cur); cur = []
+            if cur: parts.append(cur)
+            return parts
+        pieces = []
+        for p in split(ws, ".!?"):
+            pieces += split(p, ",;") if p[-1]["end"] - p[0]["start"] > 4.5 and len(p) >= 6 else [p]
+        out += [{"start": p[0]["start"], "end": p[-1]["end"], "text": " ".join(w["w"].strip() for w in p)} for p in pieces]
+    return [dict(x, id=i) for i, x in enumerate(out)]
 
 
 def llm_beats(segs, dur, model, key):
@@ -187,6 +206,10 @@ def to_card(i, b, segs, words, secs):
         spec = {"id": f"card_{i:03}", "type": "layout", "layout": "hero" if kind == "hero" else "statement", "content": content,
                 "position": {"x": bx / W, "y": by / H, "w": bw / W, "h": bh / H, "size": size},
                 "animation": {"times": [round(t0 + .2 * j, 3) for j in range(3)]}}
+        cap = min(t0 + 6.5, secs[sec]["t1"] - .1)
+        if cap - t0 < 2.4:   # keyword late in a short section: show the card up to 1 s before its sentence so it stays ≥ 2.4 s
+            t0 = max(secs[sec]["t0"] + .35, min(t0, cap - 2.4), seg["start"] - 1.0)
+            spec["animation"]["times"] = [round(t0 + .2 * j, 3) for j in range(3)]
         t_in, last = t0, t0 + .4
     t_out = min(max(seg["end"] + .4, last + 2.2, t_in + 2.5), t_in + 6.5, secs[sec]["t1"] - .1)
     return {"spec": spec, "t_in": round(t_in, 3), "t_out": round(t_out, 3), "section": sec, "kind": kind}, None

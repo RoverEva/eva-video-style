@@ -57,10 +57,11 @@ jobs:
       - name: Publish Before/After demos to the website
         run: |
           set -e; sudo chown -R $USER /tmp/out
+          ff() { docker run --rm -v $PWD:/w -v /tmp/out:/tmp/out -w /w --entrypoint ffmpeg eva-worker "$@"; }   # ffmpeg from the worker image
           for d in realestate education; do
             mkdir -p site/demos/$d
-            ffmpeg -loglevel error -y -i saas/tests/media/$d.mp4 -vf scale=720:-2 -r 30 -c:v libx264 -crf 26 -preset slow -an -movflags +faststart site/demos/$d/before.mp4
-            ffmpeg -loglevel error -y -i /tmp/out/$d/out/final.mp4 -vf scale=720:-2 -c:v libx264 -crf 24 -preset slow -c:a aac -b:a 128k -movflags +faststart site/demos/$d/after.mp4
+            ff -loglevel error -y -i saas/tests/media/$d.mp4 -vf scale=720:-2 -r 30 -c:v libx264 -crf 26 -preset slow -an -movflags +faststart site/demos/$d/before.mp4
+            ff -loglevel error -y -i /tmp/out/$d/out/final.mp4 -vf scale=720:-2 -c:v libx264 -crf 24 -preset slow -c:a aac -b:a 128k -movflags +faststart site/demos/$d/after.mp4
           done
           python3 - <<'EOF'
           import json; p = "site/demos/demos.json"; j = json.load(open(p))
@@ -68,6 +69,7 @@ jobs:
               if d["id"] in ("realestate", "education"): d.update(ready=True, before=f"demos/{d['id']}/before.mp4", after=f"demos/{d['id']}/after.mp4")
           json.dump(j, open(p, "w"), indent=1)
           EOF
+          sudo chown -R $USER site/demos
           git config user.name "eva-render-bot"; git config user.email "eva-render-bot@users.noreply.github.com"
           git add -f site/demos && git commit -m "Demos: Before/After rendered by the worker image from real uploads (run ${{ github.run_id }})" || exit 0
           git pull --rebase origin ${{ github.ref_name }} && git push origin HEAD:${{ github.ref_name }}

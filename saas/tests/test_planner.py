@@ -24,3 +24,17 @@ with tempfile.TemporaryDirectory() as d:
             assert all(w in text for w in words), f"invented text {words}"
             assert c["t_out"] - c["t_in"] >= 2.0
 print("planner tests: ok")
+
+# real eva-asr shape (seen on Modal's image in CI): one 8 s VAD segment + a short one in a 10 s clip → still one card per look
+with tempfile.TemporaryDirectory() as d:
+    d = Path(d); words = "Hi, I'm Eva. Welcome to Eva Video Style. Just upload your video, choose a template, and let AI".split()
+    ws = [{"w": w, "start": round(.332 + i * 7.85 / len(words), 3), "end": round(.632 + i * 7.85 / len(words), 3)} for i, w in enumerate(words)]
+    w2 = [{"w": x, "start": 8.285 + i * .45, "end": 8.685 + i * .45} for i, x in enumerate("create something amazing.".split())]
+    tr = {"source": "eva-asr", "language": "en", "segments": [{"start": .332, "end": 8.184, "text": " ".join(words), "words": ws},
+                                                              {"start": 8.285, "end": 9.711, "text": "create something amazing.", "words": w2}]}
+    (d / "t.js").write_text("window.EV_ASR = " + json.dumps(tr) + ";\n")
+    subprocess.run([sys.executable, HERE.parent / "worker/planner.py", d / "t.js", d / "o", "--duration", "10.033", "--templates", "T20,T01", "--mode", "multi", "--no-llm"], check=True)
+    p = json.loads((d / "o/plan.json").read_text())
+    assert {c["section"] for c in p["cards"]} == {0, 1}, p["planner"]["rejected"]
+    assert all(c["t_out"] - c["t_in"] >= 2.0 for c in p["cards"])
+print("planner tests (long ASR segments): ok")
