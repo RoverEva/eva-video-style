@@ -11,28 +11,32 @@ window.RE = {
    "lines": [
     "今天带你看一套",
     "超心动的现代豪宅"
-   ]
+   ],
+   "src": 17.6
   },
   {
    "t0": 3.766,
    "t1": 4.766,
    "text": "采光超好",
    "role": "item",
-   "icon": "sun"
+   "icon": "sun",
+   "src": 6.0
   },
   {
    "t0": 4.766,
    "t1": 6.0,
    "text": "空间也很大",
    "role": "item",
-   "icon": "space"
+   "icon": "space",
+   "src": 0.3
   },
   {
    "t0": 6.0,
    "t1": 8.133,
    "text": "还有超美的私家庭院",
    "role": "item",
-   "icon": "tree"
+   "icon": "tree",
+   "src": 7.1
   },
   {
    "t0": 8.3,
@@ -43,7 +47,8 @@ window.RE = {
    "lines": [
     "真的太适合",
     "自住了"
-   ]
+   ],
+   "src": 11.0
   }
  ]
 };
