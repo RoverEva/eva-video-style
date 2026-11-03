@@ -13,7 +13,8 @@ from playwright.sync_api import sync_playwright
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("site"); ap.add_argument("video"); ap.add_argument("out")
     ap.add_argument("--aspect", default="9:16"); ap.add_argument("--templates", default="T17,T20"); ap.add_argument("--music", default="mix")
-    ap.add_argument("--email", default="eva-e2e@example.com"); a = ap.parse_args()
+    ap.add_argument("--email", default="eva-e2e@example.com"); ap.add_argument("--expect", choices=["delivered", "refunded"], default="delivered")
+    a = ap.parse_args()
     out = Path(a.out); out.mkdir(parents=True, exist_ok=True); T = {"start": time.time()}; res = {"site": a.site, "video": a.video}
     mark = lambda k: T.__setitem__(k, round(time.time() - T["start"], 1))
     with sync_playwright() as p:
@@ -38,15 +39,19 @@ def main():
         if "couldn't" in pg.inner_text("#jobTitle"): res["error"] = pg.inner_text("#jobSub"); print(json.dumps(res)); sys.exit(1)
         pg.click("#jobAction button.btn"); pg.wait_for_url(lambda u: "stripe.com" in u or "paid=1" in u, timeout=60_000); mark("checkout_open")
         if "stripe.com" in pg.url:
-            pg.wait_for_selector("#cardNumber", timeout=60_000); pg.screenshot(path=out / "4_checkout.png")
+            pg.wait_for_load_state("networkidle", timeout=60_000)
             if pg.query_selector("#email"): pg.fill("#email", a.email)
+            if not pg.is_visible("#cardNumber"):   # newer Checkout: payment methods in an accordion
+                for sel in ('[data-testid="card-accordion-item-button"]', 'button:has-text("Card")', 'label:has-text("Card")'):
+                    if pg.query_selector(sel): pg.click(sel); break
+            pg.wait_for_selector("#cardNumber", timeout=60_000); pg.screenshot(path=out / "4_checkout.png")
             pg.fill("#cardNumber", "4242 4242 4242 4242"); pg.fill("#cardExpiry", "12 / 34"); pg.fill("#cardCvc", "123")
             if pg.query_selector("#billingName"): pg.fill("#billingName", "EVA E2E Test")
             if pg.query_selector("#billingPostalCode") and pg.is_visible("#billingPostalCode"): pg.fill("#billingPostalCode", "94107")
             pg.click("button[type=submit]")
         pg.wait_for_url("**/video.html?id=*paid=1*", timeout=3 * 60_000); mark("paid_redirect")
         pg.wait_for_function("() => /video is ready|refunded/.test(document.querySelector('#jobTitle').textContent)", timeout=30 * 60_000, polling=3000)
-        mark("hd_ready"); pg.screenshot(path=out / "5_delivered.png")
+        mark("hd_ready" if a.expect == "delivered" else "refunded"); pg.screenshot(path=out / "5_result.png")
         res["final_title"] = pg.inner_text("#jobTitle"); res["final_sub"] = pg.inner_text("#jobSub")
         href = pg.get_attribute("#jobAction a.btn", "href")
         api_base = pg.evaluate("() => window.EVA_API"); job = pg.url.split("id=")[1].split("&")[0].split("#")[0]
@@ -56,7 +61,13 @@ def main():
         v = json.loads(urllib.request.urlopen(f"{api_base}/api/jobs/{job}?t={urllib.parse.quote(tok)}", timeout=30).read())
         res["job"] = job; res["metrics"] = {"preview": v["preview"].get("metrics"), "final": (v.get("final") or {}).get("metrics"), "music": (v.get("final") or {}).get("music")}
     except Exception as e: res["metrics_error"] = str(e)
-    if not href: print(json.dumps(res)); sys.exit(1)
+    # private handle for live_checks.py (token = access to the video): never in the public JSON artifact
+    (out / "private.txt").write_text(json.dumps({"api": api_base, "job": job, "token": tok, "href": href}))
+    if a.expect == "refunded":
+        ok = "refunded" in res["final_title"].lower() and not href
+        res["refund_ok"] = ok; (out / "summary.json").write_text(json.dumps(res, indent=1)); print(json.dumps(res, indent=1))
+        sys.exit(0 if ok else 1)
+    if not href or "ready" not in res["final_title"]: print(json.dumps(res)); sys.exit(1)
     mp4 = out / "delivered.mp4"; urllib.request.urlretrieve(href, mp4); mark("downloaded")
     pr = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration,size:stream=codec_type,width,height", "-of", "json", mp4],
                                    capture_output=True, text=True).stdout)

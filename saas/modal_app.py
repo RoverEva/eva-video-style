@@ -116,6 +116,8 @@ def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
     def put(**kw): st.update(kw, updated_ts=time.time()); S.put_json(key, st); return st
     put(state="running", stage="preparing", progress=5)
     try:
+        import stripe_lite
+        if not preview and opts.get("_fail_final") and stripe_lite.mode() == "test": raise RuntimeError("injected test failure (e2e-fail-final, test mode only)")
         p = prepare.remote(job, opts)
         if p["rc"] == 2:
             put(state="rejected", stage="rejected", reason=p["rejected"])
@@ -151,13 +153,17 @@ def cleanup():
     jobs.reload(); cut = time.time() - 2 * 86400; gone = 0
     for d in Path("/jobs").iterdir():
         if d.is_dir() and d.stat().st_mtime < cut: shutil.rmtree(d, ignore_errors=True); gone += 1
-    jobs.commit(); print("cleanup: removed", gone, "job folders"); return gone
+    jobs.commit()
+    _paths(); import store
+    S = store.from_env(); dropped = S.expire()   # same periods as the bucket lifecycle rules; works with an object-only token
+    print("cleanup: removed", gone, "job folders;", dropped, "expired objects"); return {"folders": gone, "objects": dropped}
 
 
 @app.function(image=web_image, secrets=SECRETS, timeout=120)
 def setup(api_url: str):
     _paths(); import store, stripe_lite
-    S = store.from_env(); out = {"lifecycle": [r["ID"] for r in S.setup_bucket()], "stripe_mode": stripe_lite.mode()}
+    S = store.from_env(); out = {"bucket": S.setup_bucket(), "stripe_mode": stripe_lite.mode()}
+    if stripe_lite.mode() != "test" and os.environ.get("EVA_ALLOW_LIVE") != "1": raise SystemExit("refusing: Stripe key is not a TEST key")
     cur = S.get_json("config/stripe_webhook.json") or {}
     url = api_url.rstrip("/") + "/api/stripe/webhook"
     if cur.get("url") != url: cur = {}

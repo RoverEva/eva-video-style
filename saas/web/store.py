@@ -12,6 +12,7 @@ import json, os, shutil, time
 from pathlib import Path
 
 UPLOAD_DAYS, OUTPUT_DAYS, ORDER_DAYS = 3, 7, 90
+RETENTION = (("uploads/", UPLOAD_DAYS), ("outputs/", OUTPUT_DAYS), ("jobs/", OUTPUT_DAYS), ("orders/", ORDER_DAYS))
 
 
 class R2:
@@ -59,16 +60,30 @@ class R2:
         if filename: p["ResponseContentDisposition"] = f'attachment; filename="{filename}"'
         return self.c.generate_presigned_url("get_object", Params=p, ExpiresIn=seconds)
 
+    def delete(self, key): self.c.delete_object(Bucket=self.b, Key=key)
+
+    def expire(self):
+        """retention without bucket-admin rights: delete objects older than their prefix's period (daily cron)"""
+        n = 0
+        for prefix, days in RETENTION:
+            for k, t in self.list(prefix):
+                if time.time() - t > days * 86400: self.delete(k); n += 1
+        return n
+
     def setup_bucket(self):
         """Lifecycle rules delete customer media automatically, even if every worker is down; CORS lets the browser PUT
         straight to R2 with a presigned URL (the URL itself is the authorisation)."""
         rules = [{"ID": p.strip("/"), "Status": "Enabled", "Filter": {"Prefix": p}, "Expiration": {"Days": d}}
                  for p, d in (("uploads/", UPLOAD_DAYS), ("outputs/", OUTPUT_DAYS), ("jobs/", OUTPUT_DAYS), ("orders/", ORDER_DAYS))]
         rules.append({"ID": "abort-multipart", "Status": "Enabled", "Filter": {"Prefix": ""}, "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 1}})
-        self.c.put_bucket_lifecycle_configuration(Bucket=self.b, LifecycleConfiguration={"Rules": rules})
-        self.c.put_bucket_cors(Bucket=self.b, CORSConfiguration={"CORSRules": [{"AllowedOrigins": ["*"], "AllowedMethods": ["PUT", "GET", "HEAD"],
-                                                                                "AllowedHeaders": ["*"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600}]})
-        return rules
+        out = {}
+        for name, fn in (("lifecycle", lambda: self.c.put_bucket_lifecycle_configuration(Bucket=self.b, LifecycleConfiguration={"Rules": rules})),
+                         ("cors", lambda: self.c.put_bucket_cors(Bucket=self.b, CORSConfiguration={"CORSRules": [{"AllowedOrigins": ["*"],
+                             "AllowedMethods": ["PUT", "GET", "HEAD"], "AllowedHeaders": ["*"], "ExposeHeaders": ["ETag"], "MaxAgeSeconds": 3600}]}))):
+            try: fn(); out[name] = "set"
+            except Exception as e:   # bucket-scoped object token: set these once in the Cloudflare dashboard instead
+                out[name] = "not permitted for this token (set it in the Cloudflare dashboard)" if "AccessDenied" in str(e) or "403" in str(e) else f"error: {e}"[:200]
+        return out
 
 
 class Local:
@@ -87,7 +102,14 @@ class Local:
         for k, _ in self.list(prefix): self._p(k).unlink()
     def presign_put(self, key, size, ctype="video/mp4", seconds=1800): return f"{self.base}/_local/{key}?size={size}"
     def presign_get(self, key, seconds=3600, filename=None): return f"{self.base}/_local/{key}"
-    def setup_bucket(self): return []
+    def delete(self, key): self._p(key).unlink(missing_ok=True)
+    def expire(self):
+        n = 0
+        for prefix, days in RETENTION:
+            for k, t in self.list(prefix):
+                if time.time() - t > days * 86400: self.delete(k); n += 1
+        return n
+    def setup_bucket(self): return {}
 
 
 def from_env():

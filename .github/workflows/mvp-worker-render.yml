@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
       - name: Free disk for the image (torch + models)
         run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL && df -h /
       - name: Build worker image
@@ -46,7 +46,7 @@ jobs:
             for r in preview final; do sudo python3 -c "import json;r=json.load(open('/tmp/out/$d/out/report_$r.json'));print('$r', json.dumps({k:r.get(k) for k in ('ok','width','height','duration','lufs','music','warnings','planner','cpu_s_total')}));print({k:v.get('wall_s') for k,v in r['stages'].items()})" || true; done
             sudo python3 -c "import json;p=json.load(open('/tmp/out/$d/plan.json'));print('sections',[(s['t0'],s['t1'],s['template']) for s in p['sections']]);print('cards',[(c['t_in'],c['t_out'],c['spec']['content']) for c in p['cards']])" || true
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
         if: always()
         with:
           name: worker-render

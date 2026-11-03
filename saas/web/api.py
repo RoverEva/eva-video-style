@@ -93,6 +93,8 @@ class Service:
         if not size: raise ValueError("The upload has not finished yet.")
         if size > MAX_BYTES: raise ValueError("The video is larger than 200 MB.")
         opts = self.options(body)
+        if self.stripe.mode() == "test" and o["upload"]["name"].startswith("e2e-fail-final"):
+            opts["_fail_final"] = True   # live failure test: paid render fails → retry → automatic refund (never with live keys)
         if not self.bump(f"pv:{today()}", LIMITS["preview_global_day"]): raise PermissionError("We've hit today's free preview capacity. Please try again tomorrow.")
         if not self.bump(f"pv:{today()}:{h(ip)[:16]}", LIMITS["preview_per_ip_day"]): raise PermissionError("Free preview limit reached (3 per day).")
         o.update(options=opts, state="preview", preview_started=time.time()); self.save(o)
