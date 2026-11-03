@@ -1,4 +1,4 @@
-/* Industry · Real Estate (native 9:16) — Chinese social "property tour" look:
+/* T26 Real Estate Social (native 9:16 only) — Chinese social "property tour" look:
  * cut-out presenter with a white sticker outline, heavy dark headline with a white keyline and one red phrase,
  * yellow brush underline, yellow spark strokes, red hearts, icon list that builds up line by line.
  *

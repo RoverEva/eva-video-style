@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-two named templates (T18 and T22 were retired; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template is 16:9 (1920×1080) and keeps the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only; all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -26,6 +26,7 @@ Twenty-two named templates (T18 and T22 were retired; the other IDs are unchange
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
 | T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
 | T24 | Luxury Nude Motion | 奢华裸色 | Premium personal-brand talks, frameworks and step-by-step methods, product and service intros |
+| T26 | Real Estate Social (9:16 only) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
 
 ## T01 · Acid Lime Kinetic
 
@@ -419,6 +420,20 @@ Twenty-two named templates (T18 and T22 were retired; the other IDs are unchange
 **Presenter window:** presenter cut-out standing on the nude stage (left or centre), no frame, gentle push-in
 
 ![T24 sample a](samples/T24_a.jpg) ![T24 sample b](samples/T24_b.jpg) ![T24 sample c](samples/T24_c.jpg) ![T24 sample d](samples/T24_d.jpg)
+
+## T26 · Real Estate Social (9:16 only)
+
+*房产种草* · palette `#2b1a12` `#ff2d4b` `#ffd21f` `#ffffff` · **1080×1920 only**
+
+**Best for:** Property tours and listing intros for Reels / TikTok / 小红书 / 抖音, agent talking-head videos
+
+**Signature beats:**
+- presenter cut out (AI matte) with a white sticker outline, standing over a soft background: a clean plate of her own footage, property footage or one property photo per beat
+- heavy dark Chinese headline with a white keyline and one red phrase, yellow brush underline drawn on, yellow spark strokes, red heart stickers
+- icon list (sun, space, tree, house, kitchen, bed, pin, school, pool…) that builds up line by line as each point is spoken
+- three-beat structure from the SRT: opening line → points → closing line, white flash cuts between them
+
+**Data-driven:** `scripts/srt_to_beats.py talk.srt template/industry/t26/data.js` builds the beats; every on-screen word is copied from the SRT. Facts (rooms, size, price) appear only when the user supplies them. Source: [`template/industry/t26/`](../template/industry/t26/)
 
 ## Mixing rules
 
