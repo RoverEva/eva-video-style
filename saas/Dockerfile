@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG EVA_ASR_REF=main
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu "torch~=2.8.0" "torchaudio~=2.8.0" "torchvision~=0.23.0" \
  && pip install "git+https://github.com/RoverEva/eva-asr@${EVA_ASR_REF}" \
- && pip install numpy pillow opencv-python-headless boto3
+ && pip install numpy pillow opencv-python-headless boto3 requests starlette
 
 WORKDIR /app
 COPY package.json ./
