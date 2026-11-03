@@ -9,7 +9,7 @@
   C.evaKeys = [{ t: 0, d: 0, L: Object.assign({}, CARD, { o: 0 }) }, { t: .05, d: .45, L: CARD }, { t: 3.87, d: .5, L: CARD2 }, { t: 7.73, d: .35, L: C.pose('full') }];
   C.ringFn = t => t < 7.73 ? { color: '#fff', width: 10, shadow: .35 } : { color: 'transparent', width: 0, shadow: 0 };
 
-  const AX = pk(880, 470), AY = pk(190, 260);
+  const AX = pk(880, 560), AY = pk(190, 110), AS = .7;
   const blob = (L, x, y, w, h, grad, z) => { const b = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', background: grad, zIndex: z || 1, filter: 'saturate(1.1)' }); return b; };
   const blobAt = (b, t, ph) => { const r = n => (50 + 12 * Math.sin(t * 1.3 + ph + n)).toFixed(1) + '%'; b.style.borderRadius = `${r(0)} ${r(1)} ${r(2)} ${r(3)} / ${r(4)} ${r(5)} ${r(6)} ${r(7)}`; b.style.transform = `rotate(${Math.sin(t * .6 + ph) * 8}deg)`; };
   const capBar = (L, words, hi, x, y) => { const b = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', height: '96px', padding: '0 36px 0 18px', display: 'flex', alignItems: 'center', gap: '22px', background: S.INK, borderRadius: '18px', zIndex: 40, boxShadow: '0 14px 30px rgba(20,10,60,.25)', transformOrigin: '50% 50%' });
@@ -28,13 +28,13 @@
       st.launch = el(L, 'div', 'abs', { left: pk(360, 40) + 'px', top: pk(600, 1150) + 'px', fontFamily: S.HEAD, fontSize: pk(230, 190) + 'px', lineHeight: 1, color: '#fff', fontStyle: 'italic', transform: 'skewX(-8deg)', zIndex: 35, textShadow: '0 10px 30px rgba(40,20,90,.35)', transformOrigin: '0 50%' }, 'EVA VIDEO');
       st.day = el(L, 'div', 'abs', { left: pk(1400, 650) + 'px', top: pk(720, 1040) + 'px', fontFamily: S.HEAD, fontSize: pk(130, 104) + 'px', lineHeight: 1, color: '#fff', background: S.VI, padding: '6px 34px', borderRadius: '22px', transform: 'rotate(-6deg)', zIndex: 36, transformOrigin: '50% 50%', boxShadow: '0 16px 30px rgba(80,40,200,.35)' }, 'STYLE');
       st.newt = el(L, 'div', 'abs', { left: pk(860, 90) + 'px', top: pk(280, 230) + 'px', fontFamily: S.HEAD, fontSize: pk(140, 118) + 'px', lineHeight: 1, color: S.INK, background: S.LI, padding: '10px 44px', borderRadius: '18px', transform: 'rotate(-8deg)', zIndex: 36, transformOrigin: '50% 50%', boxShadow: '0 14px 28px rgba(60,80,0,.25)' }, "HI, I'M EVA!");
-      const sv = k.svg(L, 600, 400, AX, AY); if (V) sv.style.transform = 'scale(.9,-.9)'; sv.style.zIndex = 34; st.arc = k.sv(sv, 'path', { d: 'M40 60 C240 0 420 40 410 120 C400 200 260 230 180 250', fill: 'none', stroke: S.INK, 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-dasharray': 700, 'stroke-dashoffset': 700 });
+      const sv = k.svg(L, 600, 400, AX, AY); if (V) sv.style.transform = `scale(${AS},-${AS})`; sv.style.zIndex = 34; st.arc = k.sv(sv, 'path', { d: 'M40 60 C240 0 420 40 410 120 C400 200 260 230 180 250', fill: 'none', stroke: S.INK, 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-dasharray': 700, 'stroke-dashoffset': 700 });
       st.dot = el(L, 'div', 'abs', { left: '0px', top: '0px', width: '30px', height: '30px', borderRadius: '50%', background: '#fff', boxShadow: '0 0 0 6px rgba(255,255,255,.5)', zIndex: 38 });
       st.cap = capBar(L, ['Open-source', 'AI', 'video', 'editing.'], 0, pk(700, 64), pk(920, 1370));
       k.sfx('pop', .12, .14); k.sfx('whoosh', .85, .12); k.sfx('impact', .95, .16); k.sfx('pop', 1.35, .14, { f: 1100 }); [1.95, 2.3, 2.65, 3.0].forEach(x => k.sfx('click', x, .12)); return st; },
     update(lt, st, t) { blobAt(st.b2, t, 2); tf(st.b2, { y: 10 * Math.sin(t * 3), r: Math.sin(t * 1.4) * 6 }); tf(st.eyes, { y: 10 * Math.sin(t * 3), x: 4 * Math.sin(t * .9) });
       const n = pop(lt, .1, .4, 2.4); tf(st.newt, { s: n.s * (1 + .03 * Math.sin(t * 6)), o: n.o, r: -8 }); st.arc.setAttribute('stroke-dashoffset', 700 * (1 - ease.out3(P(lt, .3, .6))));
-      const a = P(lt, .9, 1.6); const pt = st.arc.getPointAtLength ? st.arc.getPointAtLength(700 * ease.io3(a)) : { x: 0, y: 0 }; tf(st.dot, V ? { x: AX + 300 + (pt.x - 300) * .9 - 15, y: AY + 200 - (pt.y - 200) * .9 - 15, o: P(lt, .9, .1) } : { x: 880 + pt.x - 15, y: 190 + pt.y - 15, o: P(lt, .9, .1) });
+      const a = P(lt, .9, 1.6); const pt = st.arc.getPointAtLength ? st.arc.getPointAtLength(700 * ease.io3(a)) : { x: 0, y: 0 }; tf(st.dot, V ? { x: AX + 300 + (pt.x - 300) * AS - 15, y: AY + 200 - (pt.y - 200) * AS - 15, o: P(lt, .9, .1) } : { x: 880 + pt.x - 15, y: 190 + pt.y - 15, o: P(lt, .9, .1) });
       const l = ease.outExpo(P(lt, .9, .45)); tf(st.launch, { x: -900 * (1 - l), o: clamp(l * 4) }); st.launch.style.transform += ' skewX(-8deg)'; st.launch.style.filter = `blur(${(1 - l) * 12}px)`;
       st.streaks.forEach((s, i) => { const u = P(lt, .9 + i * .02, .5); tf(s, { x: -400 + 900 * ease.outExpo(u), o: clamp(u * 4) * (1 - P(lt, 1.5 + i * .03, .5)) }); });
       const d = pop(lt, 1.35, .4, 2.2); tf(st.day, { s: d.s, o: d.o, r: -6 }); tf(st.cap, pop(lt, 1.85, .3, 1.6)); capAt(st.cap, t, 1.95, .35); } });
