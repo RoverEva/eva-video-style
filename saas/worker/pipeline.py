@@ -165,6 +165,33 @@ def preview_chunks(J):
 
 
 # ───────────────────────────── finish ─────────────────────────────
+def phrase_srt(transcript, out, max_chars=26, cjk=False, max_s=2.8, gap=.6):
+    """Short caption phrases from eva-asr's aligned word times. ASR cues can run 8 s / 90 characters, which wraps into a
+    wall of text on a phone screen; phrases break at sentence ends, pauses, ~2.8 s or max_chars. None if no word times."""
+    try:
+        t = transcript.read_text(encoding="utf-8"); d = json.loads(t[t.index("{"): t.rindex("}") + 1])
+    except Exception: return None
+    words = [w for sg in d.get("segments", []) for w in (sg.get("words") or []) if "start" in w and "end" in w and w.get("w", "").strip()]
+    if not words: return None
+    join = (lambda ws: "".join(w["w"].strip() for w in ws)) if cjk else (lambda ws: " ".join(w["w"].strip() for w in ws))
+    cues, cur = [], []
+    for w in words:
+        ends = w["w"].strip()[-1:] in ".!?。！？"   # a sentence's last word may overflow a little rather than sit alone
+        if cur and (len(join(cur + [w])) > max_chars + (10 if ends else 0) or w["start"] - cur[-1]["end"] > gap
+                    or w["end"] - cur[0]["start"] > max_s + (.8 if ends else 0)):
+            cues.append(cur); cur = []
+        cur.append(w)
+        if w["w"].strip()[-1:] in ".!?。！？": cues.append(cur); cur = []
+    if cur: cues.append(cur)
+    f = lambda x: f"{int(x // 3600):02}:{int(x % 3600 // 60):02}:{int(x % 60):02},{int(round(x % 1 * 1000)) % 1000:03}"
+    srt = []
+    for i, c in enumerate(cues, 1):
+        a, z = c[0]["start"], max(c[-1]["end"], c[0]["start"] + .5)
+        if i < len(cues): z = min(z + .25, cues[i][0]["start"] - .02)   # hold a little, never overlap the next phrase
+        srt.append(f"{i}\n{f(a)} --> {f(z)}\n{join(c)}\n")
+    out.write_text("\n".join(srt), encoding="utf-8"); return out
+
+
 def portrait_ass(p):
     """captions.py writes a 1920x1080 ASS; for 9:16 masters re-declare the canvas and restyle so lines sit in the engine's
     caption zone (EV.zone('caption'): above the platform caption, buttons and like rail) instead of being stretched."""
@@ -198,7 +225,8 @@ def finish(jd, preview=False):
 
     def captions():
         cjk = J.j.get("language", "en") in ("zh", "ja", "ko", "yue")
-        sh([PY, ENGINE_REPO / "scripts/captions.py", J.d / "srt/talk.bilingual.srt", 0, end, W / "captions",
+        src = phrase_srt(J.d / "srt/talk.transcript.js", J.d / "srt/talk.phrases.srt", 26 if o.get("aspect") == "9:16" else 40, cjk) or J.d / "srt/talk.bilingual.srt"
+        sh([PY, ENGINE_REPO / "scripts/captions.py", src, 0, end, W / "captions",
             CFG / ("captions.cjk.json" if cjk else "captions.en.json")], J.log)
         if o.get("aspect") == "9:16": portrait_ass(W / "captions.ass")
 
