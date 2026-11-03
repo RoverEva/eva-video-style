@@ -2,6 +2,8 @@
 
 Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only; all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
+Vertical (9:16) versions and sample frames: [`Eva_Video_Style_Vertical.md`](Eva_Video_Style_Vertical.md).
+
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
 | T01 | Acid Lime Kinetic | 酸性青柠 | Openings, hooks, bold claims, wins |

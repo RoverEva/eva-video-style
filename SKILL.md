@@ -8,6 +8,7 @@ description: Edit talking-head videos in Eva Video Style — kinetic motion grap
 A motion-design house style for Eva's talking-head videos (bilingual creator, Chinese + English). The speaker stays on screen the whole time inside a window that keeps changing shape, while bold solid-color cards, giant condensed words and real screen recordings pop in exactly on the words she says.
 
 Read these before building:
+- `references/Eva_Video_Style_Vertical.md` — **the 9:16 template card**: every template's vertical layout, safe zones, render flags and sample frames (T26 is vertical only).
 - `references/templates.md` — **the 22 named templates (T01–T21, T23 and T24; T18 and T22 were retired)** with sample images. The user picks them by ID or name ("use T10 HUD Keynote for this part").
 - `references/style-guide.md` — the look: palette, type, Eva window, motion vocabulary, themes, signature beats, captions.
 - `references/pipeline.md` — step-by-step production, from raw video to delivered masters.
