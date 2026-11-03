@@ -9,7 +9,9 @@ usage: captions.py SRC.srt START END OUT_BASENAME [config.json]
   config.json optional: {"fix": {"original Chinese line": "display text"}, "keys": ["keyword", ...]}
               "fix" corrects obvious typos/mistranslations (Chinese or English lines) in the burned captions only (the source SRT is never edited);
               "keys" are words to highlight in lime (first match per line);
-              "mode": "en" writes English-only captions (one larger line) for international versions.
+              "mode": "en" writes English-only captions (one larger line) for international versions;
+              "aspect": "9:16" writes vertical captions (1080x1920 canvas, sized and lifted above the phone UI:
+              bottom edge at y 1490, side margins clear of the right-hand action rail).
 """
 import re, sys
 src, start, end, out = sys.argv[1], float(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
@@ -63,19 +65,24 @@ with open(out + '.srt', 'w', encoding='utf-8') as f:
     for i, (a, z, c, e) in enumerate(cues, 1): f.write(f'{i}\n{fmt_srt(a)} --> {fmt_srt(z)}\n' + '\n'.join(x for x in (c, e) if x) + '\n\n')
 head = """[Script Info]
 ScriptType: v4.00+
-PlayResX: 1920
-PlayResY: 1080
+PlayResX: {PX}
+PlayResY: {PY}
 WrapStyle: 0
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: CN,Noto Sans CJK SC Black,52,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,2,0,1,4,2,2,380,380,34,1
-Style: EN,Inter,34,&H00F2F2F2,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,0.5,0,1,3,1.5,2,380,380,34,1
-Style: ENB,Inter Black,50,&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,0.5,0,1,4,2,2,300,300,40,1
+Style: CN,Noto Sans CJK SC Black,{CN},&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,2,0,1,{O1},2,2,{ML},{MR},{MV},1
+Style: EN,Inter,{EN},&H00F2F2F2,&H00FFFFFF,&H00000000,&H64000000,1,0,0,0,100,100,0.5,0,1,3,1.5,2,{ML},{MR},{MV},1
+Style: ENB,Inter Black,{EB},&H00FFFFFF,&H00FFFFFF,&H00000000,&H64000000,0,0,0,0,100,100,0.5,0,1,4,2,2,{BL},{BR},{BV},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
+_V = _cfg.get('aspect') == '9:16'
+_G = dict(PX=1080, PY=1920, CN=64, EN=40, EB=64, O1=5, ML=90, MR=160, MV=430, BL=90, BR=160, BV=440) if _V else \
+     dict(PX=1920, PY=1080, CN=52, EN=34, EB=50, O1=4, ML=380, MR=380, MV=34, BL=300, BR=300, BV=40)
+head = head.replace('{PX}', str(_G['PX'])).replace('{PY}', str(_G['PY']))
+for _k in ('CN', 'EN', 'EB', 'O1', 'ML', 'MR', 'MV', 'BL', 'BR', 'BV'): head = head.replace('{' + _k + '}', str(_G[_k]))
 HL, WH = r'{\c&H2EFFD4&}', r'{\c&HFFFFFF&}'  # lime #d4ff2e (BGR)
 KEYS = KEYS + _cfg.get('keys', [])
 def hl(t):
