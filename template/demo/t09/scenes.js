@@ -6,6 +6,8 @@
   const pad = n => String(n).padStart(5, '0'), SRC = [['web', 451], ['wb', 3327], ['fly', 286], ['whis', 403], ['sent', 2088], ['match', 387], ['egg', 151], ['jmw', 151]];
   const NT = pk(55, 96), COLS = pk(11, 8);
   const WALL = Array.from({ length: NT }, (_, i) => { const [d, n] = SRC[i % SRC.length]; return `../media/${d}/f_${pad(Math.floor(((i * 37) % 97) / 97 * (n - 1)))}.jpg`; });
+  /* optional: ?wall=DIR&wallN=FRAMES builds the wall from slices of one video (30 fps JPGs); each tile plays its own slice */
+  const WD = C.params.get('wall'), WN = +(C.params.get('wallN') || 0), WOFF = Array.from({ length: NT }, (_, i) => Math.floor(((i * 37) % NT) / NT * Math.max(0, WN - 60)));
   const CARD = pk({ x: 1240, y: 170, w: 560, h: 700, r: 8, s: 1.5 }, { x: 190, y: 880, w: 700, h: 660, r: 8, s: 1.5 }),
     TR = pk({ x: 1600, y: 60, w: 240, h: 240, r: 120, s: 3 }, { x: 390, y: 980, w: 300, h: 300, r: 150, s: 3 });
   C.evaKeys = [{ t: 0, d: 0, L: Object.assign({}, CARD, { o: 0 }) }, { t: 2.5, d: .3, L: CARD }, { t: 7.73, d: .45, L: TR }, { t: 12.07, d: .45, L: CARD }];
@@ -17,12 +19,12 @@
   // W1 · 3D wall of real frames sweeping past; counter rolls to 20 templates
   C.scene({ t0: 0, t1: 1.93, bg: T.hudBg, quiet: true, build(L) {
       const st = {}; const wrap = el(L, 'div', 'abs', { left: pk(-400, -360) + 'px', top: '-120px', width: pk(2900, 2400) + 'px', height: pk(1400, 2300) + 'px', transformOrigin: '30% 50%' }); st.wrap = wrap;
-      const R = C.rng(4); st.tiles = WALL.map((f, i) => { const c = i % COLS, r = Math.floor(i / COLS); const tl = el(wrap, 'img', 'abs', { left: (c * 262 + (r % 2) * 60) + 'px', top: (r * 170) + 'px', width: '240px', height: '135px', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 10px 30px rgba(0,0,0,.6)' }); C.setSrc(tl, f); tl.d = R() * 1.2; return tl; });
+      const R = C.rng(4); st.tiles = WALL.map((f, i) => { const c = i % COLS, r = Math.floor(i / COLS); const tl = el(wrap, 'img', 'abs', { left: (c * 262 + (r % 2) * 60) + 'px', top: (r * 170) + 'px', width: '240px', height: '135px', objectFit: 'cover', borderRadius: '6px', boxShadow: '0 10px 30px rgba(0,0,0,.6)' }); C.setSrc(tl, WD ? `${WD}/f_${pad(WOFF[i])}.jpg` : f); tl.d = R() * 1.2; return tl; });
       st.fr = frame(L, '01'); st.dim = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'rgba(5,6,10,.6)' });
       st.o = T.odometer(L, '20', pk(820, 360), pk(380, 640), 240, '#fff', false); st.k = kick(L, 'TEMPLATES · EVA VIDEO STYLE', pk(760, 200), pk(660, 920), T.HUD.GOLD);
       k.sfx('whoosh', .1, .12); for (let i = 0; i < 8; i++) k.sfx('click', .9 + i * .08, .05); k.sfx('ding', 1.6, .08); return st; },
     update(lt, st, t) { st.wrap.style.transform = `perspective(1400px) rotateY(${-24 + 6 * lt / 2}deg) rotateX(14deg) translateX(${-pk(300, 160) * lt}px)`;
-      st.tiles.forEach(tl => tl.style.opacity = clamp((lt - tl.d * .4) * 4)); T.hudFrameAt(st.fr, t);
+      st.tiles.forEach((tl, i) => { tl.style.opacity = clamp((lt - tl.d * .4) * 4); if (WD) C.setSrc(tl, C.seq(WD, WOFF[i] / 30 + lt, WN)); }); T.hudFrameAt(st.fr, t);
       const d = P(t, .8, .3); st.dim.style.opacity = d; st.o.row.style.opacity = d; tf(st.k, slide(t, 1.2, .4, 0, 20)); T.odometerAt(st.o, t, .9, .8); } });
 
   // W2 · blue iris wipe with a spark burst

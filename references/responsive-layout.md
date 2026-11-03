@@ -47,7 +47,7 @@ inside the presenter window, the same JPEG-decode jitter seen when the unmodifie
 | Template | 9:16 | Notes |
 |---|---|---|
 | T01 Acid Lime Kinetic | ✅ ported | text stack top, presenter card below |
-| T09 Showcase Wall Opener | ✅ ported | taller 8×12 tile wall, HUD rows / flow scaled to the safe width |
+| T09 Showcase Wall Opener | ✅ ported | taller 8×12 tile wall, HUD rows / flow scaled to the safe width; `?wall=DIR&wallN=FRAMES` builds the wall from playing slices of one video |
 | T17 Science Network | ✅ ported | circle presenter moves between beats, globe / sphere chain / tunnel recentred |
 | T20 Fast-Paced Social Media | ✅ ported | phone preview inside the style panel follows the source orientation |
 | T02–T08, T10–T16, T19, T21, T23, T24 | ⏳ not ported | render at 1080×1920 without errors only where their helpers allow, but their layouts are still 16:9 coordinates: **not adapted**, do not ship in 9:16 |
