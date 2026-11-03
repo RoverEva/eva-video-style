@@ -4,9 +4,9 @@ Vertical-first templates for specific verticals. Each one is driven by a beat pl
 next video needs no code changes:
 
 ```bash
-python3 scripts/srt_to_beats.py talk.srt template/industry/t26/data.js --end 10.08   # on-screen text = the SRT, unchanged
+python3 scripts/srt_to_beats.py talk.srt template/industry/t26/data.js --end 10.08 --bgcuts 17.6,6,0.3,7.1,11   # text = the SRT; one footage shot per line
 python3 scripts/matte.py media/re_eva 0 FRAMES media/re_cut                                 # cut-out presenter (RGBA WebP)
-node scripts/render.mjs template/industry/t26/index.html --out out/t26.mp4            # 1080x1920, 30 fps
+node scripts/render.mjs template/industry/t26/index.html --query bg=../media/house --out out/t26.mp4   # sharp property footage behind her            # 1080x1920, 30 fps
 ```
 
 | Folder | Look |

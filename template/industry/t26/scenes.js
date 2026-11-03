@@ -8,6 +8,7 @@
  *   bg=DIR    instead of the plate: 30 fps JPG frames for a moving background (property footage)
  *   cut=DIR   RGBA cut-out frames from scripts/matte.py (default ../media/re_cut)
  *   n=FRAMES  number of frames in those folders (default: end * 30)
+ * With bg=DIR, a beat with `src: SECONDS` (srt_to_beats.py --bgcuts) cuts the footage to that shot when the beat starts.
  * A beat may carry `bg: 'path/to/photo.jpg'` (a real property photo) to replace the footage background for that beat. */
 (function () {
   const C = EV, { el, tf, pop, slide, P, ease, clamp, lerp } = C, k = K, D = window.RE, Q = C.params;
@@ -46,22 +47,25 @@
   /* ---------- background + cut-out presenter (whole video) ---------- */
   const POSE = [{ x: 30, y: 60, s: 1.0 }, { x: 330, y: 110, s: .92 }, { x: 40, y: 560, s: .96 }];
   const BGZ = [{ s: 1.16, ox: 50, oy: 40 }, { s: 1.55, ox: 15, oy: 18 }, { s: 1.22, ox: 60, oy: 30 }];
+  /* background shots: each beat with `src` starts its own shot (items cut a little before they are spoken) */
+  const SHOTS = BG ? D.beats.filter(b => b.src != null).map(b => ({ at: b.role === 'hero' ? 0 : b.role === 'close' ? b.t0 - .1 : b.t0 - .15, src: b.src })) : [];
+  const shotAt = t => SHOTS.reduce((m, s) => t >= s.at ? s : m, SHOTS[0]);
   const beatIx = t => t < A1 ? 0 : t < B1 ? 1 : 2, starts = [0, A1, B1];
   const blend = (arr, t) => { const i = beatIx(t), u = i ? ease.outBack(P(t, starts[i], .5), 1.2) : 1, a = arr[Math.max(0, i - 1)], b = arr[i], o = {}; for (const key in b) o[key] = lerp(a[key], b[key], u); return o; };
   C.scene({ t0: 0, t1: D.end + .05, bg: '#efe6dc', quiet: true, build(L) {
       const st = {}; st.bgw = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden' });
-      st.bg = el(st.bgw, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: 'blur(10px) brightness(1.07) saturate(.92)' });
+      st.bg = el(st.bgw, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: Q.get('bg') ? 'none' : 'blur(10px) brightness(1.07) saturate(.92)' });
       el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'linear-gradient(180deg, rgba(255,250,242,.22), rgba(255,246,236,.06) 50%, rgba(70,45,30,.16))' });
       st.pw = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 3, transformOrigin: '50% 100%' });
       st.p = el(st.pw, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px',
         filter: 'drop-shadow(7px 0 0 #fff) drop-shadow(-7px 0 0 #fff) drop-shadow(0 7px 0 #fff) drop-shadow(0 -7px 0 #fff) drop-shadow(0 18px 30px rgba(70,40,20,.35))' });
       st.fl = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: '#fff', zIndex: 40, opacity: 0 }); return st; },
-    update(lt, st, t) { const i = beatIx(t), b = D.beats.find(x => x.bg && t >= x.t0 - .2 && t < x.t1 + .2);
-      C.setSrc(st.bg, b ? b.bg : BG ? C.seq(BG, t, N) : PLATE); const z = BGZ[i], push = 1 + .035 * P(t, starts[i], 4);
+    update(lt, st, t) { const i = beatIx(t), b = D.beats.find(x => x.bg && t >= x.t0 - .2 && t < x.t1 + .2), sh = shotAt(t);
+      C.setSrc(st.bg, b ? b.bg : BG ? C.seq(BG, sh ? sh.src + t - sh.at : t) : PLATE); const z = BG ? { s: 1, ox: 50, oy: 50 } : BGZ[i], push = 1 + .035 * P(t, sh ? sh.at : starts[i], 4);
       st.bg.style.transformOrigin = `${z.ox}% ${z.oy}%`; st.bg.style.transform = `scale(${(z.s * push).toFixed(4)})`;
       C.setSrc(st.p, `${CUT}/f_${String(Math.min(N - 1, Math.round(t * 30))).padStart(5, '0')}.webp`);
       const p = blend(POSE, t); tf(st.pw, { x: p.x, y: p.y + 6 * Math.sin(t * 1.6), s: p.s * (1 + .006 * Math.sin(t * 2.1)) });
-      st.fl.style.opacity = Math.max(...starts.slice(1).map(s => t >= s ? .55 * (1 - P(t, s, .28)) : 0)); } });
+      st.fl.style.opacity = Math.max(...starts.slice(1).map(s => t >= s ? .55 * (1 - P(t, s, .28)) : 0), ...SHOTS.slice(1).map(s => t >= s.at ? .35 * (1 - P(t, s.at, .22)) : 0)); } });
 
   /* ---------- A · hero line: two-line headline over the presenter's body ---------- */
   if (hero) C.scene({ t0: 0, t1: A1 + .03, z: 10, quiet: true, build(L) {
