@@ -5,7 +5,7 @@ home page → upload a REAL video → options → free preview → Stripe Checko
 
     python3 saas/tests/browser_e2e.py SITE_URL VIDEO.mp4 OUT_DIR [--aspect 9:16] [--templates T17,T20] [--music mix|none|track:id,id]
 """
-import argparse, json, subprocess, sys, time, urllib.request
+import argparse, json, subprocess, sys, time, urllib.parse, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -49,7 +49,13 @@ def main():
         mark("hd_ready"); pg.screenshot(path=out / "5_delivered.png")
         res["final_title"] = pg.inner_text("#jobTitle"); res["final_sub"] = pg.inner_text("#jobSub")
         href = pg.get_attribute("#jobAction a.btn", "href")
+        api_base = pg.evaluate("() => window.EVA_API"); job = pg.url.split("id=")[1].split("&")[0].split("#")[0]
+        tok = pg.evaluate(f"() => localStorage.getItem('eva:{job}')")
         b.close()
+    try:   # measured render time and compute cost recorded by the workers
+        v = json.loads(urllib.request.urlopen(f"{api_base}/api/jobs/{job}?t={urllib.parse.quote(tok)}", timeout=30).read())
+        res["job"] = job; res["metrics"] = {"preview": v["preview"].get("metrics"), "final": (v.get("final") or {}).get("metrics"), "music": (v.get("final") or {}).get("music")}
+    except Exception as e: res["metrics_error"] = str(e)
     if not href: print(json.dumps(res)); sys.exit(1)
     mp4 = out / "delivered.mp4"; urllib.request.urlretrieve(href, mp4); mark("downloaded")
     pr = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration,size:stream=codec_type,width,height", "-of", "json", mp4],

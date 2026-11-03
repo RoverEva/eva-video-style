@@ -1,3 +1,33 @@
+# EVA Video Studio — paid MVP (`feat/mvp-launch`)
+
+```
+site/ (Vercel, static) ──► Modal `eva-api` (saas/web/api.py) ──► R2 presigned PUT (browser → private bucket)
+   preview ≤10 s, watermarked ─► Modal render_job: prepare (eva-asr, face, plan) → render_chunk ×N (parallel) → finish
+   Stripe Checkout $9.99 ─► signed webhook ─► paid HD render ─► delivered (video page + optional email)
+   failure ─► Modal retries ×2 per stage ─► one more full attempt ─► automatic full refund      (reconcile cron, 10 min)
+```
+
+| Piece | Where |
+|---|---|
+| Web API: uploads, previews, rate limits, checkout, webhook, status | `saas/web/api.py` (Starlette) |
+| Stripe over REST, webhook HMAC verification, live-key guard | `saas/web/stripe_lite.py` |
+| R2 storage, lifecycle (uploads 3 d, outputs 7 d, orders 90 d), CORS | `saas/web/store.py` |
+| Render worker (unchanged engine; 9:16/16:9, ≤30 s, 10 s preview) | `saas/worker/pipeline.py`, `auto/`, `planner.py` |
+| Music: original rights-cleared beds, 1–3 tracks or AI Auto Mix | `saas/music/compose.py`, `saas/worker/musicbed.py` |
+| Modal functions (api, render_job, stages, reconcile, cleanup, setup) | `saas/modal_app.py` |
+| Website | `site/` |
+| CI: worker image render with real eva-asr (no accounts needed) | `.github/workflows/mvp-worker-render.yml` |
+| CI: tests → Modal → R2/Stripe setup → Vercel → live browser purchase | `.github/workflows/mvp-deploy.yml` |
+
+Limits: MP4/MOV with speech, ≤ 30 s, ≤ 200 MB (size signed into the upload URL). Free previews: 3 per IP per day,
+150 per day in total (`EVA_PREVIEWS_PER_IP`, `EVA_PREVIEWS_PER_DAY`). Live Stripe keys are refused unless `EVA_ALLOW_LIVE=1`.
+
+Local: `python3 saas/tests/test_api.py`, `python3 saas/tests/test_planner.py`,
+`python3 saas/tests/local_stack.py STATE --fixture-asr "text"` (site :8080, API :8000, fake signed Stripe),
+`python3 saas/tests/browser_e2e.py SITE VIDEO OUT` (works against the live site with Stripe test card 4242…).
+
+---
+
 # EVA Video Studio — cloud SaaS (Phase 1: cloud rendering)
 
 Turns the unchanged Eva Video Style engine into an unattended cloud job. Everything new lives in `saas/`;
