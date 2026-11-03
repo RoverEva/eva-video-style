@@ -21,3 +21,6 @@ music-library/**/*.opus
 music-library/**/SOURCE_LICENSE.txt
 music-library/catalog.json
 *.m4a
+
+# composed at build time (saas/music/compose.py)
+saas/music/tracks/

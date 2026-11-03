@@ -28,9 +28,9 @@ COPY engine engine
 COPY scripts scripts
 COPY saas saas
 RUN chmod +x scripts/*.sh && python saas/worker/warm_models.py
+# original background beds (rights-cleared, see saas/music/compose.py): composed at build time, nothing downloaded
+RUN python saas/music/compose.py saas/music/tracks
 
-# Optional cloud music library (only tracks whose licenses are cleared for paid output; see saas/README.md)
-ENV EVA_MUSIC_LIBRARY=/music
-RUN mkdir -p /music/background /music/jingles
+ENV EVA_MUSIC_LIBRARY=/app/music-library
 
 CMD ["python", "saas/worker/pipeline.py", "--help"]

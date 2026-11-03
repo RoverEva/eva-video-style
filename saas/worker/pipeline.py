@@ -26,7 +26,7 @@ ENGINE_REPO = Path(os.environ.get("EVA_ENGINE", HERE.parents[1])).resolve()   # 
 CFG = HERE.parent / "config"
 FPS, CHUNK_S = 30, 10.0
 LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
-ALLOWED_MUSIC_LICENSES = {"CC0-1.0", "CC-BY-4.0", "licensed-commercial", "user-supplied"}
+TRACKS = Path(os.environ.get("EVA_TRACKS", HERE.parent / "music/tracks"))   # composed by saas/music/compose.py (rights-cleared)
 DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 10}
 SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}
 PREVIEW = {"9:16": (720, 1280), "16:9": (1280, 720)}
@@ -208,26 +208,30 @@ def finish(jd, preview=False):
            + [J.d / f"sec/c{i:02}.mp4" for i in idx], J.log, env=dict(os.environ, FONTSDIR=os.environ.get("FONTSDIR", "/usr/share/fonts")))
 
     def music():
-        mode = o["music"]; md = W / "music"
+        """music: none | track (music_tracks: 1-3 ids, one per section) | mix (AI Auto Mix). Rights-cleared tracks only
+        (saas/worker/musicbed.py); scripts/music.py ducks the bed under the voice. Never blocks delivery."""
+        mode = {"auto": "mix", "manual": "track"}.get(o.get("music"), o.get("music") or "none"); md = W / "music"
         if md.exists(): shutil.rmtree(md)
-        src = W / "master_CN-EN.mp4"   # captions burned (English-only in this mode; the name comes from assemble.sh)
-        cfg = json.loads((CFG / "music.saas.json").read_text()); cfg["background_music"] = mode
-        if mode == "manual": cfg["manual"]["file"] = o.get("music_track")
-        (W / "music.json").write_text(json.dumps(cfg))
+        md.mkdir(parents=True)
+        src = W / "master_CN-EN.mp4"   # captions burned (the name comes from assemble.sh)
         final = J.d / "out" / ("preview_hd.mp4" if preview else "final.mp4")
         if final.exists(): final.unlink()
         if mode == "none":
             shutil.copy(src, final); report["music"] = {"mode": "none"}; return
         try:
+            r = subprocess.run([PY, HERE / "musicbed.py", TRACKS, J.d / "plan.json", J.d / "transcript.js", md / "bed.wav", "--mode", mode,
+                                "--tracks", ",".join(o.get("music_tracks") or [])], capture_output=True, text=True)
+            J.log.write(r.stdout + r.stderr)
+            if r.returncode: raise RuntimeError((r.stderr or r.stdout).strip().splitlines()[-1])
+            bed = json.loads(r.stdout.strip().splitlines()[-1])
+            cfg = json.loads((CFG / "music.saas.json").read_text())
+            cfg.update(background_music="manual", manual={"file": str(md / "bed.wav"), "start": 0}, jingles=False)
+            (W / "music.json").write_text(json.dumps(cfg))
             sh([PY, ENGINE_REPO / "scripts/music.py", "plan", src, J.d / "srt/talk.bilingual.srt", md, "--config", W / "music.json",
                 "--cues", W / "cues.json", "--storyboard", J.d / "storyboard.json"], J.log)
-            plan = json.loads((md / "music_plan.json").read_text()); lic = (plan.get("background") or {}).get("license")
-            if o.get("paid") and lic not in ALLOWED_MUSIC_LICENSES:
-                raise RuntimeError(f"background track license is {lic}: not cleared for paid output")
             sh([PY, ENGINE_REPO / "scripts/music.py", "apply", md / "music_plan.json", final, "--video", src], J.log)
             chk = json.loads((md / "music_check.json").read_text()) if (md / "music_check.json").exists() else {}
-            report["music"] = {"mode": mode, "track": plan["background"]["file"], "license": lic, "jingles": len(plan.get("jingles", [])),
-                               "sync_ok": chk.get("sync_ok"), "speech_clear": chk.get("speech_clear")}
+            report["music"] = dict(bed, speech_clear=chk.get("speech_clear"), sync_ok=chk.get("sync_ok"))
         except Exception as e:   # music must never block delivery: fall back to voice + SFX, and say so
             report["warnings"].append(f"music skipped: {e}"); report["music"] = {"mode": "none", "requested": mode}
             if final.exists(): final.unlink()
