@@ -62,6 +62,9 @@ node scripts/render.mjs s1/index.html --cues sec/s1_cues.json
 Sections are independent, so they can render in parallel. Verify each section's frame count.
 
 ## 7. Audio (voice + SFX only)
+**Templates carry no sound.** The cue calls built into template and demo scenes (`K.sfx`) are muted in `engine/kit.js`. Sound effects are written for each video from its content: read the script and the finished cut, then add cues only where something happens on screen or in the talk, with `K.cue(kind, t, gain, args)` in that section's `scenes.js` (times local to the section) or as a hand-written cue list `[[kind, t, gain, {args}], ...]`.
+- Typical choices: a soft `impact` under the hook or a key claim; `whoosh` on a scene or template change; `pop` when a word, card or sticker lands; `ding` on a check or result; `riser` before a reveal; `applause` only for a real win or the finale.
+- Keep it sparse (most beats have none), never on top of her words' important syllables, gains about .05–.16. No music.
 ```
 python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.json:<s2 start seconds> ...
 python3 scripts/sfx.py sec/all_cues.json <total seconds> sec/sfx.wav

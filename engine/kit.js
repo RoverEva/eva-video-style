@@ -44,7 +44,11 @@
     for (let i = 0; i < n; i++) a.push({ c: el(L, 'div', 'abs', { width: (10 + R() * 14) + 'px', height: (18 + R() * 22) + 'px', background: cols[i % 7], borderRadius: '3px' }), x0: x0 + R() * w, vx: (R() - .5) * 900, vy: -900 - R() * 800, d: R() * .2 }); return a; };
   K.burst = (a, t, t0) => a.forEach(q => { const u = t - t0 - q.d; if (u < 0) { q.c.style.opacity = 0; return; } C.tf(q.c, { x: q.x0 + q.vx * u, y: 1100 + q.vy * u + 1100 * u * u, r: 400 * u, o: C.clamp(2 - u) }); });
 
-  /* sound cues: kinds whoosh | pop | click | impact | riser | ding | applause (rendered by scripts/sfx.py) */
-  K.sfx = (kind, t, g, args) => C.sfx.push([kind, +t.toFixed(3), g, args || {}]);
+  /* sound cues: kinds whoosh | pop | click | impact | riser | ding | applause (rendered by scripts/sfx.py).
+   * Templates carry NO sound: K.sfx (the cue calls built into template and demo scenes) is muted. Sound design is written
+   * per video from its content with K.cue (or a cue list, see references/pipeline.md "Sound effects"). Set C.templateSfx = true
+   * only to hear an old demo exactly as it was first rendered. */
+  K.cue = (kind, t, g, args) => C.sfx.push([kind, +t.toFixed(3), g, args || {}]);
+  K.sfx = (kind, t, g, args) => { if (C.templateSfx) K.cue(kind, t, g, args); };
   window.K = K;
 })();

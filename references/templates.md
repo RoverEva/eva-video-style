@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only; all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-four named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only (T27 is tested in 16:9; its 9:16 pass is still to be checked); all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -27,6 +27,7 @@ Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are
 | T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
 | T24 | Luxury Nude Motion | 奢华裸色 | Premium personal-brand talks, frameworks and step-by-step methods, product and service intros |
 | T26 | Real Estate Social (9:16 only) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
+| T27 | Video Wall Kinetic Typography | 视频墙动感大字 | Hooks and high-energy talking-head stretches: launches, pain points, strong claims, one idea per beat |
 
 ## T01 · Acid Lime Kinetic
 
@@ -435,10 +436,31 @@ Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are
 
 **Data-driven:** `scripts/srt_to_beats.py talk.srt template/industry/t26/data.js` builds the beats; every on-screen word is copied from the SRT. Facts (rooms, size, price) appear only when the user supplies them. Source: [`template/industry/t26/`](../template/industry/t26/)
 
+## T27 · Video Wall Kinetic Typography
+
+*视频墙动感大字* · palette `#ffffff` `#c6ff1a` `#3b2bff` `#07060d` · type Noto Sans CJK SC 900 with a black stroke
+
+**Best for:** Hooks and high-energy talking-head stretches: launches, pain points, strong claims, one idea per beat
+
+**Signature beats:**
+- fixed layer order: scrolling, softly blurred wall of video frames (rows at different speeds, a few solid colour tiles) → big Chinese words **behind** the presenter → the presenter in front → a few hand-drawn white rays
+- the presenter is the original HD frame masked by the cached AI cut-out (`scripts/matte.py`), so she stays sharp; person, words and wall are graded separately (no global filter)
+- white outline about 18 px (scaled to the frame) floating about 10 px outside the silhouette; smooth, continuous and steady, it follows arms and palms loosely, not pixel by pixel
+- 1–2 lines per beat in white, lime or an indigo box; pop / scale / slide / impact entrances; six layouts (A–F) with auto-fit so words stay inside the frame and clear of the face, body and hands
+- strong 3-second hook: white flash and a push-in on the presenter
+
+**Data-driven:** `T.vwPlan(cues, { keys })` turns SRT cues (or EV.asr segments) into beats; every word comes from the script, nothing is hard-coded. The wall takes any list of images or frames. Source: [`engine/t27.js`](../engine/t27.js), sample [`template/sample5/t27/`](../template/sample5/t27/)
+
+**Presenter window:** no window; the cut-out stands centre, slightly below middle, with a gentle push
+
+![T27 sample a](samples/T27_a.jpg) ![T27 sample b](samples/T27_b.jpg) ![T27 sample c](samples/T27_c.jpg) ![T27 sample d](samples/T27_d.jpg)
+
 ## Mixing rules
 
 - Use the templates the user names for exactly those parts; otherwise pick per section from *Best for*.
 - One template per section; change template at a natural pause so the presenter window can morph between poses.
 - The window pose at the end of a section must equal the pose at the start of the next.
 - Bright templates (T01–T07) mix freely. HUD templates (T09–T11, T13) pair well together. Keep T21 for calm stretches and T19 for bringing in real footage. T24 Luxury Nude Motion suits premium, calm sections (frameworks, methods, brand statements); keep it for a whole section and let the type move slowly. T23 Creative Pop suits step lists: give each point the next colour of the seven-colour system, in order.
+- T27 works best as the main look (up to about 70% of a video), broken up by one or two other templates for screens and lists (for example T11 for real screenshots, T05 for a key point, T16 for the ending). When a second line would sit behind the head, move it to a layout that keeps it beside her.
+- **No template carries sound.** Sound effects are designed per video from its content (see [`pipeline.md`](pipeline.md), step 7).
 - Numbers, dates and facts on screen come only from what the speaker says. Anything conceptual is labelled ILLUSTRATIVE.

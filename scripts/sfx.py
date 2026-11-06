@@ -37,7 +37,7 @@ GEN = {'applause': applause, 'whoosh': whoosh, 'pop': pop, 'click': click, 'impa
 for c in cues:
     kind, t, g = c[0], c[1], c[2]; args = c[3] if len(c) > 3 else {}
     sig = GEN[kind](**args).astype(np.float32); i = int(t * SR); j = min(L, i + len(sig))
-    if i < L: out[i:j] += sig[:j - i] * g
+    if 0 <= i < L: out[i:j] += sig[:j - i] * g
 out = np.tanh(out * 1.1) * .9
 w = wave.open(OUT, 'w'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(SR); w.writeframes((out * 32767).astype(np.int16).tobytes()); w.close()
 print(OUT, len(cues), 'cues')

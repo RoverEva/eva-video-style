@@ -8,6 +8,7 @@ New templates (T24 onward) are demoed on one short clip: a 5-second AI-presenter
 |---|---|
 | `t24/` | T24 Luxury Nude Motion, 5 s sample |
 | `t24-layouts/` | all eight T24 layouts in turn (2 s each), a reference for every layout call |
+| `t27/` | T27 Video Wall Kinetic Typography, 5 s sample (needs `media/cut`; wall = the template frames in `references/samples/`) |
 
 ## Media
 
@@ -15,7 +16,7 @@ Put the clip's frames in `template/sample5/media/` (not in the repository):
 
 ```bash
 scripts/extract_frames.sh templatechoose_demo.mp4 template/sample5/media/eva
-python3 scripts/matte.py template/sample5/media/eva 0 149 template/sample5/media/cut   # cut-out for T24
+python3 scripts/matte.py template/sample5/media/eva 0 149 template/sample5/media/cut   # cut-out for T24 and T27
 ```
 
 Render with `node scripts/render.mjs template/sample5/t24/index.html --out out/t24.mp4`, then add the voice, SFX and captions as in [`references/pipeline.md`](../../references/pipeline.md).

@@ -39,15 +39,16 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 | T21 | Clean & Minimal | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_CN-EN.mp4) |
 | T23 | Creative Pop | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_CN-EN.mp4) |
 | T24 | Luxury Nude Motion | 5-second sample: [video](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T24_LuxuryNude.mp4) | [frames](references/templates.md#t24--luxury-nude-motion) |
+| T27 | Video Wall Kinetic Typography | 5-second sample: [source](template/sample5/t27/) | [frames](references/templates.md#t27--video-wall-kinetic-typography) |
 
 ## What it does
 
 - **A presenter window that keeps moving.** Full-bleed → card → circle, with face-safe framing: the speaker's whole head is always visible.
 - **Kinetic graphics timed to the words.** Cards, giant type, stickers, gauges, maps and real screen recordings pop in exactly when they are said.
-- **22 named templates (T01–T21, T23 and T24).** From Acid Lime Kinetic and Electric Blue Console to Old Newspaper, Science Network, Footage Intro, Fast-Paced Social, Clean & Minimal the Creative Pop seven-colour card system and the new Luxury Nude Motion (3D white type and ivory cards on a nude stage). (T18 and T22 were retired; the other IDs stay the same.) See [`references/templates.md`](references/templates.md).
+- **22 named templates (T01–T21, T23 and T24).** From Acid Lime Kinetic and Electric Blue Console to Old Newspaper, Science Network, Footage Intro, Fast-Paced Social, Clean & Minimal the Creative Pop seven-colour card system the Luxury Nude Motion (3D white type and ivory cards on a nude stage) and the new T27 Video Wall Kinetic Typography (big words behind a sharp cut-out presenter with a white outline, over a scrolling video wall). (T18 and T22 were retired; the other IDs stay the same.) See [`references/templates.md`](references/templates.md).
 - **Captions your way.** English-only, or bilingual (Chinese line on top, English underneath). Machine-translation slips are fixed in the burned captions only, and your SRT is never edited. On footage-heavy shots, captions move to the clearest part of the frame.
 - **Real footage, handled properly (T19).** AI cut-out of the speaker (natural colours), fast swaps through backgrounds you import (your own images or footage; no images are bundled), the clip pushes in, the presenter shrinks into a circle that stays clear of the action.
-- **Clean sound.** No background music by default: the original voice plus short sound effects, normalised to about -16 LUFS. Optional: one ducked lo-fi bed plus a few Kenney accents (`background_music: auto | manual`, see `music-library/README.md`).
+- **Clean sound.** No background music by default, and templates carry no sound of their own: the original voice plus short sound effects designed for each video from its content, normalised to about -16 LUFS. Optional: one ducked lo-fi bed plus a few Kenney accents (`background_music: auto | manual`, see `music-library/README.md`).
 
 ## Use it as a Claude skill
 

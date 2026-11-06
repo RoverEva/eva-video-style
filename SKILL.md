@@ -48,7 +48,7 @@ When the user names templates, use exactly those for those parts. When they don'
 ## Non-negotiables
 
 1. **16:9, 1920×1080, 30 fps.** No chapter bars, shot numbers, timecodes or watermarks in the output.
-2. **No background music unless the user turns it on.** By default (`background_music: none`) there is no music, and music inside any clip or template must be muted. Only when the user sets `background_music` to `auto` or `manual` add one continuous, ducked bed plus at most a few Kenney accents with `scripts/music.py` (pipeline step 9b), preview the audio first and wait for approval. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**.
+2. **No background music unless the user turns it on.** By default (`background_music: none`) there is no music, and music inside any clip or template must be muted. Only when the user sets `background_music` to `auto` or `manual` add one continuous, ducked bed plus at most a few Kenney accents with `scripts/music.py` (pipeline step 9b), preview the audio first and wait for approval. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). **Templates carry no sound:** their built-in cues are muted; design the SFX for each video from its content with `K.cue` (see `references/pipeline.md`, step 7). Final loudness is about **-16 LUFS**.
 3. **The speaker's whole head is always visible**, from hair to chin, in every window shape. Never crop the face; calibrate the face position on every new shoot.
 4. **Never overwrite** source videos, old projects or approved samples. Every output goes to a new versioned folder (`v1_samples/`, `v1_full/`, `v2_full/` ...).
 5. **Never invent facts, numbers or software screens.** Show real UI only from real screen recordings. Label anything conceptual `ILLUSTRATIVE` and draw it without fake numbers. Show stated results (scores, prices, dates) exactly as spoken.
@@ -72,7 +72,7 @@ scripts/extract_frames.sh raw/screen.mp4 media/screen     # real screen recordin
 # 2. sections: copy template/section/ per 15–40 s chunk, write scenes.js (see references/engine-api.md)
 node scripts/render.mjs s1/index.html --stills check/s1 --times 1,4,8,12   # layout check
 node scripts/render.mjs s1/index.html --out sec/s1.mp4                     # silent render
-node scripts/render.mjs s1/index.html --cues sec/s1_cues.json              # sound cues
+node scripts/render.mjs s1/index.html --cues sec/s1_cues.json              # sound cues (only the K.cue calls you wrote for this video)
 # 3. audio + captions + assembly
 python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.json:37.4
 python3 scripts/sfx.py sec/all_cues.json 73.667 sec/sfx.wav
