@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-four named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only (T27 is tested in 16:9; its 9:16 pass is still to be checked); all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-four named templates (T18 and T22 are retired; T25 Editorial Depth and T26 Vintage Story are not on this branch; Real Estate Social, first numbered T26, is now T28 so the IDs match the template library page). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T28, which is made 9:16 first (T27 is tested in 16:9; its 9:16 pass is still to be checked); all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 | ID | Template | Chinese name | Best for |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Twenty-four named templates (T18, T22 and T25 are unused IDs; the other IDs are 
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
 | T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
 | T24 | Luxury Nude Motion | 奢华裸色 | Premium personal-brand talks, frameworks and step-by-step methods, product and service intros |
-| T26 | Real Estate Social (9:16 only) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
+| T28 | Real Estate Social (9:16 first, 16:9 too) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
 | T27 | Video Wall Kinetic Typography | 视频墙动感大字 | Hooks and high-energy talking-head stretches: launches, pain points, strong claims, one idea per beat |
 
 ## T01 · Acid Lime Kinetic
@@ -422,9 +422,9 @@ Twenty-four named templates (T18, T22 and T25 are unused IDs; the other IDs are 
 
 ![T24 sample a](samples/T24_a.jpg) ![T24 sample b](samples/T24_b.jpg) ![T24 sample c](samples/T24_c.jpg) ![T24 sample d](samples/T24_d.jpg)
 
-## T26 · Real Estate Social (9:16 only)
+## T28 · Real Estate Social (9:16 first, 16:9 too)
 
-*房产种草* · palette `#2b1a12` `#ff2d4b` `#ffd21f` `#ffffff` · **1080×1920 only**
+*房产种草* · palette `#2b1a12` `#ff2d4b` `#ffd21f` `#ffffff` · **1080×1920 first; 1920×1080 puts the presenter in the right third and the text on the left**
 
 **Best for:** Property tours and listing intros for Reels / TikTok / 小红书 / 抖音, agent talking-head videos
 
@@ -434,7 +434,9 @@ Twenty-four named templates (T18, T22 and T25 are unused IDs; the other IDs are 
 - icon list (sun, space, tree, house, kitchen, bed, pin, school, pool…) that builds up line by line as each point is spoken
 - three-beat structure from the SRT: opening line → points → closing line, white flash cuts between them
 
-**Data-driven:** `scripts/srt_to_beats.py talk.srt template/industry/t26/data.js` builds the beats; every on-screen word is copied from the SRT. Facts (rooms, size, price) appear only when the user supplies them. Source: [`template/industry/t26/`](../template/industry/t26/)
+**Data-driven:** `scripts/srt_to_beats.py talk.srt template/industry/t26/data.js` builds the beats; every on-screen word is copied from the SRT. Facts (rooms, size, price) appear only when the user supplies them. Source: [`template/industry/t26/`](../template/industry/t26/) (folder keeps its first name). Sound is placed from the content: a `pop` per point, a light `impact` on the red keyword, a `ding` at the end; no music.
+
+![T28 sample a](samples/T28_a.jpg) ![T28 sample b](samples/T28_b.jpg) ![T28 sample c](samples/T28_c.jpg) ![T28 sample d](samples/T28_d.jpg)
 
 ## T27 · Video Wall Kinetic Typography
 
