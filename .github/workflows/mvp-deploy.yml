@@ -32,6 +32,7 @@ jobs:
       R2_BUCKET: ${{ secrets.R2_BUCKET || 'eva-video-studio' }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       EVA_MAIL_FROM: ${{ secrets.EVA_MAIL_FROM }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -76,8 +77,10 @@ jobs:
           python saas/music/compose.py /tmp/tracks --mp3 && mkdir -p site/demos/music && cp /tmp/tracks/*.mp3 site/demos/music/
           echo "window.EVA_API = \"$API_URL\";" > site/config.js
           npm i -g vercel@39 >/dev/null
-          cd site && vercel link --yes --project eva-video-studio --token "$VERCEL_TOKEN"
-          URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN"); echo "deployment: $URL"
+          SC=(); [ -n "$VERCEL_SCOPE" ] && SC=(--scope "$VERCEL_SCOPE")   # team slug, when the token is team-scoped
+          cd site && vercel whoami --token "$VERCEL_TOKEN" "${SC[@]}" || { echo "::error::Vercel rejected VERCEL_TOKEN (recreate it; for a team token also add secret VERCEL_SCOPE = team slug)"; exit 1; }
+          vercel link --yes --project eva-video-studio --token "$VERCEL_TOKEN" "${SC[@]}"
+          URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN" "${SC[@]}"); echo "deployment: $URL"
           ORG=$(python -c "import json;print(json.load(open('.vercel/project.json'))['orgId'])")
           D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains?teamId=$ORG" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
           [ -z "$D" ] && D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
