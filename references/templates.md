@@ -335,8 +335,6 @@ Twenty-four named templates (T18 and T22 are retired; T25 Editorial Depth and T2
 
 **Presenter window:** circle with a thin glowing cyan ring; can sit at the tunnel centre
 
-**Product demo layout:** the product video plays big on a glass screen with a thin cyan border behind; the presenter is cut out in front, standing in a glowing cyan circle (head and shoulders break out of its top) that hops centre → up → right → down → left → centre with a squash on each landing and a shadow below. `T.sciDemo(L, {D, path, hop})` + `T.sciDemoAt(o, t, screenSrc, frameSrc, cutSrc)`; sample [`template/sample5/t17-demo/`](../template/sample5/t17-demo/) (screen recording as JPGs in `media/demo`). Sound from the content, e.g. a light pop on each landing.
-
 **Face-safe rule:** the presenter is always the top layer. Big headlines sit behind her (they may be partly hidden by her, never drawn over her), never cross the face or features and never cover the hands. `T.sciAvoid(head, pose)` measures each headline against her head zone and keeps it upper-left: it reflows the words into a taller left column at full size, or moves the block above her head or to the far side, whichever keeps the type biggest. With a full-bleed or large centred presenter, put the type in a scene at z 55 and add `T.sciCutTop(t0, t1, frameFn, cutFn)` so her sharp cut-out (`scripts/matte.py`) sits on top.
 
 ![T17 sample a](samples/T17_a.jpg) ![T17 sample b](samples/T17_b.jpg) ![T17 sample c](samples/T17_c.jpg) ![T17 sample d](samples/T17_d.jpg)
@@ -357,6 +355,8 @@ Twenty-four named templates (T18 and T22 are retired; T25 Editorial Depth and T2
 **Presenter window:** full cut-out → white-ring circle (bottom-left / top-left) → cyan glow ring at the end; your blurred background material behind her inside the circle
 
 ![T19 sample a](samples/T19_a.jpg) ![T19 sample b](samples/T19_b.jpg) ![T19 sample c](samples/T19_c.jpg) ![T19 sample d](samples/T19_d.jpg)
+
+**Product demo layout:** the product video plays full-bleed behind at normal speed with a slow push-in; the presenter is cut out in front, standing in a white-ringed circle with a cyan glow (head and shoulders break out of its top) that hops centre → up → right → down → left → centre, with a squash on each landing and a shadow below; optional slanted label chip with text from the screen. `T.ftDemo(L, {D, path, hop, label})` + `T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc)`; sample [`template/sample5/t19-demo/`](../template/sample5/t19-demo/) (screen recording as JPGs in `media/demo`). Sound from the content, e.g. a light pop on each landing.
 
 ## T20 · Fast-Paced Social Media
 

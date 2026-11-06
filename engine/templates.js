@@ -1,4 +1,4 @@
-/* Eva Video Style · template library for T08–T17, T23 and T24. Load after kit.js (and land.js for the T14 globe).
+/* Eva Video Style · template library for T08–T17, T19 (product demo), T23 and T24. Load after kit.js (and land.js for the T14 globe).
  *   T08 NEON  · 霓虹讲解 Neon Explainer
  *   T09 WALL  · 作品墙开场 Showcase Wall Opener
  *   T10 KEY   · HUD 发布会 HUD Keynote
@@ -585,36 +585,38 @@
       if (b.wrap) d.style.width = wl + 'px';
       d.style.left = b.x + 'px'; d.style.top = b.y + 'px'; });
     return d; };
-  /* T17 product demo: the product video big on a glass screen BEHIND, the presenter cut out in FRONT, standing in a glowing
-   * cyan circle that hops around the frame (centre → up → right → down → left …) with a little squash on each landing.
-   * Her head and shoulders break out of the top of the circle. T.sciDemo(L, {D, path, hop}) then per frame
-   * T.sciDemoAt(o, t, screenSrc, frameSrc, cutSrc). path = list of circle centres; hop = seconds per jump. Needs media/cut. */
-  T.sciDemo = (L, opt) => { opt = opt || {}; const o = { D: opt.D || 420, hop: opt.hop || .9, t0: opt.t0 || 0, W: C.W, H: C.H }, D = o.D, V = C.portrait;
-    o.path = opt.path || (V ? [[540, 1120], [540, 860], [820, 1120], [540, 1380], [260, 1120], [540, 1120]] : [[960, 640], [960, 430], [1500, 600], [960, 800], [420, 600], [960, 640]]);
-    const sw = opt.sw || (V ? 1000 : 1560), sh = sw * (opt.ar || 1080 / 1864), sx = (C.W - sw) / 2, sy = opt.sy ?? (V ? 300 : (C.H - sh) / 2 - 10);
-    o.scr = el(L, 'div', 'abs', { left: sx + 'px', top: sy + 'px', width: sw + 'px', height: sh + 'px', borderRadius: '18px', overflow: 'hidden', zIndex: 4, border: `2px solid rgba(24,224,242,.55)`, boxShadow: '0 0 0 8px rgba(24,224,242,.08), 0 0 60px rgba(24,224,242,.25), 0 40px 90px rgba(0,0,0,.6)', transformOrigin: '50% 50%' });
-    o.img = el(o.scr, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover' });
-    o.shadow = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: (D * .16) + 'px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0))', zIndex: 9 });
-    o.b = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', zIndex: 10, transformOrigin: '50% 100%' });
-    el(o.b, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 35%, #1b4fa8, #0a1f4a 70%)', border: `5px solid ${T.SCN.CYAN}`, boxShadow: `0 0 34px rgba(24,224,242,.6), inset 0 0 40px rgba(24,224,242,.25)`, boxSizing: 'border-box' });
-    // person: tombstone clip = the circle's lower half + straight sides up past the top, so the head pops out of the ring
-    const top = D * .62; o.pw = el(o.b, 'div', 'abs', { left: 0, top: -top + 'px', width: D + 'px', height: (D + top) + 'px', clipPath: `path('M0 0 L${D} 0 L${D} ${top + D / 2} A${D / 2} ${D / 2} 0 0 1 0 ${top + D / 2} Z')` });
-    const fh = C.face.h * C.src.h, k = D * (opt.head || .46) / fh, iw = C.src.w * k, ih = C.src.h * k;
-    o.p = el(o.pw, 'img', 'abs', { width: iw + 'px', height: ih + 'px', left: (D / 2 - C.face.x * iw) + 'px', top: (top + D * (opt.faceY ?? .1) - C.face.y * ih) + 'px', filter: 'brightness(1.06) contrast(1.05) saturate(1.05)', WebkitMaskSize: '100% 100%', maskSize: '100% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' });
-    return o; };
-  T.sciDemoAt = (o, t, scr, frame, cut) => { C.setSrc(o.img, scr); C.setSrc(o.p, frame); const m = `url(${cut})`; if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = m; o.p._m = m; }
-    tf(o.scr, { s: .94 + .06 * ease.outExpo(P(t, o.t0, .8)), o: P(t, o.t0, .4) });
-    const n = o.path.length - 1, u = Math.max(0, t - o.t0 - .3) / o.hop, i = Math.min(n - 1, Math.floor(u)), f = Math.min(1, u - i), seg = u >= n ? 1 : ease.io3(f / .7);
-    const [x0, y0] = o.path[Math.min(i, n)], [x1, y1] = o.path[Math.min(i + 1, n)], x = x0 + (x1 - x0) * seg, yb = y0 + (y1 - y0) * seg, lift = u >= n ? 0 : Math.sin(Math.PI * clamp(f / .7)) * o.D * .32;
-    const land = u >= n ? 0 : clamp((f - .7) / .3), sq = Math.sin(Math.PI * land) * .1, D = o.D, enter = ease.outBack(P(t, o.t0, .5), 1.6);
-    o.b.style.transform = `translate(${x - D / 2}px, ${yb - D / 2 - lift}px) scale(${(1 + sq) * enter}, ${(1 - sq) * enter})`;
-    o.shadow.style.transform = `translate(${x - D / 2}px, ${yb + D * .44}px) scale(${1 - lift / D * .9})`; o.shadow.style.opacity = .9 - lift / D; };
   /* full-bleed or large presenter in T17: put the type BETWEEN the video and a cut-out of her. Register after the text scenes:
    * T.sciCutTop(t0, t1, frameFn, cutFn) adds a scene at z 60 (above the Eva window at 50 and text scenes at z 55) that draws
    * the original HD frame masked by the AI cut-out (scripts/matte.py), so she stays sharp and on top. */
   T.sciCutTop = (t0, t1, frameFn, cutFn) => C.scene({ t0, t1, z: 60, quiet: true, build(L) { return { p: el(L, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }) }; },
     update(lt, st, t) { C.setSrc(st.p, frameFn(t)); const m = `url(${cutFn(t)})`; if (st.p._m !== m) { st.p.style.webkitMaskImage = st.p.style.maskImage = m; st.p._m = m; } } });
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
+
+  /* T19 Footage Intro · product demo: the product video plays full-bleed BEHIND (normal speed, slow push-in); the presenter is cut
+   * out in FRONT, standing in a white-ringed circle with a cyan glow that hops around the frame (centre → up → right → down → left …) with a little squash on each landing.
+   * Her head and shoulders break out of the top of the circle; optional slanted T19 label chip (text from the screen).
+   * T.ftDemo(L, {D, path, hop, label}) then per frame T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc). path = list of circle centres; hop = seconds per jump. Needs media/cut. */
+  T.ftDemo = (L, opt) => { opt = opt || {}; const o = { D: opt.D || 420, hop: opt.hop || .9, t0: opt.t0 || 0, W: C.W, H: C.H }, D = o.D, V = C.portrait;
+    o.path = opt.path || (V ? [[540, 1120], [540, 860], [820, 1120], [540, 1380], [260, 1120], [540, 1120]] : [[960, 640], [960, 430], [1500, 600], [960, 800], [420, 600], [960, 640]]);
+    o.scr = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden', zIndex: 4, transformOrigin: '50% 50%' });
+    el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 5, background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.32))' });
+    if (opt.label) { o.lab = el(L, 'div', 'abs', { right: (V ? 60 : 90) + 'px', top: (V ? 230 : 70) + 'px', zIndex: 12, fontFamily: "'Inter','Noto Sans CJK SC',sans-serif", fontWeight: 900, fontStyle: 'italic', fontSize: (V ? 50 : 46) + 'px', color: '#2ee6ff', background: 'rgba(8,14,32,.92)', padding: '.12em .55em', transform: 'skewX(-10deg)', boxShadow: '0 10px 30px rgba(0,0,0,.4)', whiteSpace: 'nowrap', transformOrigin: '100% 50%' }, opt.label); }
+    o.img = el(o.scr, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover' });
+    o.shadow = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: (D * .16) + 'px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0))', zIndex: 9 });
+    o.b = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', zIndex: 10, transformOrigin: '50% 100%' });
+    el(o.b, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 30%, #ffffff, #dfe8f2 75%)', border: '7px solid #fff', boxShadow: '0 0 0 3px rgba(46,230,255,.9), 0 0 36px rgba(46,230,255,.55), 0 18px 40px rgba(0,0,0,.35)', boxSizing: 'border-box' });
+    // person: tombstone clip = the circle's lower half + straight sides up past the top, so the head pops out of the ring
+    const top = D * .62; o.pw = el(o.b, 'div', 'abs', { left: 0, top: -top + 'px', width: D + 'px', height: (D + top) + 'px', clipPath: `path('M0 0 L${D} 0 L${D} ${top + D / 2} A${D / 2} ${D / 2} 0 0 1 0 ${top + D / 2} Z')` });
+    const fh = C.face.h * C.src.h, k = D * (opt.head || .46) / fh, iw = C.src.w * k, ih = C.src.h * k;
+    o.p = el(o.pw, 'img', 'abs', { width: iw + 'px', height: ih + 'px', left: (D / 2 - C.face.x * iw) + 'px', top: (top + D * (opt.faceY ?? .1) - C.face.y * ih) + 'px', filter: 'brightness(1.06) contrast(1.05) saturate(1.05)', WebkitMaskSize: '100% 100%', maskSize: '100% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' });
+    return o; };
+  T.ftDemoAt = (o, t, scr, frame, cut) => { C.setSrc(o.img, scr); C.setSrc(o.p, frame); const m = `url(${cut})`; if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = m; o.p._m = m; }
+    tf(o.scr, { s: 1 + .035 * P(t, o.t0, 6) }); if (o.lab) tf(o.lab, slide(t, o.t0 + .5, .35, 80, 0));
+    const n = o.path.length - 1, u = Math.max(0, t - o.t0 - .3) / o.hop, i = Math.min(n - 1, Math.floor(u)), f = Math.min(1, u - i), seg = u >= n ? 1 : ease.io3(f / .7);
+    const [x0, y0] = o.path[Math.min(i, n)], [x1, y1] = o.path[Math.min(i + 1, n)], x = x0 + (x1 - x0) * seg, yb = y0 + (y1 - y0) * seg, lift = u >= n ? 0 : Math.sin(Math.PI * clamp(f / .7)) * o.D * .32;
+    const land = u >= n ? 0 : clamp((f - .7) / .3), sq = Math.sin(Math.PI * land) * .1, D = o.D, enter = ease.outBack(P(t, o.t0, .5), 1.6);
+    o.b.style.transform = `translate(${x - D / 2}px, ${yb - D / 2 - lift}px) scale(${(1 + sq) * enter}, ${(1 - sq) * enter})`;
+    o.shadow.style.transform = `translate(${x - D / 2}px, ${yb + D * .44}px) scale(${1 - lift / D * .9})`; o.shadow.style.opacity = .9 - lift / D; };
 
   /* ---------- T23 Creative Pop: seven-colour card system, rounded cards, big keywords, icons, arrows, sparkles, stickers ----------
    * Every layout takes a list of items { t: label, i: icon name, c: colour (optional) } and returns an object; the matching
