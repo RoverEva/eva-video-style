@@ -335,6 +335,8 @@ Twenty-four named templates (T18 and T22 are retired; T25 Editorial Depth and T2
 
 **Presenter window:** circle with a thin glowing cyan ring; can sit at the tunnel centre
 
+**Face-safe rule:** the presenter is always the top layer. Big headlines sit behind her (they may be partly hidden by her, never drawn over her), never cross the face or features and never cover the hands. `T.sciAvoid(head, pose)` measures each headline against her head zone and keeps it upper-left: it reflows the words into a taller left column at full size, or moves the block above her head or to the far side, whichever keeps the type biggest. With a full-bleed or large centred presenter, put the type in a scene at z 55 and add `T.sciCutTop(t0, t1, frameFn, cutFn)` so her sharp cut-out (`scripts/matte.py`) sits on top.
+
 ![T17 sample a](samples/T17_a.jpg) ![T17 sample b](samples/T17_b.jpg) ![T17 sample c](samples/T17_c.jpg) ![T17 sample d](samples/T17_d.jpg)
 
 ## T19 · Footage Intro

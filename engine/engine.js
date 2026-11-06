@@ -203,8 +203,8 @@
       sc.root = root;
       sc.st = sc.build ? (sc.land ? asLand(() => sc.build(root)) : sc.build(root)) || {} : {};
     });
-    /* automatic whoosh on every scene change unless the scene is quiet */
-    for (const sc of S.scenes) if (sc.t0 > .05 && !sc.quiet) S.sfx.push(['whoosh', +(sc.t0 - .05).toFixed(3), .14, {}]);
+    /* old automatic whoosh on every scene change: templates carry no sound now, so only with C.templateSfx (see kit.js K.cue) */
+    if (S.templateSfx) for (const sc of S.scenes) if (sc.t0 > .05 && !sc.quiet) S.sfx.push(['whoosh', +(sc.t0 - .05).toFixed(3), .14, {}]);
     evaInit(stage);
     if (Q.get('guides')) S.guides(stage);
     window.END = S.end;

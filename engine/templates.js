@@ -558,6 +558,38 @@
   /* white headline with one cyan word + small sub line. T.sciHeadAt(h, t, t0) */
   T.sciHead = (L, lines, sub, x, y, size) => { size = size || 92; const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', zIndex: 8 }); d.ls = lines.map(l => el(d, 'div', '', { fontFamily: T.SCN.EN, fontWeight: 900, fontSize: size + 'px', lineHeight: 1.02, color: '#fff', whiteSpace: 'nowrap', textShadow: '0 4px 30px rgba(0,0,0,.6)' }, l.replace(/\[(.+?)\]/g, `<span style="color:${T.SCN.CYAN}">$1</span>`)));
     d.s = el(d, 'div', 'cn', { fontSize: (size * .32) + 'px', fontWeight: 400, color: '#e8f2ff', marginTop: '20px', lineHeight: 1.35, whiteSpace: 'pre' }, sub || ''); return d; };
+  /* T17 face-safe rule: the presenter is always the top layer and big type never crosses the face, features or hands.
+   * T.sciAvoid(head, g, opt): g = the presenter's rectangle on stage (the evaKeys pose, or {x:0,y:0,w:C.W,h:C.H} for full-bleed).
+   * After fonts load it measures the headline block; if it would overlap the person zone (head + shoulders + gesture room,
+   * from C.faceRect(g)), it keeps the block upper-left and shrinks it to the room left of the person, or moves it above the
+   * head, or to the right side, whichever keeps the type biggest. Text may tuck behind the presenter, never over her. */
+  T.sciPerson = (g, opt) => { opt = opt || {}; const f = C.faceRect(g), px = opt.padX ?? .22, pt = opt.padTop ?? .28;
+    return { x: f.x - f.w * px, y: f.y - f.h * pt, w: f.w * (1 + 2 * px), h: C.H - (f.y - f.h * pt), face: f }; };
+  T.sciAvoid = (d, g, opt) => { opt = opt || {}; const gap = opt.gap ?? 40, SF = C.SAFE, yMax = opt.yMax ?? C.H * .7;
+    C.fits.push(() => { const lay = d.closest('.layer'), disp = lay && lay.style.display; if (lay) lay.style.display = 'block';  // layers start hidden: show to measure
+      const P0 = T.sciPerson(g, opt), x = parseFloat(d.style.left), y = parseFloat(d.style.top), bw = d.offsetWidth, bh = d.offsetHeight;
+      const hit = (x1, y1, w1, h1) => x1 < P0.x + P0.w && x1 + w1 > P0.x && y1 < P0.y + P0.h && y1 + h1 > P0.y;
+      if (!hit(x, y, bw, bh)) { if (lay) lay.style.display = disp; return; }
+      const ls = [...d.querySelectorAll(':scope > div')], cand = [], wl = P0.x - gap - x;
+      if (wl > 0) { cand.push({ k: Math.min(1, wl / bw), x, y });                                                         // shrink, stay upper-left
+        // reflow: break lines at spaces into a taller left column at full size (CJK runs never break), shrink only if a word is wider
+        d.style.width = wl + 'px'; ls.forEach(l => { l.style.whiteSpace = 'normal'; l.style.wordBreak = 'keep-all'; });
+        const wide = Math.max(...ls.map(l => l.scrollWidth)), hh = d.offsetHeight, kw = Math.min(1, wl / wide), kh = Math.min(1, (yMax - y) / hh);
+        cand.push({ k: Math.min(kw, kh) * .999, x, y, wrap: 1 }); d.style.width = ''; ls.forEach(l => { l.style.whiteSpace = 'nowrap'; l.style.wordBreak = ''; }); }
+      const ha = P0.y - gap - SF.top; if (ha > 0) cand.push({ k: Math.min(1, ha / bh, (C.W - SF.left - SF.right) / bw), x, y: SF.top }); // above the head
+      const xr = P0.x + P0.w + gap, wr = C.W - SF.right - xr; if (wr > 0) cand.push({ k: Math.min(1, wr / bw), x: xr, y });        // right side
+      if (lay) lay.style.display = disp;
+      const b = cand.sort((p, q) => q.k - p.k)[0]; if (!b) { d.style.opacity = 0; return; }
+      if (b.wrap) { d.style.width = (wl / b.k) + 'px'; ls.forEach(l => { l.style.whiteSpace = 'normal'; l.style.wordBreak = 'keep-all'; }); }
+      d.querySelectorAll('div').forEach(l => { l.style.fontSize = (parseFloat(getComputedStyle(l).fontSize) * b.k).toFixed(1) + 'px'; });
+      if (b.wrap) d.style.width = wl + 'px';
+      d.style.left = b.x + 'px'; d.style.top = b.y + 'px'; });
+    return d; };
+  /* full-bleed or large presenter in T17: put the type BETWEEN the video and a cut-out of her. Register after the text scenes:
+   * T.sciCutTop(t0, t1, frameFn, cutFn) adds a scene at z 60 (above the Eva window at 50 and text scenes at z 55) that draws
+   * the original HD frame masked by the AI cut-out (scripts/matte.py), so she stays sharp and on top. */
+  T.sciCutTop = (t0, t1, frameFn, cutFn) => C.scene({ t0, t1, z: 60, quiet: true, build(L) { return { p: el(L, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }) }; },
+    update(lt, st, t) { C.setSrc(st.p, frameFn(t)); const m = `url(${cutFn(t)})`; if (st.p._m !== m) { st.p.style.webkitMaskImage = st.p.style.maskImage = m; st.p._m = m; } } });
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
 
   /* ---------- T23 Creative Pop: seven-colour card system, rounded cards, big keywords, icons, arrows, sparkles, stickers ----------
