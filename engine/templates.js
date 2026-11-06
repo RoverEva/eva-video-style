@@ -189,6 +189,23 @@
     bullets.forEach((t, i) => g.b.push(el(L, 'div', 'abs cn', { left: x + 'px', top: (y + 86 + i * 58) + 'px', fontSize: '34px', color: '#111', background: '#fff', padding: '2px 12px', borderRadius: '4px', transformOrigin: '0 50%' }, '· ' + t))); return g; };
   T.tagAt = (g, t, t0, step) => { tf(g.h, pop(t, t0, .3, 1.8)); g.b.forEach((b, i) => tf(b, slide(t, t0 + .4 + i * (step || .5), .3, -30, 0))); };
   T.dotsBg = '#050507';
+  /* T08 v2 "clean neon" stage (T24-level presenter clarity): the purple-blue mood lives in the BACKGROUND only.
+   * bg  = the original frame, softened and dimmed, with a purple-blue light wash; person = the same HD frame masked by the
+   * AI cut-out, sharpened and lifted slightly, never under any haze. Needs media/cut (scripts/matte.py).
+   * T.neonStageAt(o, full, cut) per frame. T.neonTitle = bold sans cream headline, soft glow only, dark shadow for reading. */
+  T.neonSharp = () => { if (document.getElementById('neSharp')) return 'neSharp'; const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('width', 0); s.setAttribute('height', 0); s.style.position = 'absolute';
+    s.innerHTML = '<filter id="neSharp" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -.3 0 -.3 2.2 -.3 0 -.3 0" preserveAlpha="true"/></filter>'; document.body.appendChild(s); return 'neSharp'; };
+  T.neonStage = (L, opt) => { opt = opt || {}; const o = {}, W = C.W, H = C.H, full = { left: 0, top: 0, width: W + 'px', height: H + 'px', objectFit: 'cover' };
+    o.bg = el(L, 'img', 'abs', Object.assign({}, full, { filter: `blur(${opt.blur ?? 3}px) brightness(${opt.dim ?? .4}) saturate(.55) contrast(1.08)`, transform: 'scale(1.03)' }));
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', mixBlendMode: 'color', opacity: .34, background: 'linear-gradient(120deg, #6a34e0, #3446f0 60%, #1d2490)' });
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', mixBlendMode: 'screen', background: `radial-gradient(${W * .45}px ${H * .6}px at 14% 22%, rgba(140,80,255,.30), rgba(0,0,0,0) 70%), radial-gradient(${W * .4}px ${H * .55}px at 88% 70%, rgba(60,100,255,.26), rgba(0,0,0,0) 70%)` });
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', background: `linear-gradient(90deg, rgba(8,4,26,.6), rgba(8,4,26,0) 48%), radial-gradient(${W * .7}px ${H * .75}px at 55% 50%, rgba(0,0,0,0) 60%, rgba(4,2,16,.55))` });
+    o.sh = el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', filter: 'drop-shadow(0 0 16px rgba(130,100,255,.26)) drop-shadow(0 14px 30px rgba(0,0,0,.45))' });
+    o.p = el(o.sh, 'img', 'abs', Object.assign({}, full, { filter: `url(#${T.neonSharp()}) brightness(${opt.lift ?? 1.1}) contrast(1.07) saturate(1.06)`, WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }));
+    return o; };
+  T.neonStageAt = (o, fullSrc, cutSrc) => { C.setSrc(o.bg, fullSrc); C.setSrc(o.p, fullSrc); const m = `url(${cutSrc})`; if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = m; o.p._m = m; } };
+  T.NEON2 = { CREAM: '#fff4d8', GLOW: '0 2px 0 rgba(20,8,40,.55), 0 8px 24px rgba(6,2,20,.6), 0 0 18px rgba(255,226,150,.32)' };
+  T.neonTitle = (L, lines, x, y, size) => lines.map((s, i) => el(L, 'div', 'abs', { left: x + 'px', top: (y + i * size * 1.22) + 'px', fontFamily: "'Noto Sans CJK SC','Inter',sans-serif", fontWeight: 900, fontSize: (i ? size * 1.0 : size) + 'px', lineHeight: 1.1, letterSpacing: '.01em', color: i ? T.NEON2.CREAM : '#ffffff', textShadow: T.NEON2.GLOW, whiteSpace: 'nowrap', transformOrigin: '0 50%' }, s));
 
   /* ---------- T12 Old Newspaper ---------- */
   T.NEWS = { PAPER: '#e8dcc0', AGED: '#d6c6a0', INK: '#1c1814', RED: '#c4232b', DARK: '#211b15', SERIF: "'Noto Serif CJK SC','Noto Serif CJK JP',Georgia,serif", TYPE: "'Courier 10 Pitch',Courier,monospace",
