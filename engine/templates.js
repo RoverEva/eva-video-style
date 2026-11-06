@@ -592,31 +592,41 @@
     update(lt, st, t) { C.setSrc(st.p, frameFn(t)); const m = `url(${cutFn(t)})`; if (st.p._m !== m) { st.p.style.webkitMaskImage = st.p.style.maskImage = m; st.p._m = m; } } });
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
 
-  /* T19 Footage Intro · product demo: the product video plays full-bleed BEHIND (normal speed, slow push-in); the presenter is cut
-   * out in FRONT, standing in a white-ringed circle with a cyan glow that hops around the frame (centre → up → right → down → left …) with a little squash on each landing.
-   * Her head and shoulders break out of the top of the circle; optional slanted T19 label chip (text from the screen).
-   * T.ftDemo(L, {D, path, hop, label}) then per frame T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc). path = list of circle centres; hop = seconds per jump. Needs media/cut. */
-  T.ftDemo = (L, opt) => { opt = opt || {}; const o = { D: opt.D || 420, hop: opt.hop || .9, t0: opt.t0 || 0, W: C.W, H: C.H }, D = o.D, V = C.portrait;
-    o.path = opt.path || (V ? [[540, 1120], [540, 860], [820, 1120], [540, 1380], [260, 1120], [540, 1120]] : [[960, 640], [960, 430], [1500, 600], [960, 800], [420, 600], [960, 640]]);
+  /* T19 Footage Intro · product demo. The product video plays full-bleed BEHIND (normal speed, slow push-in); the presenter is
+   * cut out in FRONT at full size, then (at opt.morph s) shrinks into a small white-ringed circle with a cyan glow that hops
+   * to the bottom-left corner, then alternates top-left ↔ bottom-left every opt.hop s (squash on landing, shadow below).
+   * Inside the circle her head and shoulders break out of its top. Optional slanted T19 label chip (text from the screen).
+   * T.ftDemo(L, {D, morph, hop, corners, label}) then per frame T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc). Needs media/cut. */
+  T.ftDemo = (L, opt) => { opt = opt || {}; const V = C.portrait, o = { D: opt.D || (V ? 300 : 250), hop: opt.hop || 1.1, morph: opt.morph ?? 1.4, t0: opt.t0 || 0 }, D = o.D;
+    o.corners = opt.corners || (V ? [[230, 1330], [230, 420]] : [[250, 800], [250, 285]]);   // [bottom-left, top-left]
     o.scr = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden', zIndex: 4, transformOrigin: '50% 50%' });
-    el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 5, background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.32))' });
-    if (opt.label) { o.lab = el(L, 'div', 'abs', { right: (V ? 60 : 90) + 'px', top: (V ? 230 : 70) + 'px', zIndex: 12, fontFamily: "'Inter','Noto Sans CJK SC',sans-serif", fontWeight: 900, fontStyle: 'italic', fontSize: (V ? 50 : 46) + 'px', color: '#2ee6ff', background: 'rgba(8,14,32,.92)', padding: '.12em .55em', transform: 'skewX(-10deg)', boxShadow: '0 10px 30px rgba(0,0,0,.4)', whiteSpace: 'nowrap', transformOrigin: '100% 50%' }, opt.label); }
     o.img = el(o.scr, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover' });
+    o.vig = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 5, background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,.4))' });
+    if (opt.label) o.lab = el(L, 'div', 'abs', { right: (V ? 60 : 90) + 'px', top: (V ? 230 : 70) + 'px', zIndex: 12, fontFamily: "'Inter','Noto Sans CJK SC',sans-serif", fontWeight: 900, fontStyle: 'italic', fontSize: (V ? 50 : 46) + 'px', color: '#2ee6ff', background: 'rgba(8,14,32,.92)', padding: '.12em .55em', transform: 'skewX(-10deg)', boxShadow: '0 10px 30px rgba(0,0,0,.4)', whiteSpace: 'nowrap', transformOrigin: '100% 50%' }, opt.label);
+    const mask = { WebkitMaskSize: '100% 100%', maskSize: '100% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' };
+    // full-size cut-out over the product video (soft shadow so she sits on it)
+    o.fw = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 10, transformOrigin: '0 0', filter: 'drop-shadow(0 18px 34px rgba(0,0,0,.45))' });
+    o.full = el(o.fw, 'img', 'abs', Object.assign({ left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: 'brightness(1.05) contrast(1.04)' }, mask));
     o.shadow = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: (D * .16) + 'px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0))', zIndex: 9 });
-    o.b = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', zIndex: 10, transformOrigin: '50% 100%' });
-    el(o.b, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 30%, #ffffff, #dfe8f2 75%)', border: '7px solid #fff', boxShadow: '0 0 0 3px rgba(46,230,255,.9), 0 0 36px rgba(46,230,255,.55), 0 18px 40px rgba(0,0,0,.35)', boxSizing: 'border-box' });
-    // person: tombstone clip = the circle's lower half + straight sides up past the top, so the head pops out of the ring
+    o.b = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', zIndex: 11, transformOrigin: '50% 100%' });
+    el(o.b, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 30%, #ffffff, #dfe8f2 75%)', border: '6px solid #fff', boxShadow: '0 0 0 3px rgba(46,230,255,.9), 0 0 30px rgba(46,230,255,.55), 0 16px 34px rgba(0,0,0,.35)', boxSizing: 'border-box' });
     const top = D * .62; o.pw = el(o.b, 'div', 'abs', { left: 0, top: -top + 'px', width: D + 'px', height: (D + top) + 'px', clipPath: `path('M0 0 L${D} 0 L${D} ${top + D / 2} A${D / 2} ${D / 2} 0 0 1 0 ${top + D / 2} Z')` });
-    const fh = C.face.h * C.src.h, k = D * (opt.head || .46) / fh, iw = C.src.w * k, ih = C.src.h * k;
-    o.p = el(o.pw, 'img', 'abs', { width: iw + 'px', height: ih + 'px', left: (D / 2 - C.face.x * iw) + 'px', top: (top + D * (opt.faceY ?? .1) - C.face.y * ih) + 'px', filter: 'brightness(1.06) contrast(1.05) saturate(1.05)', WebkitMaskSize: '100% 100%', maskSize: '100% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' });
+    const fh = C.face.h * C.src.h, k = D * (opt.head || .46) / fh, iw = C.src.w * k, ih = C.src.h * k; o.k = k;
+    o.p = el(o.pw, 'img', 'abs', Object.assign({ width: iw + 'px', height: ih + 'px', left: (D / 2 - C.face.x * iw) + 'px', top: (top + D * (opt.faceY ?? .1) - C.face.y * ih) + 'px', filter: 'brightness(1.06) contrast(1.05) saturate(1.05)' }, mask));
     return o; };
-  T.ftDemoAt = (o, t, scr, frame, cut) => { C.setSrc(o.img, scr); C.setSrc(o.p, frame); const m = `url(${cut})`; if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = m; o.p._m = m; }
-    tf(o.scr, { s: 1 + .035 * P(t, o.t0, 6) }); if (o.lab) tf(o.lab, slide(t, o.t0 + .5, .35, 80, 0));
-    const n = o.path.length - 1, u = Math.max(0, t - o.t0 - .3) / o.hop, i = Math.min(n - 1, Math.floor(u)), f = Math.min(1, u - i), seg = u >= n ? 1 : ease.io3(f / .7);
-    const [x0, y0] = o.path[Math.min(i, n)], [x1, y1] = o.path[Math.min(i + 1, n)], x = x0 + (x1 - x0) * seg, yb = y0 + (y1 - y0) * seg, lift = u >= n ? 0 : Math.sin(Math.PI * clamp(f / .7)) * o.D * .32;
-    const land = u >= n ? 0 : clamp((f - .7) / .3), sq = Math.sin(Math.PI * land) * .1, D = o.D, enter = ease.outBack(P(t, o.t0, .5), 1.6);
-    o.b.style.transform = `translate(${x - D / 2}px, ${yb - D / 2 - lift}px) scale(${(1 + sq) * enter}, ${(1 - sq) * enter})`;
-    o.shadow.style.transform = `translate(${x - D / 2}px, ${yb + D * .44}px) scale(${1 - lift / D * .9})`; o.shadow.style.opacity = .9 - lift / D; };
+  T.ftDemoAt = (o, t, scr, frame, cut) => { C.setSrc(o.img, scr); C.setSrc(o.full, frame); C.setSrc(o.p, frame); const m = `url(${cut})`;
+    if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = o.full.style.webkitMaskImage = o.full.style.maskImage = m; o.p._m = m; }
+    const D = o.D, lt = t - o.t0; tf(o.scr, { s: 1 + .035 * P(lt, 0, 6) }); if (o.lab) tf(o.lab, slide(lt, .5, .35, 80, 0));
+    // 1) full-size cut-out → 2) shrinks toward the first corner while the circle pops in → 3) hops BL ↔ TL
+    const mu = ease.io3(P(lt, o.morph, .45)), [cx0, cy0] = o.corners[0];
+    const fx = C.face.x * C.W, fy = C.face.y * C.H, sF = 1 - mu * (1 - o.k * 1.0), tx = (cx0 - fx * sF) * mu, ty = (cy0 - D * .4 - fy * sF) * mu;
+    o.fw.style.transform = `translate(${tx}px, ${ty}px) scale(${sF})`; o.fw.style.opacity = 1 - P(lt, o.morph + .25, .2); o.fw.style.display = lt > o.morph + .5 ? 'none' : '';
+    const on = lt >= o.morph + .3; o.b.style.display = o.shadow.style.display = on ? '' : 'none'; if (!on) return;
+    const enter = ease.outBack(P(lt, o.morph + .3, .3), 1.8), h = Math.max(0, lt - o.morph - .9) / o.hop, n = o.corners.length;
+    const i = Math.floor(h), f = h - i, a = o.corners[i % n], b = o.corners[(i + 1) % n], mv = ease.io3(f / .6), lift = Math.sin(Math.PI * clamp(f / .6)) * D * .45;
+    const x = a[0] + (b[0] - a[0]) * mv, y = a[1] + (b[1] - a[1]) * mv - lift, sq = Math.sin(Math.PI * clamp((f - .6) / .25)) * .1;
+    o.b.style.transform = `translate(${x - D / 2}px, ${y - D / 2}px) scale(${(1 + sq) * enter}, ${(1 - sq) * enter})`;
+    const gy = a[1] + (b[1] - a[1]) * mv; o.shadow.style.transform = `translate(${x - D / 2}px, ${gy + D * .44}px) scale(${(1 - lift / D * .8) * enter})`; o.shadow.style.opacity = .85 - lift / D; };
 
   /* ---------- T23 Creative Pop: seven-colour card system, rounded cards, big keywords, icons, arrows, sparkles, stickers ----------
    * Every layout takes a list of items { t: label, i: icon name, c: colour (optional) } and returns an object; the matching

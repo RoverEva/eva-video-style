@@ -356,7 +356,7 @@ Twenty-four named templates (T18 and T22 are retired; T25 Editorial Depth and T2
 
 ![T19 sample a](samples/T19_a.jpg) ![T19 sample b](samples/T19_b.jpg) ![T19 sample c](samples/T19_c.jpg) ![T19 sample d](samples/T19_d.jpg)
 
-**Product demo layout:** the product video plays full-bleed behind at normal speed with a slow push-in; the presenter is cut out in front, standing in a white-ringed circle with a cyan glow (head and shoulders break out of its top) that hops centre → up → right → down → left → centre, with a squash on each landing and a shadow below; optional slanted label chip with text from the screen. `T.ftDemo(L, {D, path, hop, label})` + `T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc)`; sample [`template/sample5/t19-demo/`](../template/sample5/t19-demo/) (screen recording as JPGs in `media/demo`). Sound from the content, e.g. a light pop on each landing.
+**Product demo layout:** the product video plays full-bleed behind at normal speed with a slow push-in; the presenter is cut out in front at full size, then shrinks into a small white-ringed circle with a cyan glow (head and shoulders break out of its top) that lands bottom-left and then hops top-left ↔ bottom-left, with a squash on each landing and a shadow below; optional slanted label chip with text from the screen. `T.ftDemo(L, {D, morph, hop, corners, label})` + `T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc)`; sample [`template/sample5/t19-demo/`](../template/sample5/t19-demo/) (screen recording as JPGs in `media/demo`). Sound from the content, e.g. a whoosh on the shrink and a light pop on each landing.
 
 ## T20 · Fast-Paced Social Media
 
