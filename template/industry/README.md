@@ -11,7 +11,7 @@ node scripts/render.mjs template/industry/t26/index.html --query bg=../media/hou
 
 | Folder | Look |
 |---|---|
-| `t26/` | **T26 Real Estate Social** (9:16 only) — Chinese social property tour: cut-out presenter with a white sticker outline, heavy dark headline with a white keyline and one red phrase, yellow brush underline and spark strokes, red hearts, icon list that builds up line by line |
+| `t26/` | **T26 Real Estate Social** (native 9:16; `--ar 16:9` for the horizontal layout) — Chinese social property tour: cut-out presenter with a white sticker outline, heavy dark headline with a white keyline and one red phrase, yellow brush underline and spark strokes, red hearts, icon list that builds up line by line |
 
 Media goes in `template/industry/media/` (not in the repository). Background: `?plate=IMG` (a still with the presenter
 removed), `?bg=DIR` (property footage frames) or a per-beat `bg` photo in `data.js`. Only real property facts the client

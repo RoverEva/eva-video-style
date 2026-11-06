@@ -45,7 +45,9 @@
   const icon = (p, name, x, y, size) => { const s = svg(p, size, size, x, y, 6); s.setAttribute('viewBox', '0 0 100 100'); s.style.transformOrigin = '50% 50%'; (ICON[name] || ICON.check)(s); s.style.filter = 'drop-shadow(0 0 0 #fff) drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff)'; return s; };
 
   /* ---------- background + cut-out presenter (whole video) ---------- */
-  const POSE = [{ x: 30, y: 60, s: 1.0 }, { x: 330, y: 110, s: .92 }, { x: 40, y: 560, s: .96 }];
+  /* 16:9: presenter stands in the right third (x = offset of her centre from the frame centre), text in the left two thirds */
+  const V = C.portrait, pk = C.pick, PW = V ? C.W : Math.round(C.H * 9 / 16);
+  const POSE = pk([{ x: 420, y: 40, s: 1.04 }, { x: 500, y: 60, s: .98 }, { x: 400, y: 70, s: 1.02 }], [{ x: 30, y: 60, s: 1.0 }, { x: 330, y: 110, s: .92 }, { x: 40, y: 560, s: .96 }]);
   const BGZ = [{ s: 1.16, ox: 50, oy: 40 }, { s: 1.55, ox: 15, oy: 18 }, { s: 1.22, ox: 60, oy: 30 }];
   /* background shots: each beat with `src` starts its own shot (items cut a little before they are spoken) */
   const SHOTS = BG ? D.beats.filter(b => b.src != null).map(b => ({ at: b.role === 'hero' ? 0 : b.role === 'close' ? b.t0 - .1 : b.t0 - .15, src: b.src })) : [];
@@ -57,7 +59,7 @@
       st.bg = el(st.bgw, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: Q.get('bg') ? 'none' : 'blur(10px) brightness(1.07) saturate(.92)' });
       el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'linear-gradient(180deg, rgba(255,250,242,.22), rgba(255,246,236,.06) 50%, rgba(70,45,30,.16))' });
       st.pw = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 3, transformOrigin: '50% 100%' });
-      st.p = el(st.pw, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px',
+      st.p = el(st.pw, 'img', 'abs', { left: ((C.W - PW) / 2) + 'px', top: 0, width: PW + 'px', height: C.H + 'px',
         filter: 'drop-shadow(7px 0 0 #fff) drop-shadow(-7px 0 0 #fff) drop-shadow(0 7px 0 #fff) drop-shadow(0 -7px 0 #fff) drop-shadow(0 18px 30px rgba(70,40,20,.35))' });
       st.fl = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: '#fff', zIndex: 40, opacity: 0 }); return st; },
     update(lt, st, t) { const i = beatIx(t), b = D.beats.find(x => x.bg && t >= x.t0 - .2 && t < x.t1 + .2), sh = shotAt(t);
@@ -70,8 +72,8 @@
   /* ---------- A · hero line: two-line headline over the presenter's body ---------- */
   if (hero) C.scene({ t0: 0, t1: A1 + .03, z: 10, quiet: true, build(L) {
       const st = {}, [l1, l2] = hero.lines, hat = wordAt(hero, hero.hl || l2);
-      st.sp = sparks(L, 34, 980, -20); st.a = C.fit(txt(L, hlLine(l1, hero.hl, 1.22), 98, 64, 1050), 952);
-      st.b = C.fit(txt(L, hlLine(l2, hero.hl, 1.22), 104, 64, 1172), 952); st.u = brush(L, 70, 1316, 820); st.h = heart(L, 880, 960, 120);
+      st.sp = sparks(L, pk(70, 34), pk(470, 980), -20); st.a = C.fit(txt(L, hlLine(l1, hero.hl, 1.22), pk(104, 98), pk(110, 64), pk(560, 1050)), pk(1060, 952));
+      st.b = C.fit(txt(L, hlLine(l2, hero.hl, 1.22), pk(112, 104), pk(110, 64), pk(690, 1172)), pk(1060, 952)); st.u = brush(L, pk(116, 70), pk(845, 1316), pk(900, 820)); st.h = heart(L, pk(1010, 880), pk(450, 960), pk(130, 120));
       st.at = [hero.t0, hero.t0 + .25, hat, hat + .25]; k.sfx('pop', hero.t0, .12); k.sfx('impact', hat, .12); k.sfx('pop', hat + .3, .1, { f: 1200 }); return st; },
     update(lt, st, t) { const [a, b, h, u] = st.at; tf(st.a, slide(t, a, .45, 0, 50)); const q = pop(t, b, .45, 1.6); tf(st.b, q);
       brushAt(st.u, P(t, u, .5)); const s = pop(t, a + .15, .35, 2); tf(st.sp, { s: s.s, o: s.o }); st.sp.style.transform += ' rotate(-20deg)';
@@ -79,10 +81,10 @@
 
   /* ---------- B · icon list builds line by line, presenter on the right ---------- */
   if (items.length) C.scene({ t0: A1, t1: B1 + .03, z: 10, build(L) {
-      const st = {}, n = items.length, gap = Math.min(262, 780 / n), y0 = 640 - (n - 1) * gap / 2 + 120;
-      st.sp = sparks(L, 40, y0 - 150, -10);
+      const st = {}, n = items.length, gap = pk(Math.min(230, 700 / n), Math.min(262, 780 / n)), y0 = pk(540 - (n - 1) * gap / 2 - 60, 640 - (n - 1) * gap / 2 + 120);
+      st.sp = sparks(L, pk(70, 40), y0 - 150, -10);
       st.rows = items.map((b, i) => { const r = el(L, 'div', 'abs', { left: '0px', top: '0px', width: C.W + 'px', height: '0px', transformOrigin: `120px ${y0 + i * gap + 60}px` });
-        icon(r, b.icon, 56, y0 + i * gap, 132); const tx = txt(r, b.text, 76, 210, y0 + i * gap + 14, { whiteSpace: 'normal', width: '400px', lineHeight: 1.08 }); return r; });
+        icon(r, b.icon, pk(110, 56), y0 + i * gap, pk(140, 132)); const tx = V ? txt(r, b.text, 76, 210, y0 + i * gap + 14, { whiteSpace: 'normal', width: '400px', lineHeight: 1.08 }) : C.fit(txt(r, b.text, 88, 280, y0 + i * gap + 16), 820); return r; });
       items.forEach((b, i) => k.sfx('pop', b.t0, .12, { f: 800 + i * 140 })); return st; },
     update(lt, st, t) { const s = pop(t, A1 + .1, .35, 2); tf(st.sp, { s: s.s, o: s.o }); st.sp.style.transform += ' rotate(-10deg)';
       st.rows.forEach((r, i) => { const b = items[i], q = pop(t, b.t0, .42, 1.7), sl = slide(t, b.t0, .42, -80, 0); tf(r, { x: sl.x, s: q.s, o: q.o }); }); } });
@@ -90,8 +92,8 @@
   /* ---------- C · closing line: big headline on top, presenter lower ---------- */
   if (close) C.scene({ t0: B1, t1: D.end + .05, z: 10, build(L) {
       const st = {}, [l1, l2] = close.lines, hat = wordAt(close, close.hl || l2);
-      st.sp = sparks(L, 30, 200, -24); st.a = C.fit(txt(L, hlLine(l1, close.hl, 1.2), 128, 72, 250), 940);
-      st.b = C.fit(txt(L, hlLine(l2, close.hl, 1.2), 136, 72, 400), 940); st.u = brush(L, 80, 600, 640); st.h = heart(L, 800, 380, 150);
+      st.sp = sparks(L, pk(70, 30), pk(300, 200), -24); st.a = C.fit(txt(L, hlLine(l1, close.hl, 1.2), pk(132, 128), pk(116, 72), pk(360, 250)), pk(1040, 940));
+      st.b = C.fit(txt(L, hlLine(l2, close.hl, 1.2), pk(144, 136), pk(116, 72), pk(510, 400)), pk(1040, 940)); st.u = brush(L, pk(124, 80), pk(720, 600), pk(640, 640)); st.h = heart(L, pk(690, 800), pk(560, 380), 150);
       st.at = [close.t0, hat, hat + .3]; k.sfx('pop', close.t0, .12); k.sfx('ding', hat + .1, .07); return st; },
     update(lt, st, t) { const [a, h, u] = st.at; tf(st.a, slide(t, a, .45, 0, 50)); tf(st.b, pop(t, h, .45, 1.8)); brushAt(st.u, P(t, u, .5));
       const s = pop(t, a + .1, .35, 2); tf(st.sp, { s: s.s, o: s.o }); st.sp.style.transform += ' rotate(-24deg)';

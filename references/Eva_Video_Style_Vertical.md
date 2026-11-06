@@ -2,7 +2,7 @@
 
 The vertical house style for Eva's short videos (TikTok, Reels, Shorts, 抖音, 小红书), built on the same engine and look
 as the 16:9 Eva Video Style. Use it whenever the output is 9:16. Every template from T01 to T24 renders in both
-aspects (16:9 output is pixel-identical to before); **T26 Real Estate Social is vertical only**. Branch:
+aspects (16:9 output is pixel-identical to before); **T26 Real Estate Social is vertical-first** (native 9:16, with a 16:9 layout too). Branch:
 `feat/vertical-layouts-demos`. Technical reference: `references/responsive-layout.md`.
 
 ## Non-negotiables
@@ -38,7 +38,7 @@ Set `"aspect": "9:16"` in the captions config (`scripts/captions.py`):
 1. **Media:** extract her video to 30 fps JPGs (`f_00000.jpg`); for cut-out templates (T19, T24, T26) run `scripts/matte.py` for RGBA cut-outs. B-roll folders keep their names (`web`, `wb`, `fly`, `whis`, `sent`, `match`, `egg`, `jmw`); swap in her footage there.
 2. **Calibrate** the face on a gridded frame and note the footage size.
 3. **Preview:** `node scripts/render.mjs template/demo/tNN/index.html --ar 9:16 --stills check --times 1,4,8,12 --query "eva=…&srcw=1080&srch=1920&face=x,y,h&guides=1"` (`guides=1` draws the safe zones). Send keyframe sheets first.
-4. **T26 from an SRT:** `python3 scripts/srt_to_beats.py talk.srt template/industry/t26/data.js --end SECONDS --bgcuts S1,S2,…` (one footage shot per line), then render with `--query "bg=../media/house"`.
+4. **T26 from an SRT:** `python3 scripts/srt_to_beats.py talk.srt template/industry/t26/data.js --end SECONDS --bgcuts S1,S2,…` (one footage shot per line), then render with `--query "bg=../media/house"`. 16:9: add `--ar 16:9` and 16:9 footage; a second beat plan can sit beside it (`--query "data=data16.js&…"`).
 5. **Render** the full video with `--ar 9:16 --out …`; dump SFX cues with `--cues`, build the stem with `scripts/sfx.py`.
 6. **Audio:** original voice + SFX stem → loudnorm -16 LUFS. No music unless she asks.
 7. **Captions:** `captions.py` with `"aspect": "9:16"`, then burn for the `_CN-EN` version.
@@ -78,7 +78,7 @@ Set `"aspect": "9:16"` in the captions config (`scripts/captions.py`):
 | T21 | Clean & Minimal | 简洁极简 | zone remap | Calm tutorials, summaries |
 | T23 | Creative Pop | 创意波普 | zone remap · presenter inside the hub | Step lists, creator tips |
 | T24 | Luxury Nude Motion | 奢华裸色 | native · cut-out lower and centred, cards on top | Premium personal brand |
-| T26 | Real Estate Social | 房产种草 | **vertical only** · sticker cut-out over property footage | Property tours, listings |
+| T26 | Real Estate Social | 房产种草 | **native 9:16** (also 16:9 with `--ar 16:9`) · sticker cut-out over property footage | Property tours, listings |
 
 Sample frames use the AI presenter test clip and the demo B-roll; real videos use her own footage.
 
@@ -192,7 +192,11 @@ Nude stage, 3D white type and ivory cards in the top zone; the cut-out presenter
 
 ![T24 v1](samples/vertical/T24_v1.jpg) ![T24 v2](samples/vertical/T24_v2.jpg)
 
-### T26 · Real Estate Social · 房产种草 (vertical only)
+### T26 · Real Estate Social · 房产种草 (native 9:16, also 16:9)
 Sticker cut-out presenter over real property footage, one shot per spoken line; dark headline with a red phrase, yellow brush underline and sparks, red hearts, icon list built line by line. Text only from the SRT.
 
 ![T26 v1](samples/vertical/T26_v1.jpg) ![T26 v2](samples/vertical/T26_v2.jpg)
+
+**16:9 version** (`--ar 16:9`): presenter in the right third, headline and icon list in the left two thirds; demo on model-home recordings.
+
+![T26 h1](samples/vertical/T26_h1.jpg) ![T26 h2](samples/vertical/T26_h2.jpg)

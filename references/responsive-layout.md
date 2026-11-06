@@ -64,7 +64,7 @@ inside the presenter window, the same JPEG-decode jitter seen when the unmodifie
 | T19 Footage Intro | ✅ native 9:16 | cut-out rig re-laid with `pick()`; needs `scripts/matte.py` cut-out frames, `?cut=DIR` |
 | T24 Luxury Nude (`template/sample5/t24`) | ✅ native 9:16 | cut-out lower and centred, card groups scaled into the top zone; `?cut=DIR&cutN=FRAMES` |
 | T02–T08, T10–T16, T21, T23 | ✅ zone remap | `portLayout` boxes; backgrounds via `portFull` / `portCover` (T07 footage, T08 neon grade, T14 floor, T15 sky, T16 bursts) |
-| T26 Real Estate Social (`template/industry/t26`) | ✅ 9:16 only | native vertical template, no 16:9 version |
+| T26 Real Estate Social (`template/industry/t26`) | ✅ native 9:16 + 16:9 | vertical by default; `?ar=16:9` puts the presenter in the right third, text in the left two thirds |
 | Card demos t01 / t09 / t17 / t20 | ✅ zone remap | background scene `cover`, card block top, presenter below |
 | `template/cards/layouts`, `template/sample5/t24-layouts` | ⏳ reference pages | layout catalogues, still 16:9 only |
 | Burned captions (`scripts/captions.py`, `caption_zones.py`) | ⏳ | still PlayRes 1920×1080; needs a portrait style set using `EV.zone('caption')` |

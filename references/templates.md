@@ -1,6 +1,6 @@
 # Template library
 
-Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) except T26, which is 9:16 only; all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
+Twenty-three named templates (T18, T22 and T25 are unused IDs; the other IDs are unchanged). Ask for one by ID or name ("use T10 HUD Keynote for this part"). Every template renders 16:9 (1920×1080) and 9:16 (1080×1920, see [`responsive-layout.md`](responsive-layout.md)) T26 is vertical-first (native 9:16, with a 16:9 layout); all keep the presenter's whole head in frame. Every demo plays the same 15-second intro, so the sample frames below line up across templates: (a) "Meet Eva Video Style", (b) the four styles, (c) ready-to-use templates, (d) the call to action. From T24 on, new templates are shown on a shorter 5-second sample instead ([`template/sample5/`](../template/sample5/)), so their frames show that template's own layouts. The rendered demos are in the [latest release](https://github.com/RoverEva/eva-video-style/releases); their sources are in [`template/demo/`](../template/demo/).
 
 Vertical (9:16) versions and sample frames: [`Eva_Video_Style_Vertical.md`](Eva_Video_Style_Vertical.md).
 
@@ -28,7 +28,7 @@ Vertical (9:16) versions and sample frames: [`Eva_Video_Style_Vertical.md`](Eva_
 | T21 | Clean & Minimal | 简洁极简 | Tutorials, business analysis, education, calm summaries |
 | T23 | Creative Pop | 创意波普 | Playful tutorials, step lists and checklists, workflows, creator tips, social content |
 | T24 | Luxury Nude Motion | 奢华裸色 | Premium personal-brand talks, frameworks and step-by-step methods, product and service intros |
-| T26 | Real Estate Social (9:16 only) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
+| T26 | Real Estate Social (9:16 first, also 16:9) | 房产种草 | Property tours and listing intros for Reels / TikTok / 小红书 / 抖音 |
 
 ## T01 · Acid Lime Kinetic
 
@@ -423,9 +423,9 @@ Vertical (9:16) versions and sample frames: [`Eva_Video_Style_Vertical.md`](Eva_
 
 ![T24 sample a](samples/T24_a.jpg) ![T24 sample b](samples/T24_b.jpg) ![T24 sample c](samples/T24_c.jpg) ![T24 sample d](samples/T24_d.jpg)
 
-## T26 · Real Estate Social (9:16 only)
+## T26 · Real Estate Social (9:16 first, also 16:9)
 
-*房产种草* · palette `#2b1a12` `#ff2d4b` `#ffd21f` `#ffffff` · **1080×1920 only**
+*房产种草* · palette `#2b1a12` `#ff2d4b` `#ffd21f` `#ffffff` · **1080×1920** (default) · 1920×1080 with `--ar 16:9`
 
 **Best for:** Property tours and listing intros for Reels / TikTok / 小红书 / 抖音, agent talking-head videos
 
