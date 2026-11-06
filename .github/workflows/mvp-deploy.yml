@@ -76,16 +76,7 @@ jobs:
           sudo apt-get install -y -qq ffmpeg >/dev/null
           python saas/music/compose.py /tmp/tracks --mp3 && mkdir -p site/demos/music && cp /tmp/tracks/*.mp3 site/demos/music/
           echo "window.EVA_API = \"$API_URL\";" > site/config.js
-          npm i -g vercel@39 >/dev/null
-          SC=(); [ -n "$VERCEL_SCOPE" ] && SC=(--scope "$VERCEL_SCOPE")   # team slug, when the token is team-scoped
-          cd site && vercel whoami --token "$VERCEL_TOKEN" "${SC[@]}" || { echo "::error::Vercel rejected VERCEL_TOKEN (recreate it; for a team token also add secret VERCEL_SCOPE = team slug)"; exit 1; }
-          vercel link --yes --project eva-video-studio --token "$VERCEL_TOKEN" "${SC[@]}"
-          URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN" "${SC[@]}"); echo "deployment: $URL"
-          ORG=$(python -c "import json;print(json.load(open('.vercel/project.json'))['orgId'])")
-          D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains?teamId=$ORG" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
-          [ -z "$D" ] && D=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v9/projects/eva-video-studio/domains" | python -c "import json,sys;d=json.load(sys.stdin).get('domains',[]);print(d[0]['name'] if d else '')" || true)
-          [ -n "$D" ] || { echo "::error::could not read the production domain of the Vercel project"; exit 1; }
-          echo "site=https://$D" >> $GITHUB_OUTPUT; echo "SITE: https://$D"
+          python saas/deploy/vercel_deploy.py site eva-video-studio   # REST API, no CLI; writes site= to GITHUB_OUTPUT
       - name: Pin CORS + links to the real site, Stripe webhook (secret → Modal secret manager), redeploy
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
