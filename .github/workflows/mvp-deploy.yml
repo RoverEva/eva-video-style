@@ -116,6 +116,7 @@ jobs:
           set -e
           sudo apt-get install -y -qq ffmpeg >/dev/null
           pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
+          python saas/tests/test_stripe_checkout_ui.py   # Stripe step vs mock Checkout layouts (accordion / card already active / iframe)
           M=saas/tests/media; mkdir -p e2e
           # 1. the new 30 s 9:16 customer video: full purchase, HD delivered automatically
           # private test clip: R2 testdata/new30.mp4 (upload it in the Cloudflare dashboard) or saas/tests/media/new30.mp4
@@ -130,6 +131,15 @@ jobs:
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
         if: always()
         with: { name: live-e2e, path: "e2e/**/*.json", if-no-files-found: ignore }   # public repo: JSON only, no videos/screens
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        if: failure()
+        with:   # Stripe test-mode page only, private video token redacted; public repo → kept 3 days
+          name: stripe-checkout-diagnostics
+          path: |
+            e2e/**/stripe_fail.png
+            e2e/**/stripe_fail.html
+          if-no-files-found: ignore
+          retention-days: 3
       - name: Summary
         if: always()
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
