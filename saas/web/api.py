@@ -28,7 +28,10 @@ TRACKS = {"bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Ins
 LIMITS = {"preview_per_ip_day": int(os.environ.get("EVA_PREVIEWS_PER_IP", 3)), "preview_global_day": int(os.environ.get("EVA_PREVIEWS_PER_DAY", 150)),
           "uploads_per_ip_day": 12, "max_final_attempts": 2, "stuck_minutes": 40}
 # exact site origin(s) only (set by the deploy from the real Vercel domain via Modal secret eva-config)
-ORIGIN_OK = re.compile(os.environ.get("EVA_SITE_ORIGINS", r"^https://eva-video-studio\.vercel\.app$"))
+# CORS: explicit list of exact site origins (no wildcard, no regex). Production: the Vercel domain, set by the deploy in
+# Modal secret eva-config as EVA_ALLOWED_ORIGINS (comma-separated). Default = the known production origin.
+PROD_ORIGIN = "https://eva-video-studio.vercel.app"
+ALLOWED_ORIGINS = [o.strip().rstrip("/") for o in os.environ.get("EVA_ALLOWED_ORIGINS", PROD_ORIGIN).split(",") if o.strip()]
 URL_TTL = 900   # signed R2 links live 15 minutes; the site asks for a fresh one when needed
 JOB_RE = re.compile(r"^[a-z0-9]{12}$")
 
@@ -188,6 +191,23 @@ class Service:
         return v
 
 
+class CatchErrors:
+    """ASGI middleware: unhandled exceptions → logged traceback + JSON 500 (inside CORS, so the header is kept)."""
+    def __init__(self, app): self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http": return await self.app(scope, receive, send)
+        started = {"v": False}
+        async def snd(m):
+            if m["type"] == "http.response.start": started["v"] = True
+            await send(m)
+        try: await self.app(scope, receive, snd)
+        except Exception:
+            import traceback; traceback.print_exc()
+            if started["v"]: raise
+            await JSONResponse({"error": "Something went wrong on our side. Please try again in a minute."}, status_code=500)(scope, receive, send)
+
+
 def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK_SECRET"), local_store=None):
     async def body(req):
         try: return await req.json()
@@ -195,7 +215,7 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
 
     def site_of(req):
         o = req.headers.get("origin", "")
-        return o if ORIGIN_OK.match(o) else os.environ.get("EVA_SITE_URL", "https://eva-video-studio.vercel.app")
+        return o if o in ALLOWED_ORIGINS else os.environ.get("EVA_SITE_URL", PROD_ORIGIN).strip().rstrip("/")
 
     async def config(req):
         return JSONResponse({"price": PRICE_CENTS / 100, "max_bytes": MAX_BYTES, "max_seconds": MAX_SECONDS, "preview_seconds": PREVIEW_SECONDS,
@@ -250,5 +270,9 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
                 p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(data); return Response(status_code=200)
             return Response(p.read_bytes(), media_type="video/mp4") if p.exists() else err("missing", 404)
         routes.append(Route("/_local/{key:path}", local, methods=["GET", "PUT"]))
-    mw = [Middleware(CORSMiddleware, allow_origin_regex=ORIGIN_OK.pattern, allow_methods=["GET", "POST", "PUT"], allow_headers=["content-type"])]
+    # Order matters: CORS is outermost, the error catcher sits inside it, so even a crash returns a JSON 500 that still
+    # carries Access-Control-Allow-Origin (the browser then shows the real error instead of a misleading "CORS" block).
+    mw = [Middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+                     allow_headers=["content-type"], allow_credentials=False, max_age=600),
+          Middleware(CatchErrors)]
     return Starlette(routes=routes, middleware=mw)

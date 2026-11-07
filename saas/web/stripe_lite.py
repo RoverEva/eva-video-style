@@ -18,14 +18,14 @@ class StripeError(Exception): pass
 
 
 def key():
-    k = os.environ.get("STRIPE_SECRET_KEY", "")
+    k = "".join(os.environ.get("STRIPE_SECRET_KEY", "").split())   # tolerate pasted whitespace/newlines
     if not k: raise StripeError("STRIPE_SECRET_KEY is not set")
     if k.startswith(("sk_live_", "rk_live_")) and os.environ.get("EVA_ALLOW_LIVE") != "1":
         raise StripeError("live Stripe key refused: set EVA_ALLOW_LIVE=1 only after the end-to-end tests pass")
     return k
 
 
-def mode(): k = os.environ.get("STRIPE_SECRET_KEY", ""); return "live" if "_live_" in k else "test" if k else "off"
+def mode(): k = "".join(os.environ.get("STRIPE_SECRET_KEY", "").split()); return "live" if "_live_" in k else "test" if k else "off"
 
 
 def _flat(d, pre=""):

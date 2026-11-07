@@ -97,6 +97,19 @@ def main():
     S.put_json(f"orders/{k['job']}.json", o)
     assert svc.reconcile().get(k["job"]) == "retrying"
 
+    # CORS: exact production origin only, preflight + real requests, and a crash still returns the header
+    site = "https://eva-video-studio.vercel.app"; pre = {"access-control-request-method": "POST", "access-control-request-headers": "content-type"}
+    r = c.options("/api/uploads", headers={"origin": site, **pre}); assert r.status_code == 200 and r.headers.get("access-control-allow-origin") == site, r.headers
+    assert "POST" in r.headers.get("access-control-allow-methods", "") and "content-type" in r.headers.get("access-control-allow-headers", "").lower()
+    r = c.options("/api/uploads", headers={"origin": "https://evil.example", **pre}); assert "access-control-allow-origin" not in r.headers
+    r = c.options("/api/uploads", headers={"origin": "https://eva-video-studio.vercel.app.evil.example", **pre}); assert "access-control-allow-origin" not in r.headers
+    r = c.post("/api/uploads", json={"name": "x.mp4", "size": 10, "type": "video/mp4"}, headers={"origin": site, "x-forwarded-for": "7.7.7.7"})
+    assert r.status_code == 200 and r.headers.get("access-control-allow-origin") == site
+    broken = api.Service(type("Broken", (), {"put_json": lambda *a: (_ for _ in ()).throw(RuntimeError("R2 down")), "get_json": lambda *a: None})(), {}, lambda *a, **k: None, fs)
+    cb = TestClient(api.make_app(broken, lambda: SECRET), raise_server_exceptions=False)
+    r = cb.post("/api/uploads", json={"name": "x.mp4", "size": 10, "type": "video/mp4"}, headers={"origin": site})
+    assert r.status_code == 500 and r.headers.get("access-control-allow-origin") == site and "error" in r.json(), (r.status_code, r.headers)
+
     # live keys are refused unless explicitly allowed
     os.environ["STRIPE_SECRET_KEY"] = "sk_live_x"
     try: stripe_lite.key(); sys.exit("live key accepted")

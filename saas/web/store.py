@@ -18,9 +18,10 @@ class R2:
     def __init__(self):
         import boto3
         from botocore.config import Config
-        self.b = os.environ["R2_BUCKET"]
-        self.c = boto3.client("s3", endpoint_url=f"https://{os.environ['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
-                              aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"], aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"],
+        E = lambda k: "".join(os.environ[k].split())   # pasted secrets can carry newlines/spaces; keys never contain any
+        self.b = E("R2_BUCKET")
+        self.c = boto3.client("s3", endpoint_url=f"https://{E('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
+                              aws_access_key_id=E("R2_ACCESS_KEY_ID"), aws_secret_access_key=E("R2_SECRET_ACCESS_KEY"),
                               region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": 5, "mode": "standard"}))
 
     def put_json(self, key, obj): self.c.put_object(Bucket=self.b, Key=key, Body=json.dumps(obj).encode(), ContentType="application/json")

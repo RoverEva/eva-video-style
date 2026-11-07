@@ -12,7 +12,7 @@
 
 Modal Secrets (created by CI from the GitHub `production` environment): eva-r2 (R2_*), eva-stripe (STRIPE_SECRET_KEY),
 eva-stripe-webhook (STRIPE_WEBHOOK_SECRET, written straight from Stripe by the deploy step), eva-config (EVA_SITE_URL,
-EVA_SITE_ORIGINS), eva-mail (optional RESEND_API_KEY, EVA_MAIL_FROM), eva-anthropic (optional ANTHROPIC_API_KEY).
+EVA_ALLOWED_ORIGINS = exact site origin), eva-mail (optional RESEND_API_KEY, EVA_MAIL_FROM), eva-anthropic (optional ANTHROPIC_API_KEY).
 """
 import json, os, shutil, sys, time, traceback
 from pathlib import Path

@@ -58,11 +58,13 @@ jobs:
         id: modal
         run: |
           pip install -q "modal~=1.0" "requests~=2.32" "boto3~=1.35"
-          SITE_GUESS="https://eva-video-studio.vercel.app"
-          modal secret create eva-r2 R2_ACCOUNT_ID="$R2_ACCOUNT_ID" R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" R2_BUCKET="$R2_BUCKET" --force >/dev/null
-          modal secret create eva-stripe STRIPE_SECRET_KEY="$STRIPE_SECRET_KEY" --force >/dev/null
+          c() { printf %s "$1" | tr -d '[:space:]'; }   # pasted secrets may carry newlines; keys never contain whitespace
+          # known production origin goes to Modal BEFORE the first deploy (re-pinned below from Vercel's answer)
+          SITE_PROD="https://eva-video-studio.vercel.app"
+          modal secret create eva-r2 R2_ACCOUNT_ID="$(c "$R2_ACCOUNT_ID")" R2_ACCESS_KEY_ID="$(c "$R2_ACCESS_KEY_ID")" R2_SECRET_ACCESS_KEY="$(c "$R2_SECRET_ACCESS_KEY")" R2_BUCKET="$(c "$R2_BUCKET")" --force >/dev/null
+          modal secret create eva-stripe STRIPE_SECRET_KEY="$(c "$STRIPE_SECRET_KEY")" --force >/dev/null
           modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" --force >/dev/null
-          modal secret list | grep -q eva-config || modal secret create eva-config EVA_SITE_URL="$SITE_GUESS" EVA_SITE_ORIGINS="^https://eva-video-studio\.vercel\.app$" >/dev/null
+          modal secret create eva-config EVA_SITE_URL="$SITE_PROD" EVA_ALLOWED_ORIGINS="$SITE_PROD" --force >/dev/null
           python saas/deploy/stripe_webhook.py placeholder
           if [ -n "$ANTHROPIC_API_KEY" ]; then modal secret create eva-anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --force >/dev/null; echo "EVA_USE_LLM=1" >> $GITHUB_ENV; export EVA_USE_LLM=1; fi
           t=$(date +%s); modal deploy saas/modal_app.py; echo "first deploy: $(( $(date +%s) - t )) s"
@@ -81,12 +83,18 @@ jobs:
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
         run: |
-          ORIG="^$(python -c "import re,os;print(re.escape(os.environ['SITE_URL']))")$"
-          modal secret create eva-config EVA_SITE_URL="$SITE_URL" EVA_SITE_ORIGINS="$ORIG" --force >/dev/null
+          # exact origin reported by Vercel; Modal is redeployed below so every API container starts with it
+          modal secret create eva-config EVA_SITE_URL="$SITE_URL" EVA_ALLOWED_ORIGINS="$SITE_URL" --force >/dev/null
+          echo "API CORS origin: $SITE_URL"
           python saas/deploy/stripe_webhook.py sync "$API_URL"
           modal deploy saas/modal_app.py >/dev/null && echo "redeployed with final secrets"
           modal run saas/modal_app.py::setup
           curl -fsS "$API_URL/api/health"; echo
+      - name: Smoke test - API CORS for /api/uploads + signed R2 upload (gate for the browser test)
+        if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
+        env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
+        run: |
+          for i in 1 2 3; do python saas/tests/smoke_cors.py "$API_URL" "$SITE_URL" && exit 0; echo "retry $i in 20 s (containers may still be starting)"; sleep 20; done; exit 1
       - name: Verify R2 is private and its CORS allows only the site
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
         env: { SITE_URL: "${{ steps.site.outputs.site }}" }
