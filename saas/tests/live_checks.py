@@ -3,12 +3,12 @@
 
     python3 saas/tests/live_checks.py API_URL PURCHASE_SUMMARY.json OUT.json
 
-Webhook: unsigned / forged / stale signatures are rejected. Jobs: no or wrong token → 404. Files: the HD link is a
-presigned URL that works; the same object without or with a tampered signature is refused (bucket is private).
+Webhook: unsigned / forged / stale signatures are rejected. Jobs: no or wrong token → 404. Files: the preview (or HD)
+link is a 15-minute presigned URL that works; the same object without or with a tampered signature is refused (bucket is private).
 CORS: a foreign origin gets no CORS grant. Rejection: a 40 s upload is refused by the server-side check (no ASR, no
 render, no charge). Output: the delivered file is full resolution. Prints and writes a JSON report; exit 1 on failure.
 """
-import hashlib, hmac, json, subprocess, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
+import hashlib, hmac, json, re, subprocess, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 
@@ -38,21 +38,22 @@ def main():
     for name, q in (("job_no_token", ""), ("job_wrong_token", "?t=wrong")):
         c, _, _ = req(f"{api}/api/jobs/{job}{q}"); ok(name + "_404", c == 404, f"HTTP {c}")
     c, b, _ = req(f"{api}/api/jobs/{job}?t={urllib.parse.quote(tok)}"); v = json.loads(b)
-    ok("job_with_token", c == 200 and v.get("state") == "delivered", v.get("state"))
-    href = (v.get("final") or {}).get("url") or href
+    ok("job_with_token", c == 200 and v.get("state") in ("preview", "delivered"), v.get("state"))
+    href = (v.get("final") or {}).get("url") or (v.get("preview") or {}).get("url") or href   # fresh 15-min signed link
 
     c, _, _ = req(href, headers={"Range": "bytes=0-1023"}); ok("presigned_download_works", c in (200, 206), f"HTTP {c}")
     bare = href.split("?")[0]; c, _, _ = req(bare, headers={"Range": "bytes=0-15"}); ok("unsigned_object_refused", c in (400, 401, 403), f"HTTP {c}")
     tampered = href.replace("X-Amz-Signature=", "X-Amz-Signature=0") ; c, _, _ = req(tampered, headers={"Range": "bytes=0-15"})
     ok("tampered_signature_refused", c in (400, 401, 403), f"HTTP {c}")
-    other = href.replace(f"outputs/{job}/final.mp4", f"uploads/{job}/input.mp4"); c, _, _ = req(other, headers={"Range": "bytes=0-15"})
+    other = re.sub(rf"outputs/{job}/(final|preview)\.mp4", f"uploads/{job}/input.mp4", href); c, _, _ = req(other, headers={"Range": "bytes=0-15"})
     ok("signature_bound_to_one_file", c in (400, 401, 403), f"HTTP {c}")
 
     c, _, hd = req(f"{api}/api/config", "OPTIONS", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"})
     ok("cors_foreign_origin_denied", "access-control-allow-origin" not in {k.lower() for k in hd}, f"HTTP {c}")
 
-    d = s.get("delivered") or {}
-    ok("full_resolution_output", (d.get("width"), d.get("height")) in ((1080, 1920), (1920, 1080)) and d.get("audio"), d)
+    d = s.get("delivered")
+    if d: ok("full_resolution_output", (d.get("width"), d.get("height")) in ((1080, 1920), (1920, 1080)) and d.get("audio"), d)
+    else: print("full_resolution_output: n/a here (paid HD is verified in the manual sandbox purchase)")
 
     # server-side rejection (the browser would block > 30 s before uploading, so call the API directly)
     with tempfile.TemporaryDirectory() as tmp:
