@@ -1,0 +1,28 @@
+# QA in the REAL Modal runtime, without touching production: `modal run` of a separate ephemeral app (eva-qa-check, no
+# secrets/volumes/endpoints/schedules) that stops when the run ends. Needs GitHub Environment "staging" with
+# MODAL_TOKEN_ID + MODAL_TOKEN_SECRET (branch rule: feat/saas-accounts). Manual trigger only.
+name: staging · QA on Modal (ephemeral, no deploy)
+on: { workflow_dispatch: {} }
+permissions: { contents: read }
+jobs:
+  modal-qa:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/saas-accounts'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 90
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: QA check in a Modal container (education 9:16, real estate 16:9)
+        run: |
+          pip install -q "modal~=1.0"
+          modal run saas/modal_qa_check.py --video saas/tests/media/education.mp4 --aspect 9:16 --templates T17,T20 && mv modal_qa_check.json education.json
+          modal run saas/modal_qa_check.py --video saas/tests/media/realestate.mp4 --aspect 16:9 --templates T20,T01 && mv modal_qa_check.json realestate.json
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        if: always()
+        with: { name: modal-qa-check, path: "*.json", if-no-files-found: ignore }

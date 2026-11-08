@@ -87,9 +87,12 @@ def prepare(job: str, opts: dict, kind: str = "preview", ver: dict = None):
     if ver:   # account version: shared project source + transcript cache + (HD) the saved plan
         S = store.from_env(); inp = versions.before_prepare(S, ver["pid"], ver["upload_key"], d / "work", ver.get("plan_from"))
         pipeline.PROGRESS.set(progress.Reporter(counters, ver["vid"], kind))
-        rc = pipeline.prepare(inp, d / "work", opts); cached = versions.after_prepare(S, ver["pid"], d / "work") if rc == 0 else 0; jobs.commit()
+        rc = pipeline.prepare(inp, d / "work", opts); cached = versions.after_prepare(S, ver["pid"], d / "work") if rc == 0 else 0
+        tq = time.time(); qa_pre = versions.run_qa(d / "work", "pre")[0] if rc == 0 else None   # Stage A: page trace before rendering
+        qa_pre_s = round(time.time() - tq, 1); jobs.commit()
         j = json.loads((d / "work/job.json").read_text())
         return {"rc": rc, "chunks": j.get("chunks", []), "rejected": j.get("rejected"), "duration": versions.duration(d / "work"),
+                "qa_pre": qa_pre, "qa_pre_s": qa_pre_s, "face_detector": _face_detector(),
                 "wall_s": round(time.time() - t, 1), "asr_cached": (d / "work/srt/.restored").exists(), "cache_saved": cached,
                 "stages": {k: v.get("wall_s") for k, v in pipeline.Job(d / "work").stages().items()}}
     if not (d / "input.mp4").exists(): store.from_env().download(f"uploads/{job}/input.mp4", d / "input.mp4")
@@ -115,10 +118,15 @@ def render_chunk(job: str, i: int, kind: str = "preview", pkey: str = None):
 def finish(job: str, preview: bool, vid: str = None):
     _paths(); import store, pipeline, progress, versions
     pipeline.PROGRESS.set(progress.Reporter(counters, vid or job, "preview" if preview else "final"))
-    jobs.reload(); w = Path(f"/jobs/{job}/work"); t = time.time(); pipeline.finish(w, preview); jobs.commit()
-    if vid:
-        keys, qa, rep = versions.outputs(store.from_env(), vid, w, preview)
-        return {"keys": keys, "qa": qa, "report": rep, "finish_wall_s": round(time.time() - t, 1)}
+    jobs.reload(); w = Path(f"/jobs/{job}/work"); t = time.time()
+    if vid:   # account versions: QA runs once at job level (full context) instead of assemble's generic pass
+        mode = os.environ.get("EVA_QA", "report"); os.environ["EVA_QA"] = "off"
+        try: pipeline.finish(w, preview)
+        finally: os.environ["EVA_QA"] = mode
+        tq = time.time(); qa_post = versions.run_qa(w, "post", preview)[0]; qa_post_s = round(time.time() - tq, 1); jobs.commit()   # Stage B
+        keys, _, rep = versions.outputs(store.from_env(), vid, w, preview)
+        return {"keys": keys, "qa_post": qa_post, "qa_post_s": qa_post_s, "report": rep, "finish_wall_s": round(time.time() - t, 1)}
+    pipeline.finish(w, preview); jobs.commit()
     tag = "preview" if preview else "final"; rep = json.loads((w / f"out/report_{tag}.json").read_text())
     S = store.from_env(); ct = {".mp4": "video/mp4", ".srt": "text/plain", ".json": "application/json"}
     S.upload(w / "out" / ("preview.mp4" if preview else "final.mp4"), f"outputs/{job}/{tag}.mp4")
@@ -199,13 +207,24 @@ def render_version(kind: str, vid: str):
                  "ai_calls": 1 if (preview and f["report"].get("planner") == "llm") else 0, "asr_cached": p.get("asr_cached"),
                  "timing": {"total_s": round(time.time() - t0, 1), "prepare_s": p["wall_s"], "chunk_s": [r["wall_s"] for r in renders],
                             "finish_s": f["finish_wall_s"], "prepare_stages": p["stages"]}}
-        status = versions.gate(f["qa"])
-        return D.rpc("eva_finish", version_id=vid, status=status, retain_days=retain, qa=f["qa"], report=f["report"], cost=costs,
+        qa = versions.qa_combined(p.get("qa_pre"), f.get("qa_post")); qa["face_detector"] = p.get("face_detector")
+        costs["timing"].update(qa_pre_s=p.get("qa_pre_s"), qa_post_s=f.get("qa_post_s"))
+        status = versions.gate(qa)   # report mode (default): always "done"; block: a blocking FAIL → qa_failed (released)
+        return D.rpc("eva_finish", version_id=vid, status=status, retain_days=retain, qa=qa, report=f["report"], cost=costs,
                      error="critical QA failure" if status == "qa_failed" else None, **f["keys"])
     except Exception as e:
         traceback.print_exc()
         qa_fail = "exit status 3" in str(e) and "assemble" in str(e)   # QA module (EVA_QA=block) stops assemble with exit 3
         return D.rpc("eva_finish", version_id=vid, status="qa_failed" if qa_fail else "failed", retain_days=0, error=f"{type(e).__name__}: {e}"[:400])
+
+
+def _face_detector():
+    """which face detector QA can use in this container (the Haar cascade ships with opencv-python-headless)"""
+    try:
+        import cv2
+        p = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+        return {"opencv": cv2.__version__, "haar": os.path.exists(p) and not cv2.CascadeClassifier(p).empty()}
+    except Exception as e: return {"error": str(e)[:120]}
 
 
 def _accounts():

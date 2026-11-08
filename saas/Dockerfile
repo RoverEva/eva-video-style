@@ -28,13 +28,14 @@ COPY engine engine
 COPY scripts scripts
 COPY saas saas
 COPY music-library music-library
+COPY qa qa
 RUN chmod +x scripts/*.sh && python saas/worker/warm_models.py
 # original background beds (rights-cleared, see saas/music/compose.py): composed at build time, nothing downloaded
 RUN python saas/music/compose.py saas/music/tracks
 
 ENV EVA_MUSIC_LIBRARY=/app/music-library
-# Video QA (module from branch feat/video-qa, merged separately): record reports, never block, until real-job reports
-# are reviewed (then EVA_QA=block / EVA_QA_GATE=block). No effect while the module is absent.
+# Video QA v1.0 (qa/, from feat/video-qa 377ed15): pre-render + post-render checks, reports saved with each version.
+# report = record, never block (initial release). Later: EVA_QA_GATE=block makes a blocking FAIL "qa_failed" (released).
 ENV EVA_QA=report EVA_QA_GATE=report
 
 CMD ["python", "saas/worker/pipeline.py", "--help"]

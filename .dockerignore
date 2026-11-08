@@ -5,6 +5,8 @@
 !saas
 !package.json
 !music-library
+!qa
+qa/tests
 saas/tests/media
 saas/music/tracks
 **/__pycache__

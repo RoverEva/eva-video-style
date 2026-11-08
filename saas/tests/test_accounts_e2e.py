@@ -60,7 +60,11 @@ def main():
     v, secs, prog = wait(A, v1); E["timings"]["preview_1_s"] = secs
     check("preview 1 done with thumbnail, video, plan, expiry", v["status"] == "done" and v.get("thumb_url") and v.get("video_url") and v.get("expires_at"), {k: v.get(k) for k in ("status", "expires_at")})
     check("progress observed and never decreased", len(prog) > 3 and all(b >= a for a, b in zip(prog, prog[1:])), sorted(set(prog))[:12])
-    check("QA hook recorded (module pending)", (v.get("qa") or {}).get("status") in ("pending_module", "pass", "fail"), v.get("qa"))
+    q = v.get("qa") or {}; E["qa_preview_1"] = {k: (q.get(k) or {}).get("status") if k in ("pre", "post") else q.get(k) for k in ("status", "mode", "pre", "post")}
+    check("QA ran before and after rendering (report mode) and is saved with the version",
+          q.get("mode") == "report" and (q.get("pre") or {}).get("status") in ("pass", "warn", "fail") and (q.get("post") or {}).get("status") in ("pass", "warn", "fail")
+          and PG.rpc("eva_version", version_id=v1).get("qa_key") == f"versions/{v1}/qa-report.json", E["qa_preview_1"])
+    check("QA warnings do not block delivery in report mode", v["status"] == "done", q.get("status"))
 
     r = call(A, "POST", f"/projects/{p['project']}/previews", json={}).json(); v2 = r["version"]   # regenerate: same settings
     v, secs, _ = wait(A, v2); E["timings"]["preview_2_cached_s"] = secs
@@ -108,6 +112,8 @@ def main():
         f = Path(d) / "hd.mp4"; f.write_bytes(requests.get(v["download_url"]).content)
         pr = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,width,height:format=duration", "-of", "json", f], capture_output=True, text=True).stdout)
     vs = next(s for s in pr["streams"] if s["codec_type"] == "video")
+    qh = hdv.get("qa") or {}; E["qa_hd"] = {"status": qh.get("status"), "pre_reused": (qh.get("pre") or {}).get("reused"), "post": (qh.get("post") or {}).get("status")}
+    check("HD export: post-render QA on the HD master, pre-render report reused (same plan)", (qh.get("post") or {}).get("status") in ("pass", "warn", "fail") and (qh.get("pre") or {}).get("reused") is True, E["qa_hd"])
     check("HD is full 1080x1920, full length, from the saved version's plan", (vs["width"], vs["height"]) == (1080, 1920) and float(pr["format"]["duration"]) > 9.5
           and (hdv.get("report") or {}).get("width") == 1080, {"w": vs["width"], "h": vs["height"], "s": pr["format"]["duration"]})
     r3 = call(A, "POST", f"/versions/{v1}/hd").json(); check("re-download of purchased HD is free", r3.get("existing") == h and call(A, "GET", "/me").json()["credits"] == 57)

@@ -312,7 +312,7 @@ def finish(jd, preview=False):
             vf = (f"scale={pw}:{ph},{mark}:x=(w-text_w)/2:y=h*0.30,{mark}:x=(w-text_w)/2:y=h*0.62")
             sh(["ffmpeg", "-loglevel", "error", "-y", "-i", final, "-t", ps, "-vf", vf, "-c:v", "libx264", "-crf", "28", "-preset", "veryfast",
                 "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", out], J.log)
-            final.unlink(); final = out
+            final = out   # keep out/preview_hd.mp4 (full-res, unwatermarked, never uploaded): post-render QA checks it
         shutil.copy(W / "captions.srt", J.d / "out/captions.srt")
         pr = probe(final); v = next(s for s in pr["streams"] if s["codec_type"] == "video")
         lufs = subprocess.run(["ffmpeg", "-nostats", "-i", str(final), "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True).stderr

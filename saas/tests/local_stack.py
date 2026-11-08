@@ -91,16 +91,21 @@ def main():
             if pipeline.prepare(inp, w, opts) == 2:
                 return DB.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=json.loads((w / "job.json").read_text()).get("rejected"))
             versions.after_prepare(S, v["project_id"], w)
+            tq = time.time(); qa_pre = versions.run_qa(w, "pre")[0]; qa_pre_s = round(time.time() - tq, 1)
             if versions.duration(w): DB.rpc("eva_set_duration", project_id=v["project_id"], duration_s=versions.duration(w))
             J = pipeline.Job(w); idx = pipeline.preview_chunks(J) if preview else list(range(len(J.j["chunks"])))
             KV[progress.key(vid, pk, "meta")] = {"chunks": idx, "t": time.time()}
             for i in idx:
                 if (DB.rpc("eva_version", version_id=vid) or {}).get("status") == "canceled": return
                 pipeline.render(w, i)
-            pipeline.finish(w, preview)
-            keys, qa, rep = versions.outputs(S, vid, w, preview)
+            mode = os.environ.get("EVA_QA", "report"); os.environ["EVA_QA"] = "off"
+            try: pipeline.finish(w, preview)
+            finally: os.environ["EVA_QA"] = mode
+            tq = time.time(); qa_post = versions.run_qa(w, "post", preview)[0]; qa_post_s = round(time.time() - tq, 1)
+            keys, _, rep = versions.outputs(S, vid, w, preview); qa = versions.qa_combined(qa_pre, qa_post)
             DB.rpc("eva_finish", version_id=vid, status=versions.gate(qa), retain_days=retain, qa=qa, report=rep,
-                   cost={"timing": {"total_s": round(time.time() - t0, 1)}, "asr_cached": (w / "srt/.restored").exists()}, **keys)
+                   cost={"timing": {"total_s": round(time.time() - t0, 1), "qa_pre_s": qa_pre_s, "qa_post_s": qa_post_s},
+                         "asr_cached": (w / "srt/.restored").exists()}, **keys)
         except Exception as e:
             import traceback; traceback.print_exc()
             DB.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=str(e)[:300])
