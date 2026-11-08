@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
   push:   # only when the staging check itself changes (dispatch needs the file on the default branch)
     branches: [feat/saas-accounts]
-    paths: [saas/modal_qa_check.py, .github/workflows/staging-modal-qa.yml]
+    paths: [saas/modal_qa_check.py, .github/workflows/staging-modal-qa.yml, qa/**, saas/worker/**, saas/tests/image_qa_check.py, saas/tests/cost_report.py]
 permissions: { contents: read }
 jobs:
   modal-qa:
@@ -34,10 +34,20 @@ jobs:
           echo "apps in staging:"; modal app list --env staging
           modal app list --env main --json > prod_before.json 2>/dev/null || echo "[]" > prod_before.json
           python3 -c "import json; a=json.load(open('prod_before.json')); print('production apps (read-only view):', [(x.get('Description') or x.get('description'), x.get('State') or x.get('state')) for x in a])"
-      - name: QA check in a Modal container (education 9:16, real estate 16:9)
+      - name: QA + timings in Modal containers (all renderable launch templates, both aspects)
         run: |
-          modal run saas/modal_qa_check.py --video saas/tests/media/education.mp4 --aspect 9:16 --templates T17,T20 && mv modal_qa_check.json education.json
-          modal run saas/modal_qa_check.py --video saas/tests/media/realestate.mp4 --aspect 16:9 --templates T20,T01 && mv modal_qa_check.json realestate.json
+          fail=0
+          run() { modal run saas/modal_qa_check.py --video "saas/tests/media/$1.mp4" --aspect "$2" --templates "$3" || fail=1; mv modal_qa_check.json "$4.json" 2>/dev/null || true; }
+          run education  9:16 T23,T21 edu_916_T23-T21
+          run realestate 16:9 T17,T02 re_169_T17-T02
+          run realestate 9:16 T01,T02 re_916_T01-T02
+          run education  16:9 T21,T23 edu_169_T21-T23
+          exit $fail
+      - name: Measured cost per video
+        if: always()
+        run: |
+          ls *_T*.json >/dev/null 2>&1 || exit 0
+          python3 saas/tests/cost_report.py *_T*.json | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Production untouched
         if: always()
         run: |

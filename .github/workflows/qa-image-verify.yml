@@ -25,12 +25,15 @@ jobs:
       - name: QA module tests inside the image
         run: |
           docker run --rm -v $PWD:/src -w /src eva-worker sh -c "ln -sfn /app/node_modules node_modules && pip install -q 'pytest~=8.3' && python -m pytest -q -rfEs qa/tests" 2>&1 | tail -40
-      - name: Real renders with QA (education 9:16 T17+T20, real estate 16:9 T20+T01)
+      - name: Real renders with QA (education 9:16 T23+T21, real estate 16:9 T17+T02)
         if: success() || failure()   # renders run even when a QA unit test fails
         run: |
           mkdir -p out && chmod 777 out
-          docker run --rm --cpus 4 -v $PWD/saas/tests/media:/media:ro -v $PWD/out:/out eva-worker python3 saas/tests/image_qa_check.py /media/education.mp4 /out/education --aspect 9:16 --templates T17,T20
-          docker run --rm --cpus 4 -v $PWD/saas/tests/media:/media:ro -v $PWD/out:/out eva-worker python3 saas/tests/image_qa_check.py /media/realestate.mp4 /out/realestate --aspect 16:9 --templates T20,T01
+          docker run --rm --cpus 4 -v $PWD/saas/tests/media:/media:ro -v $PWD/out:/out eva-worker python3 saas/tests/image_qa_check.py /media/education.mp4 /out/education --aspect 9:16 --templates T23,T21
+          docker run --rm --cpus 4 -v $PWD/saas/tests/media:/media:ro -v $PWD/out:/out eva-worker python3 saas/tests/image_qa_check.py /media/realestate.mp4 /out/realestate --aspect 16:9 --templates T17,T02
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
         if: always()
         with: { name: qa-image-verify, path: "out/*/summary.json", if-no-files-found: ignore }
+      - name: Cost per video from the measured CPU (GitHub runner, 4 vCPU; Modal staging gives the authoritative numbers)
+        if: always()
+        run: ls out/*/summary.json >/dev/null 2>&1 && python3 saas/tests/cost_report.py out/*/summary.json | tee -a "$GITHUB_STEP_SUMMARY" || true

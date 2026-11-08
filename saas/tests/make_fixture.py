@@ -29,6 +29,11 @@ def main(job, video, seconds=40.0, script=None):
                     "-f", "lavfi", "-i", f"sine=frequency=220:duration={seconds}", "-c:v", "libx264", "-crf", "23", "-pix_fmt", "yuv420p",
                     "-c:a", "aac", "-shortest", video], check=True)
     sents = [s.strip() for s in re.split(r"(?<=[.!?])\s+", SCRIPT) if s.strip()]
+    keep, n = [], 0                       # natural pace (~2.6 words/s): short clips get the first sentences only
+    for x in sents:
+        if keep and n + len(x.split()) > 2.6 * seconds: break
+        keep.append(x); n += len(x.split())
+    sents = keep
     nwords = sum(len(s.split()) for s in sents); per = (seconds - 1.0 - .6 * len(sents)) / nwords
     t, segs = .4, []
     for s in sents:

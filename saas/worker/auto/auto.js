@@ -14,7 +14,7 @@
   C.src0 = 0; C.end = PL.end; C.evaDir = PL.evaDir || '../media/eva'; if (PL.face) C.face = PL.face;
 
   const FULL = { x: 0, y: 0, w: 1920, h: 1080, r: 0, s: 1 };
-  /* Stages: values copied from the Card System previews (template/cards/t17|t20|t01|t09/scenes.js). */
+  /* Stages: values copied from the Card System previews (template/cards/t17|t20|t01|t09/scenes.js) and the template demos. */
   const SKINS = {
     T17: { win: { x: 150, y: 300, w: 560, h: 560, r: 280, s: 1.5 }, side: 'right', theme: 't17',
       ring: () => ({ color: T.SCN.CYAN, width: 3, glow: 'rgba(24,224,242,.5)', shadow: .5 }), bg: T.sciNetBg,
@@ -33,6 +33,28 @@
       ring: () => ({ width: 0, color: 'transparent', hud: 'rgba(255,255,255,.55)' }), bg: T.hudBg,
       build: L => ({ f: T.hudFrame(L, 'EVA · VIDEO STUDIO', 'T09') }),
       update: (st, t) => T.hudFrameAt(st.f, t) },
+    /* launch set 2026-11: stage values copied from template/demo/t23|t21|t02/scenes.js (window = the demo's main card window) */
+    T23: { win: { x: 1180, y: 160, w: 620, h: 760, r: 40, s: 1.5 }, side: 'left', theme: 't23',
+      themeOver: { surf: ['#ffffff', '#fff8ef'], ink: T.CP.INK, mute: '#5b587a', acc: T.CP.PINK, head: T.CP.KEY, headW: 400, upper: true, cardHead: T.CP.KEY,
+        type: T.CP.INK, typeMode: 'pop', popC: T.CP.YEL, numMode: 'chip', chip: [T.CP.PINK, '#fff'], sh: [29, 27, 58], shA: 1, line: T.CP.INK, motion: 'pop', dur: .45, heroRot: -3, r: 28 },
+      ring: () => ({ color: '#fff', width: 10, shadow: .35 }), bg: T.cpBg,
+      build: (L, i) => ({ sb: T.cpSplashBg(L, (i || 0) + 2), sp: T.cpSparkles(L, 16, (i || 0) + 5) }),
+      update: (st, t, lt) => { T.cpSplashBgAt(st.sb, t); T.cpSparklesAt(st.sp, t, P(lt, 0, .3)); } },
+    T21: { win: { x: 1240, y: 220, w: 520, h: 640, r: 0, s: 1.4 }, side: 'left', theme: 't21',
+      themeOver: { surf: ['#f7f4ee', '#ece8e0'], ink: '#1c1b18', mute: '#6f6a61', acc: '#1c1b18', head: "'Playfair Display', 'Noto Serif CJK SC', serif", headW: 400, upper: false,
+        cardHead: "'Playfair Display', 'Noto Serif CJK SC', serif", type: '#1c1b18', typeMode: 'pop', popC: 'rgba(0,0,0,0)', numMode: '3d', tint: [236, 232, 224],
+        sh: [111, 106, 97], shA: .35, border: '1px solid #cbbfa9', line: '#cbbfa9', motion: 'fade-slide', dur: .9, bob: 0, heroRot: 0, r: 2 },
+      ring: () => ({ color: '#cbbfa9', width: 2, shadow: 0 }), bg: '#ece8e0',
+      build: L => { const sv = k.svg(L, 1920, 1080, 0, 0);
+        return { v: el(L, 'div', 'abs', { left: '80px', top: '0px', width: '1px', height: '1080px', background: '#cbbfa9' }),
+          c: k.sv(sv, 'circle', { cx: 1500, cy: 540, r: 420, fill: 'none', stroke: '#d8cfbf', 'stroke-width': 1.5, 'stroke-dasharray': '4 7' }) }; },
+      update: (st, t) => st.c.setAttribute('transform', `rotate(${(t * 3).toFixed(2)} 1500 540)`) },
+    T02: { win: { x: 1260, y: 200, w: 560, h: 680, r: 30, s: 1.5 }, side: 'left', theme: 't02', cls: 'linegrid',
+      themeOver: { surf: ['#ffffff', '#eef1ff'], ink: k.INK, mute: '#4a4f6e', acc: k.BLUE, kick: k.BLUE, head: "'Anton', 'Archivo Black', 'Noto Sans CJK SC', sans-serif", headW: 400,
+        upper: true, cardHead: "'Anton', 'Archivo Black', 'Noto Sans CJK SC', sans-serif", type: '#fff', typeMode: 'glow', glow: '212,255,46', numMode: 'chip', chip: [k.BLUE, '#fff'],
+        sh: [7, 11, 46], shA: 1.4, line: k.LIME, motion: 'fade-slide', dur: .45, bob: 0, heroRot: 0, r: 26 },
+      ring: () => ({ color: k.LIME, width: 6, glow: 'rgba(212,255,46,.4)' }), bg: `radial-gradient(1400px 900px at 40% 30%, #12206b, ${k.NAVY})`,
+      build: () => ({}), update: () => {} },
   };
   /* Card boxes (beside the window, above the caption zone) are computed by planner.py (SKIN_BOX) and arrive in spec.position. */
   window.EVA_AUTO_SKINS = SKINS;
@@ -58,7 +80,7 @@
   /* one background scene per section (engine adds a whoosh on every non-quiet scene change) */
   secs.forEach((s, i) => { const sk = skinOf(i);
     C.scene({ t0: s.t0, t1: i === secs.length - 1 ? C.end + .05 : s.t1, bg: sk.bg, cls: sk.cls, quiet: i === 0,
-      build: L => sk.build(L), update: (lt, st, t) => sk.update(st, t, lt) }); });
+      build: L => sk.build(L, i), update: (lt, st, t) => sk.update(st, t, lt) }); });
 
   /* cards: each in its own full-frame group so it can leave on time.
      9:16 (?ar=9:16): one card scene per section, so EV.portLayout can scale each template's 16:9 card block into the top
@@ -66,7 +88,7 @@
   const cardScene = (t0, t1, only) => C.scene({ t0, t1, z: 60, quiet: true,
     build(L) {
       return { list: cards.filter(c => only == null || c.section === only).map(c => {
-        const sk = skinOf(c.section), g = EC.group(L, 0, 0, 1920, 1080, 15), th = EC.theme(sk.theme);
+        const sk = skinOf(c.section), g = EC.group(L, 0, 0, 1920, 1080, 15), th = EC.theme(sk.theme, sk.themeOver);
         const o = EC.fromSchema(g, [c.spec], th, { toLocal: s => s, win: sk.win })[0];
         o.times.forEach((x, j) => k.sfx('pop', +x.toFixed(3), .09, { f: 760 + 120 * (j % 4) }));
         return { g, o, c };

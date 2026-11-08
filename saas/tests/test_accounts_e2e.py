@@ -42,7 +42,7 @@ def wait(h, vid, timeout=900):
     raise SystemExit(f"timeout {vid}")
 
 
-OPTS = {"aspect": "9:16", "templates": ["T17", "T20"], "template_mode": "multi", "music": "mix"}
+OPTS = {"aspect": "9:16", "templates": ["T23", "T21"], "template_mode": "multi", "music": "mix"}
 
 
 def main():

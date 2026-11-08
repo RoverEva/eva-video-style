@@ -37,20 +37,26 @@ class Detector:
                 pass
         if self._d is None: self.name = "calibration" if calibration else None
 
-    def detect(self, bgr):
-        """largest face box (x, y, w, h) in pixels, or None"""
-        if self._d is None or self.name == "calibration": return None
+    def detect_all(self, bgr):
+        """candidate face boxes [(x, y, w, h, weight)] in pixels, most confident first"""
+        if self._d is None or self.name == "calibration": return []
         H, W = bgr.shape[:2]; s = 360 / W
         g = cv2.cvtColor(cv2.resize(bgr, (360, int(round(H * s))), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
         if self.name == "opencv-haar":
-            fs = self._d.detectMultiScale(g, scaleFactor=1.1, minNeighbors=6, minSize=(24, 24))
-            boxes = [tuple(map(int, b)) for b in fs]
+            # rank by the cascade's own confidence, not by size: on a plain talking head Haar sometimes also fires on a
+            # large textured patch (e.g. a T-shirt), and "largest box" then picks that instead of the face
+            fs, _, wts = self._d.detectMultiScale3(g, scaleFactor=1.1, minNeighbors=6, minSize=(24, 24), outputRejectLevels=True)
+            boxes = [tuple(map(int, b)) + (float(np.ravel(w)[0]),) for b, w in zip(fs, wts)]
         else:
             d = self._d.detect_multi_scale(img=g / 255.0, scale_factor=1.15, step_ratio=1, min_size=(24, 24), max_size=(330, 330))
-            boxes = [(int(b["c"]), int(b["r"]), int(b["width"]), int(b["height"])) for b in d]
-        if not boxes: return None
-        x, y, w, h = max(boxes, key=lambda b: b[2] * b[3])
-        return (x / s, y / s, w / s, h / s)
+            boxes = [(int(b["c"]), int(b["r"]), int(b["width"]), int(b["height"]), float(b["width"] * b["height"])) for b in d]
+        boxes.sort(key=lambda b: -b[4])
+        return [(x / s, y / s, w / s, h / s, wt) for x, y, w, h, wt in boxes]
+
+    def detect(self, bgr):
+        """most confident face box (x, y, w, h) in pixels, or None"""
+        b = self.detect_all(bgr)
+        return tuple(b[0][:4]) if b else None
 
     def from_calibration(self, size):
         """face box from EV.face {x, y, h} (head centre / head height as fractions of the source frame)"""
@@ -58,6 +64,29 @@ class Detector:
         if not c: return None
         W, H = size; hh = c["h"] * H; fh = hh / (HEAD_UP + HEAD_DOWN); top = c["y"] * H - hh / 2
         return (c["x"] * W - fh / 2, top + HEAD_UP * fh, fh, fh)
+
+
+def consistent(boxes, calibration_box=None, max_shift=.6, max_size=1.45):
+    """per-sample source face boxes -> the same list with outliers replaced.
+    A presenter's face moves little between samples; a box whose centre is more than `max_shift` face widths from the
+    reference (calibration box, else the median of all detections), or whose size differs by more than `max_size`x,
+    is a false detection (shirt, hands, background). Each sample takes its best candidate near the reference, or the
+    reference itself. Returns [(box, how)] with how in {detector, consistent, reference}."""
+    picks = [c for c in boxes if c]
+    if calibration_box: ref = calibration_box
+    elif picks:
+        firsts = [c[0] for c in picks]
+        ref = tuple(float(np.median([b[i] for b in firsts])) for i in range(4))
+    else: return [(None, None) for _ in boxes]
+    rx, ry, rw, rh = ref[:4]
+    ok = lambda b: (abs(b[0] + b[2] / 2 - rx - rw / 2) <= max_shift * rw and abs(b[1] + b[3] / 2 - ry - rh / 2) <= max_shift * rh
+                    and 1 / max_size <= b[2] / rw <= max_size)
+    out = []
+    for i, cands in enumerate(boxes):
+        good = [b for b in (cands or []) if ok(b)]
+        if good: out.append((tuple(good[0][:4]), "detector" if cands[0] is good[0] else "consistent"))
+        else: out.append((tuple(ref[:4]), "reference"))
+    return out
 
 
 def head_from_face(b):
@@ -95,14 +124,22 @@ def track(src_bgr, face_box, out_bgr, long_side=720, scales=(0.12, 3.6, 44)):
 
     def try_scale(s, a=1.0):
         tw, th = int(round((x1 - x0) * s * ds * a)), int(round((y1 - y0) * s * ds / a))
-        if tw < 14 or th < 14 or tw > ow * 1.6 or th > oh * 1.6: return None
+        # a face patch under ~1/30 of the frame's long side (24 px at 720) matches random texture; no EVA layout shows the
+        # presenter's face that small (smallest window ≈ 260 px), and such matches out-scored half-visible real faces
+        if min(tw, th) < max(14, round(max(ow, oh) / 30)) or tw > ow * 1.6 or th > oh * 1.6: return None
         px, py = tw // 2, th // 2   # half the face may hang outside the frame
         pad = cv2.copyMakeBorder(out, py, py, px, px, cv2.BORDER_CONSTANT, value=fill)
         if tw > pad.shape[1] or th > pad.shape[0]: return None
         t = cv2.resize(tpl, (tw, th), interpolation=cv2.INTER_AREA if s * ds < 1 else cv2.INTER_CUBIC)
         r = cv2.matchTemplate(pad, t, cv2.TM_CCOEFF_NORMED)
         _, mv, _, ml = cv2.minMaxLoc(r)
-        return mv, (s, a, (ml[0] - px) / ds, (ml[1] - py) / ds)
+        # a face partly outside the frame is scored on the padding too, which under-rates the real (half-visible) face
+        # against small false matches elsewhere: rank such candidates by the NCC of their in-frame part instead
+        X0, Y0 = ml[0] - px, ml[1] - py; ax0, ay0, ax1, ay1 = max(0, X0), max(0, Y0), min(ow, X0 + tw), min(oh, Y0 + th)
+        inside = max(0, ax1 - ax0) * max(0, ay1 - ay0) / float(tw * th)
+        if .35 <= inside < .95:
+            mv = max(mv, _ncc(out[ay0:ay1, ax0:ax1], t[ay0 - Y0:ay1 - Y0, ax0 - X0:ax1 - X0]) - .05)
+        return mv, (s, a, X0 / ds, Y0 / ds)
 
     for s in np.geomspace(*scales):
         r = try_scale(s)

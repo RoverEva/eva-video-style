@@ -16,12 +16,15 @@ usage: planner.py TRANSCRIPT.js OUT_DIR --duration SEC [--templates T17,T20] [--
 import argparse, json, os, re, sys, urllib.request
 from pathlib import Path
 
-TEMPLATES = ["T17", "T20", "T01", "T09"]
+# launch set (approved 2026-11-08): T23, T21, T17, T02, T01 rendered by the worker; T19 needs a matte + B-roll (not yet).
+# T20 / T09 stay renderable for existing projects and saved plans.
+LAUNCH = ["T23", "T21", "T17", "T02", "T01"]
+TEMPLATES = LAUNCH + ["T20", "T09"]
 W, H, FPS = 1920, 1080, 30
 # presenter windows of the auto page (saas/worker/auto/auto.js SKINS) and the card box beside each one
-WIN = {"T17": (150, 300, 560, 560), "T20": (130, 110, 600, 820), "T01": (1240, 150, 600, 740), "T09": (1290, 180, 520, 700)}
-SIDE = {"T17": "right", "T20": "right", "T01": "left", "T09": "left"}
-CONDENSED = {"T20", "T01"}           # Anton headline themes: narrower glyphs
+WIN = {"T23": (1180, 160, 620, 760), "T21": (1240, 220, 520, 640), "T02": (1260, 200, 560, 680), "T17": (150, 300, 560, 560), "T20": (130, 110, 600, 820), "T01": (1240, 150, 600, 740), "T09": (1290, 180, 520, 700)}
+SIDE = {"T23": "left", "T21": "left", "T02": "left", "T17": "right", "T20": "right", "T01": "left", "T09": "left"}
+CONDENSED = {"T20", "T01", "T02"}    # Anton; T23 uses Archivo Black (wide)           # Anton headline themes: narrower glyphs
 ICONS = ["idea", "plan", "build", "grow", "audience", "monetize", "success", "search", "publish", "analyze", "script", "footage",
          "cut", "caption", "sound", "effects", "export", "film", "rocket", "chat", "minimal", "check", "play", "heart", "star", "code", "github"]
 ICON_HINTS = {"idea": "idea think concept why insight", "plan": "plan strategy goal map", "build": "build make create tool work",
@@ -70,7 +73,7 @@ def choose_templates(mode, templates, dur):
     if mode == "single": return templates[:1]
     if mode == "auto":   # AI Auto Mix: about one look per 8 s (videos are ≤ 30 s), at most four
         n = max(1, min(4, round(dur / 8)))
-        return ["T17", "T20", "T01", "T09"][:n] if n > 1 else ["T17"]
+        return ["T17", "T23", "T01", "T21"][:n] if n > 1 else ["T17"]   # launch looks, contrasting order
     n = max(1, min(len(templates), int(dur // 5)))    # each look gets at least ~5 s
     return templates[:n]
 

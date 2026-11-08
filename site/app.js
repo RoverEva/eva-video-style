@@ -5,7 +5,7 @@
   const el = (tag, attrs = {}, kids = []) => { const e = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) k === "text" ? (e.textContent = v) : e.setAttribute(k, v);
     kids.forEach(k => e.append(k)); return e; };
-  const TEMPLATES = { T17: "Sci-Fi Network", T20: "Soft Pop", T01: "Bold Lime", T09: "Gallery Wall" };
+  const TEMPLATES = { T23: "Creative Pop", T21: "Clean & Minimal", T17: "Sci-Fi Network", T02: "Electric Blue", T01: "Bold Lime" };
   const TRACKS = { "bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Inspire", "luxury-ambient": "Luxury Ambient" };
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
@@ -103,7 +103,17 @@
 
     // template chips (multi-select) + "let us choose"
     const tc = $("#tplChips");
-    Object.entries(TEMPLATES).forEach(([id, name], i) => tc.append(el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tpl", value: id, ...(i === 0 ? { checked: "" } : {}) }), el("span", { text: name })])));
+    // template cards: WebP thumbnail, 5 s muted preview on hover/focus (made from the 15 s demos, see saas/tools/template_previews.py)
+    Object.entries(TEMPLATES).forEach(([id, name], i) => {
+      const lc = id.toLowerCase(), thumb = el("img", { src: `demos/templates/${lc}.webp`, alt: "", loading: "lazy", width: "320", height: "180" });
+      thumb.onerror = () => thumb.remove();   // assets not published yet: plain chip
+      const vid = el("video", { src: `demos/templates/${lc}_5s.mp4`, muted: "", loop: "", playsinline: "", preload: "none" }); vid.muted = true; vid.hidden = true;
+      vid.onerror = () => vid.remove();
+      const card = el("label", { class: "chip tplcard" }, [thumb, vid, el("input", { type: "checkbox", name: "tpl", value: id, ...(i === 0 ? { checked: "" } : {}) }), el("span", { text: name })]);
+      const on = () => { if (!vid.isConnected) return; vid.hidden = false; vid.play().catch(() => {}); }, off = () => { if (!vid.isConnected) return; vid.pause(); vid.hidden = true; };
+      card.addEventListener("mouseenter", on); card.addEventListener("mouseleave", off); card.addEventListener("focusin", on); card.addEventListener("focusout", off);
+      tc.append(card);
+    });
     tc.append(el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tplauto", value: "auto" }), el("span", { text: "Let us choose" })]));
     tc.addEventListener("change", e => { if (e.target.name === "tplauto" && e.target.checked) tc.querySelectorAll("[name=tpl]").forEach(x => x.checked = false);
       if (e.target.name === "tpl" && e.target.checked) $("[name=tplauto]").checked = false; });

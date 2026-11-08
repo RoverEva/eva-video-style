@@ -5,7 +5,7 @@ once Stripe-hosted Checkout has opened and verifies the TEST-mode Checkout Sessi
 hosted card fields against automation, so payment → webhook → render → download is covered by saas/tests/test_api.py
 (server side) and by a manual sandbox purchase. Without the flag (local stack) it pays and checks the delivered MP4. Writes screenshots and a JSON summary (timings, sizes) to OUT_DIR.
 
-    python3 saas/tests/browser_e2e.py SITE_URL VIDEO.mp4 OUT_DIR [--aspect 9:16] [--templates T17,T20] [--music mix|none|track:id,id]
+    python3 saas/tests/browser_e2e.py SITE_URL VIDEO.mp4 OUT_DIR [--aspect 9:16] [--templates T17,T23] [--music mix|none|track:id,id]
 """
 import argparse, json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 from pathlib import Path
@@ -120,7 +120,7 @@ def _diag(pg, out, redact, err):   # writes stripe_fail.png / stripe_fail.html
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("site"); ap.add_argument("video"); ap.add_argument("out")
-    ap.add_argument("--aspect", default="9:16"); ap.add_argument("--templates", default="T17,T20"); ap.add_argument("--music", default="mix")
+    ap.add_argument("--aspect", default="9:16"); ap.add_argument("--templates", default="T17,T23"); ap.add_argument("--music", default="mix")
     ap.add_argument("--email", default="eva-e2e@example.com"); ap.add_argument("--expect", choices=["delivered", "refunded"], default="delivered")
     ap.add_argument("--regenerate", action="store_true", help="after the preview: Regenerate preview (with a double click) and check it")
     ap.add_argument("--mobile-shots", action="store_true", help="also screenshot the video page at phone width")

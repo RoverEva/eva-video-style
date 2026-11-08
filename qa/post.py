@@ -261,19 +261,25 @@ class Post:
         src_found = 0
         out_file = self.ctx["clean"] if self.clean else self.ctx["video"]
         ck = (cache.file_sig(out_file), cache.file_sig(self.ctx["source"]), self.ctx.get("source_offset", 0), det.name, self.ctx.get("face"))
+        # pass 1: source detections for every sample, made consistent (a false detection on one frame must not be tracked)
+        cal = det.from_calibration((SW, SH)) if det.calibration else None
+        raw = [cache.memo(cache.key("detect2", ck, n), lambda n=n: [list(b) for b in det.detect_all(self.src.get(n / self.fps))]
+                          if self.src.get(n / self.fps) is not None else []) for n in self.samples]
+        srcbox = dict(zip(self.samples, F.consistent([[tuple(b) for b in r] for r in raw], cal)))
+        R.info["face_source_rejected"] = sum(1 for _, how in srcbox.values() if how in ("consistent", "reference"))
         for n in self.samples:
             t = n / self.fps; s = self.src.get(t); o = self.clean.get(n) if self.clean else self.final.get(n)
             if s is None or o is None: continue
 
             def measure():
-                box = det.detect(s); how = "detector"
+                box, how = srcbox[n]
                 if box is None: box = det.from_calibration((SW, SH)); how = "calibration"
                 if box is None: return {}
                 return {"box": list(box), "how": how, "m": F.track(s, box, o)}
-            hit = cache.memo(cache.key("track", ck, n), measure)   # measurements only; thresholds are applied below
+            hit = cache.memo(cache.key("track2", ck, n), measure)   # measurements only; thresholds are applied below
             if not hit: continue
             box, how, m = tuple(hit["box"]), hit["how"], hit["m"]
-            src_found += how == "detector"
+            src_found += how in ("detector", "consistent")
             if not m: continue
             fth = self.th(t, "face")
             conf = "high" if (m["score"] >= fth["high_conf"] or (m["out_frac"] > .02 and m["inframe"] >= .8)) else "medium" if m["score"] >= fth["detect_min_conf"] else "none"
@@ -327,7 +333,9 @@ class Post:
                     must=fail_scale, data=lambda m: {"worst_subject_scale": m["subject_scale"]})
         # stretch is a property of how a layer is scaled, so it is uniform over a scene: judge the median per scene
         # (single-sample aspect estimates are noisy and never decide alone)
-        hi = [m for m in self.faces.values() if m["conf"] == "high"]
+        # only faces fully in frame: the aspect of a half-visible face is not measurable (the probe can trade width for
+        # in-frame overlap), so cropped samples are judged by FACE_CROP/FACE_SCALE, never by FACE_STRETCH
+        hi = [m for m in self.faces.values() if m["conf"] == "high" and m["out_frac"] <= .05]
         if len(hi) >= 4:
             groups = {}
             for m in hi: groups.setdefault(self.scene_info(m["t"])[0], []).append(m)

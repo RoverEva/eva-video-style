@@ -8,7 +8,7 @@ with tempfile.TemporaryDirectory() as d:
     d = Path(d)
     D = 30   # MVP upload limit: 30 s
     subprocess.run([sys.executable, HERE / "make_fixture.py", d / "job", "-", str(D)], check=True, capture_output=True)
-    for mode, tpl, n in (("single", "T20", 1), ("multi", "T17,T20,T01", 3), ("auto", "T17", 4)):
+    for mode, tpl, n in (("single", "T21", 1), ("multi", "T23,T21,T02", 3), ("single", "T02", 1), ("auto", "T17", 4)):
         out = d / mode
         subprocess.run([sys.executable, HERE.parent / "worker/planner.py", d / "job/srt/talk.transcript.js", out, "--duration", str(D),
                         "--templates", tpl, "--mode", mode, "--no-llm"], check=True)

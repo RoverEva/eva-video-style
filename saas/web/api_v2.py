@@ -23,7 +23,9 @@ PREVIEW_DAYS = int(os.environ.get("EVA_PREVIEW_DAYS", 30))
 HD_DAYS = int(os.environ.get("EVA_HD_DAYS", 90))
 URL_TTL = 900
 ID_RE = re.compile(r"^[a-z0-9]{12}$")
-TEMPLATES = {"T17": "Sci-Fi Network", "T20": "Soft Pop", "T01": "Bold Lime", "T09": "Gallery Wall"}
+# launch templates (approved 2026-11-08). T19 Footage Intro is listed but not selectable until its cut-out + B-roll path ships.
+TEMPLATES = {"T23": "Creative Pop", "T21": "Clean & Minimal", "T17": "Sci-Fi Network", "T02": "Electric Blue", "T01": "Bold Lime"}
+NAMES = dict(TEMPLATES, T19="Footage Intro", T20="Soft Pop", T09="Gallery Wall")   # labels, incl. templates of older saved versions
 TRACKS = {"bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Inspire", "luxury-ambient": "Luxury Ambient"}
 
 
@@ -66,7 +68,7 @@ class Accounts:
         if not v: return None
         x = {k: v.get(k) for k in ("id", "project_id", "kind", "n", "source_version", "options", "status", "charge", "favorite", "error",
                                    "created_at", "finished_at", "expires_at", "qa", "report")}
-        x["templates"] = [TEMPLATES.get(t, t) for t in (v.get("options") or {}).get("templates", [])]
+        x["templates"] = [NAMES.get(t, t) for t in (v.get("options") or {}).get("templates", [])]
         x.update(self.urls(v))
         if v.get("status") in ("queued", "running"):
             w = {"state": "running", "updated_ts": time.time() if v.get("status") == "queued" else 0}

@@ -18,7 +18,7 @@ API, SITE, VIDEO, OUT = sys.argv[1].rstrip("/"), sys.argv[2].rstrip("/"), Path(s
 SB, ANON, SVC = os.environ["SUPABASE_URL"].strip().rstrip("/"), "".join(os.environ["SUPABASE_ANON_KEY"].split()), "".join(os.environ["SUPABASE_SERVICE_ROLE_KEY"].split())
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "web")); import db as D, stripe_lite
 DB = D.Supabase(SB, SVC); RUN = uuid.uuid4().hex[:8]; USERS = []; E = {"run": RUN, "checks": {}, "timings": {}}
-O = {"Origin": SITE}; OPTS = {"aspect": "9:16", "templates": ["T17", "T20"], "template_mode": "multi", "music": "mix"}
+O = {"Origin": SITE}; OPTS = {"aspect": "9:16", "templates": ["T23", "T21"], "template_mode": "multi", "music": "mix"}
 
 
 def check(name, cond, detail=None):

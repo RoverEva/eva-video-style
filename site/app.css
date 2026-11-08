@@ -179,3 +179,9 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 .vcard .row { gap: 8px; margin: 0; }
 .empty { margin-top: 30px; }
 @media (max-width: 640px) { .vgrid { grid-template-columns: repeat(2, 1fr); gap: 12px; } .top nav .acct { display: block; margin: 6px 0 0; } }
+/* template cards (thumbnail + 5 s hover preview); without assets they fall back to plain chips */
+.tplcard { display: inline-flex; flex-direction: column; gap: 6px; width: 160px; vertical-align: top; }
+.tplcard img, .tplcard video { width: 160px; height: 90px; object-fit: cover; border-radius: 10px; background: var(--line); display: block; }
+.tplcard video { position: absolute; top: 0; left: 0; }
+.tplcard span { text-align: center; }
+@media (max-width: 480px) { .tplcard { width: calc(50% - 8px); } .tplcard img, .tplcard video { width: 100%; height: auto; aspect-ratio: 16 / 9; } }
