@@ -49,6 +49,33 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
 - New skins through the real pipeline, 16:9 + 9:16: T23 34 PASS; T21 33 PASS + 1 WARN (RENDER_FREEZE 1.5 s, T21's slow
   motion); T02 34 PASS (16:9) / 33 + 1 WARN (9:16). 0 FAIL.
 
+## Template Gallery (2026-11-08, staging — not on production)
+- Sources: `~/Documents/ChatGPT/Video/template-demos/` (access verified; all 16 launch-template demos match `manifest.json`
+  sha256; originals only read, unchanged). EN 16:9 v1-release + 9:16 v1 for T23, T21, T02, T01; T17 9:16 = v2-face-safe.
+  Not used: CN-EN duplicates, superseded files, T19, excluded real-presenter demos (not in the folder).
+- `saas/tools/template_previews.py` (FFmpeg only, ~7 s per demo): busiest 5 s window (frame-difference motion, opening
+  fade skipped), muted 5 s clip, edge-density thumbnail frame that is not mid-transition (WebP q80), web-optimised 15 s
+  preview. 9:16 360×640 / 540×960, 16:9 640×360 / 960×540. Per asset set: WebP 13–36 KB, 5 s 70–222 KB, 15 s 0.28–1.27 MB.
+- **T17 16:9 held back** (`status: pending_review`): its source is flagged in the manifest (made before the face-safe
+  headline fix). Reviewed every 0.5 s plus 0.1 s close-ups at the risky beats: no headline or caption crosses her face. Not
+  uploaded and never signed until Eva approves; the T17 card shows the approved 9:16 assets letterboxed meanwhile.
+- `saas/web/gallery.json` (keys, bytes, sha256, status — no media in git) → public read-only `GET /api/v2/gallery`: 15-min
+  signed R2 links (signed locally, no R2 call) for approved assets of selectable templates only. Prefix
+  `EVA_GALLERY_PREFIX` (default `staging/template-demos/gallery/`, outside the retention deletions).
+- Site: static WebP cards per chosen aspect, ▶ plays the 5 s demo inline (muted; tap again to stop; never changes the
+  selection), "Full preview" opens the 15 s demo in a dialog; links refreshed before expiry; plain chips if the gallery
+  is unavailable. T19 is neither selectable (API + planner refuse it) nor shown.
+- Delivered files carry a C2PA Content Credentials manifest (MP4 `uuid` box before `moov` — still fast-start; WebP `C2PA`
+  chunk); `gallery.json` is pinned to those exact bytes.
+- Tests: `test_gallery.py` 178 checks on the files on Eva's Mac (sha256, sizes, dimensions, orientation, 5.0 s muted,
+  15 s, H.264 30 fps, faststart, T19 refused by the order API and planner); `browser_gallery.py` 66/66 in a real browser
+  (both aspects, playback, dialog, selection unaffected, 27 signed links 200, phone width, API-down fallback, no page
+  errors); accounts e2e 34/34, browser account journey, API + planner tests ok.
+- **R2 staging upload: not done from here** — no R2 credentials reach this session or the `staging` environment (they
+  are in the `production` environment and Modal's `eva-r2`), the workspace and the Mac's sandboxed shell cannot reach
+  R2, and GitHub releases are off-limits. Ready: `template-demos/_gallery/upload_gallery.sh` (curl SigV4 + python3,
+  credentials only from the terminal, approved files only, checksum-guarded, HEAD-verified; dry run: 27 files, 7.49 MB).
+
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.
 - Supabase sign-in (email link) + Postgres (`saas/db/001_accounts_credits.sql`): atomic functions, RLS on, browser roles revoked.
@@ -98,7 +125,7 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
    `https://eva-video-studio.vercel.app/**`. Email provider on (magic link). Built-in email is rate-limited (few per hour):
    fine for testing; custom SMTP (e.g. Resend + your domain) before public launch.
 3. ~~Staging Modal check~~ done. ~~3 QA face tests~~ fixed (40/40).
-4. The six 15 s demo MP4s (T23, T21, T17, T19, T02, T01) → `template_previews.py` → `site/demos/templates/`.
+4. ~~Demo MP4s~~ done → Gallery assets built. Upload: run `_gallery/upload_gallery.sh --upload` in Terminal; approve or not T17 16:9.
 5. T19 decision: ship later with matte + optional B-roll upload, or keep as gallery-only for launch.
 6. Optional: `ANTHROPIC_API_KEY` (Modal secret `eva-anthropic`, `EVA_USE_LLM=1`) for better card text.
 

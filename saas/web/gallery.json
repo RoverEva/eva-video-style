@@ -1,0 +1,295 @@
+{
+ "schema": "eva-gallery/1",
+ "version": "2026-11-08",
+ "prefix_env": "EVA_GALLERY_PREFIX (default staging/template-demos/gallery/)",
+ "source": "~/Documents/ChatGPT/Video/template-demos (manifest.json, sha256-verified); originals untouched, not uploaded",
+ "excluded": {
+  "T19": "not selectable until its SaaS rendering dependencies (presenter matte + B-roll) are ready",
+  "superseded": "never used",
+  "CN-EN 16:9": "English-first gallery uses the EN release demos"
+ },
+ "templates": [
+  {
+   "id": "T23",
+   "name": "Creative Pop",
+   "assets": {
+    "16:9": {
+     "status": "approved",
+     "source": "T23_creative-pop_16x9_15s_v1_EN.mp4",
+     "source_sha256": "db7ad5a1ab2f5f5d7b5805dcfdb97632a1e277d47b03d698a8ac961b2a69e07a",
+     "window_s": [
+      3.7,
+      8.7
+     ],
+     "thumb_t_s": 7.4,
+     "thumb": {
+      "key": "T23/t23_169.webp",
+      "bytes": 27610,
+      "sha256": "080c2cc949e6738130ad44f07c7c89850d9de3afbb5a62c6841425b831ee2610"
+     },
+     "clip5": {
+      "key": "T23/t23_169_5s.mp4",
+      "bytes": 149804,
+      "sha256": "823fb74d86fc065bd5aa114d9e53948c8a78c3607acc024526f22b8b975f8144"
+     },
+     "full15": {
+      "key": "T23/t23_169_15s.mp4",
+      "bytes": 867635,
+      "sha256": "e588376c48cb41785e8ebcd8bb5d85333c638604c66532e9d26cf334fa536e9b"
+     }
+    },
+    "9:16": {
+     "status": "approved",
+     "source": "T23_creative-pop_9x16_15s_v1.mp4",
+     "source_sha256": "fe87ff369651ea59172b10ef9bfbd16ce3a2ddd6bf878763143a97a3c5fc5d7f",
+     "window_s": [
+      4.5,
+      9.5
+     ],
+     "thumb_t_s": 7.5,
+     "thumb": {
+      "key": "T23/t23_916.webp",
+      "bytes": 18556,
+      "sha256": "a1abdccfb8489331afa1b60f8f40040843589a49a4c778157a7659fb80e797c4"
+     },
+     "clip5": {
+      "key": "T23/t23_916_5s.mp4",
+      "bytes": 79291,
+      "sha256": "b13f405a57b395f28c72349a798212c34f0148320646856225a22cf4742fd174"
+     },
+     "full15": {
+      "key": "T23/t23_916_15s.mp4",
+      "bytes": 401043,
+      "sha256": "63d92959f3049a152dbc27dd5125e5d858dd6628c6f42004e0c1f519edb5071e"
+     }
+    }
+   }
+  },
+  {
+   "id": "T21",
+   "name": "Clean & Minimal",
+   "assets": {
+    "16:9": {
+     "status": "approved",
+     "source": "T21_clean-minimal_16x9_15s_v1_EN.mp4",
+     "source_sha256": "d70069e85789dd93f9a7273bfa484abfd07c77cdf82bfe57d8e4344248ca30dd",
+     "window_s": [
+      7.9,
+      12.9
+     ],
+     "thumb_t_s": 11.7,
+     "thumb": {
+      "key": "T21/t21_169.webp",
+      "bytes": 19916,
+      "sha256": "c93bea221f3fc3f83f50e4b37df804b96382a9658766b65b37955a0765c42628"
+     },
+     "clip5": {
+      "key": "T21/t21_169_5s.mp4",
+      "bytes": 100963,
+      "sha256": "95a9e2190ac122bc9b760aa5313016cbbefb9191366448418bb95a2d87023e9a"
+     },
+     "full15": {
+      "key": "T21/t21_169_15s.mp4",
+      "bytes": 615472,
+      "sha256": "2f16c7880dd6d934d0e7c2170c1677d1314686d9c7e87c38dd7839c8037e5d32"
+     }
+    },
+    "9:16": {
+     "status": "approved",
+     "source": "T21_clean-minimal_9x16_15s_v1.mp4",
+     "source_sha256": "6bfe8a9dc0ed7320e02d288c2c1399dfdbc6a9775e7f95e50781d67f33fec138",
+     "window_s": [
+      7.9,
+      12.9
+     ],
+     "thumb_t_s": 11.6,
+     "thumb": {
+      "key": "T21/t21_916.webp",
+      "bytes": 15360,
+      "sha256": "e62b133a37d4d6e1f8842b5f4fbfe6bd7590b26f56456ee16c1dbd5fee326340"
+     },
+     "clip5": {
+      "key": "T21/t21_916_5s.mp4",
+      "bytes": 72479,
+      "sha256": "122716a55b93b2ed7f1dedcd5e27921b95058cb8c6a96cf05c59a448d88b380e"
+     },
+     "full15": {
+      "key": "T21/t21_916_15s.mp4",
+      "bytes": 282125,
+      "sha256": "4342ac358bb7cc52fb82f90d6de21b7c29346b5a4ab1a632b3dc811dda572e6f"
+     }
+    }
+   }
+  },
+  {
+   "id": "T17",
+   "name": "Sci-Fi Network",
+   "assets": {
+    "16:9": {
+     "status": "pending_review",
+     "note": "source flagged in manifest (made before the T17 face-safe headline fix); reviewed 2026-11-08 at 0.5 s + 0.1 s close-ups: no headline crosses her face \u2014 awaiting Eva's approval",
+     "source": "T17_science-network_16x9_15s_v1_EN.mp4",
+     "source_sha256": "edc3c2e0fcebddbd243a86110f3a5452c59b0ef96ca105d8036c9d5961133c56",
+     "window_s": [
+      0.5,
+      5.5
+     ],
+     "thumb_t_s": 3.5,
+     "thumb": {
+      "key": "T17/t17_169.webp",
+      "bytes": 29298,
+      "sha256": "a05acbe17a177fdc4fd12aa00f6d230d4a622f866d2099f394cca602f7d7ab97"
+     },
+     "clip5": {
+      "key": "T17/t17_169_5s.mp4",
+      "bytes": 171101,
+      "sha256": "a270841a513ea9fa31fe6ee88047a2c6ca5eb16f8ea39b92820612927ac97fd7"
+     },
+     "full15": {
+      "key": "T17/t17_169_15s.mp4",
+      "bytes": 1249716,
+      "sha256": "4930543f4650eb8b967b1bc537cf2741df587476831b43be0ceaf23140a0336e"
+     }
+    },
+    "9:16": {
+     "status": "approved",
+     "source": "T17_science-network_9x16_15s_v2-face-safe.mp4",
+     "source_sha256": "6e68746106b1d6565a05341eda4a7a84392a45970497a80ff6f3ceeb955340fd",
+     "window_s": [
+      9.9,
+      14.9
+     ],
+     "thumb_t_s": 11.8,
+     "thumb": {
+      "key": "T17/t17_916.webp",
+      "bytes": 22258,
+      "sha256": "c8fa29adba4614cd7c495d45462ec3954e3a468a33ed609dcee019876a5e7171"
+     },
+     "clip5": {
+      "key": "T17/t17_916_5s.mp4",
+      "bytes": 170368,
+      "sha256": "4861c2d98f3b8116e8a886c50ed5803a0f053ce708bbe99198cc1be1238bad9d"
+     },
+     "full15": {
+      "key": "T17/t17_916_15s.mp4",
+      "bytes": 709840,
+      "sha256": "95f025638d025e5eb679a12def0e2c8bfaab6f329a022db814e429132c948c0d"
+     }
+    }
+   }
+  },
+  {
+   "id": "T02",
+   "name": "Electric Blue",
+   "assets": {
+    "16:9": {
+     "status": "approved",
+     "source": "T02_electric-blue-console_16x9_15s_v1_EN.mp4",
+     "source_sha256": "c7aeed42519c8eb12ae7de1bce9724286c31be8bf36317b569f437a11adc75e5",
+     "window_s": [
+      3.0,
+      8.0
+     ],
+     "thumb_t_s": 7.5,
+     "thumb": {
+      "key": "T02/t02_169.webp",
+      "bytes": 20914,
+      "sha256": "2de514577b22c0c3a5a4bfef53e6d27591a6283126d96bcc0a254e94a5a8225d"
+     },
+     "clip5": {
+      "key": "T02/t02_169_5s.mp4",
+      "bytes": 102795,
+      "sha256": "a6b6ffaef402b633ce7b03740d52270c6767659326bb6c13ee6ca3f7c874ef07"
+     },
+     "full15": {
+      "key": "T02/t02_169_15s.mp4",
+      "bytes": 630186,
+      "sha256": "f4813f5e345de0311003159a90b0265545ba6c363ffc80e124f47a8a9fa35f2c"
+     }
+    },
+    "9:16": {
+     "status": "approved",
+     "source": "T02_electric-blue-console_9x16_15s_v1.mp4",
+     "source_sha256": "3afd123ff4e10d171a1288a939003fc60eeb49c8b5d27ca52591d7cabb5122df",
+     "window_s": [
+      3.0,
+      8.0
+     ],
+     "thumb_t_s": 7.5,
+     "thumb": {
+      "key": "T02/t02_916.webp",
+      "bytes": 16838,
+      "sha256": "4a06af699ea6a639f5fb2a6d5000719fc68e5b8d6af07c1a8d4cf94cf32754b8"
+     },
+     "clip5": {
+      "key": "T02/t02_916_5s.mp4",
+      "bytes": 69926,
+      "sha256": "c2d6eed1a5f1d94805c5104ed9c0248a213feeb93d0d5d568ab0ec895e9ab22b"
+     },
+     "full15": {
+      "key": "T02/t02_916_15s.mp4",
+      "bytes": 346359,
+      "sha256": "d155f8d76b2e9ca6773a30bb751958acb7c27a7820770121aab7d9a9107d729b"
+     }
+    }
+   }
+  },
+  {
+   "id": "T01",
+   "name": "Bold Lime",
+   "assets": {
+    "16:9": {
+     "status": "approved",
+     "source": "T01_acid-lime-kinetic_16x9_15s_v1_EN.mp4",
+     "source_sha256": "4771983f19a98e6133b5956172011ec42b46a0c8f2abde6e43fb3df7c2f9aac6",
+     "window_s": [
+      7.6,
+      12.6
+     ],
+     "thumb_t_s": 11.8,
+     "thumb": {
+      "key": "T01/t01_169.webp",
+      "bytes": 32072,
+      "sha256": "f2817f22b0b05e4dbdc7bf54dbc7a11de39980adbcff77ca33fb8a4a2a1622f3"
+     },
+     "clip5": {
+      "key": "T01/t01_169_5s.mp4",
+      "bytes": 221672,
+      "sha256": "c5adc5bcfadb2cdafa498bbb24e196a950aaa7c534845bf9b26ccff6bdf5b1fb"
+     },
+     "full15": {
+      "key": "T01/t01_169_15s.mp4",
+      "bytes": 1274100,
+      "sha256": "5210122fc29a727edcc05832d415ed26b0430e3c06c10dd93201bfbacd338ab8"
+     }
+    },
+    "9:16": {
+     "status": "approved",
+     "source": "T01_acid-lime-kinetic_9x16_15s_v1.mp4",
+     "source_sha256": "cbb17cd4107e5eaf8177d649afc0cf0360aa01be2ac742be2ca58f1849efb4f2",
+     "window_s": [
+      7.6,
+      12.6
+     ],
+     "thumb_t_s": 11.5,
+     "thumb": {
+      "key": "T01/t01_916.webp",
+      "bytes": 36432,
+      "sha256": "0299786c1950e65cc22d03f88a6a1f0e19f33502183475092d4f7dc6c2e832d2"
+     },
+     "clip5": {
+      "key": "T01/t01_916_5s.mp4",
+      "bytes": 220837,
+      "sha256": "89d70323beaedc0be0c749e8f4f2f86a445dc6fc41565077b3d3bbc4cf6bf3af"
+     },
+     "full15": {
+      "key": "T01/t01_916_15s.mp4",
+      "bytes": 969165,
+      "sha256": "7f9b6cb799fb3d6ebf6f2d544e593618c7dd84534d6db244ee163879691e18db"
+     }
+    }
+   }
+  }
+ ],
+ "content_credentials": "files carry a C2PA Content Credentials manifest (MP4 'uuid' box before moov, WebP 'C2PA' chunk) added on delivery; sizes/sha256 are of these files"
+}

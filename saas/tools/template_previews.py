@@ -1,50 +1,86 @@
 #!/usr/bin/env python3
-"""Template gallery assets from the EXISTING 15-second AI Eva demos (no re-rendering).
+"""Template Gallery assets from the EXISTING approved 15-second demos — FFmpeg only, nothing is re-rendered and the
+originals are only read.
 
-For each demo MP4: a 5-second muted 640x360 H.264 preview (the 5 s window with the most visual change, so it shows the
-template's motion, not a static intro) and a 640x360 WebP thumbnail from the middle of that window. Pure FFmpeg stream
-work: ~1-2 s per template on one CPU.
+Per demo (16:9 or 9:16):
+  <id>_<ar>_5s.mp4     the best-animated 5 s: the window with the most visual change (mean frame difference at 10 fps,
+                       first 0.5 s fade-in skipped), muted, H.264 faststart, 640x360 / 360x640
+  <id>_<ar>.webp       thumbnail: the frame inside that window with the most detail that is NOT mid-transition
+                       (low difference to its neighbours), 640x360 / 360x640, WebP q80
+  <id>_<ar>_15s.mp4    optional full preview, web-optimised (960x540 / 540x960, CRF 26; audio kept if present, 96 kb/s)
 
-usage: template_previews.py OUT_DIR T23=/path/T23.mp4 T21=/path/T21.mp4 ...
-writes OUT_DIR/<t>_5s.mp4, OUT_DIR/<t>.webp, OUT_DIR/templates.json (sizes, chosen window)
+usage: template_previews.py OUT_DIR ID:AR=/path/demo.mp4 [...]      (AR = 169 | 916)
+writes OUT_DIR/<ID>/..., OUT_DIR/gallery_build.json (window, thumb time, sizes, sha256 of source + outputs)
 """
-import json, re, subprocess, sys
+import hashlib, json, subprocess, sys
 from pathlib import Path
+
+import numpy as np
+
+SIZES = {"169": {"small": (640, 360), "full": (960, 540)}, "916": {"small": (360, 640), "full": (540, 960)}}
 
 
 def ff(*a): subprocess.run(["ffmpeg", "-loglevel", "error", "-y", *map(str, a)], check=True)
 
 
-def duration(p):
-    return float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(p)], capture_output=True, text=True, check=True).stdout)
+def probe(p):
+    r = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration:stream=codec_type,width,height",
+                                   "-of", "json", str(p)], capture_output=True, text=True, check=True).stdout)
+    v = next(s for s in r["streams"] if s["codec_type"] == "video")
+    return float(r["format"]["duration"]), (v["width"], v["height"]), any(s["codec_type"] == "audio" for s in r["streams"])
 
 
-def busiest_window(p, win=5.0):
-    """start of the 5 s window with the most scene change (ffmpeg scene score, sampled at 5 fps)"""
-    r = subprocess.run(["ffmpeg", "-i", str(p), "-vf", "fps=5,scale=320:-2,select='gte(scene,0)',metadata=print:key=lavfi.scene_score", "-f", "null", "-"],
-                       capture_output=True, text=True)
-    pts = [float(x) for x in re.findall(r"pts_time:([\d.]+)", r.stderr)]; sc = [float(x) for x in re.findall(r"scene_score=([\d.]+)", r.stderr)]
-    d = duration(p)
-    if not sc or d <= win: return 0.0
-    best, t0 = -1, 0.0
-    for s in [x * .5 for x in range(int((d - win) / .5) + 1)]:
-        v = sum(c for t, c in zip(pts, sc) if s <= t < s + win)
-        if v > best: best, t0 = v, s
-    return t0
+def frames(p, fps=10, w=96):
+    """grayscale frames at `fps`, width w (for motion analysis only)"""
+    d, (W, H), _ = probe(p); h = int(round(w * H / W / 2) * 2)
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(p), "-vf", f"fps={fps},scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                         capture_output=True, check=True).stdout
+    return np.frombuffer(raw, np.uint8).reshape(-1, h, w).astype(np.float32)
 
 
-def main(out, pairs):
-    out = Path(out); out.mkdir(parents=True, exist_ok=True); meta = {}
-    for pr in pairs:
-        tid, src = pr.split("=", 1); lc = tid.lower(); src = Path(src)
-        t0 = busiest_window(src)
-        ff("-ss", f"{t0:.2f}", "-i", src, "-t", "5", "-an", "-vf", "scale=640:360:force_original_aspect_ratio=increase,crop=640:360,fps=30",
-           "-c:v", "libx264", "-crf", "27", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", out / f"{lc}_5s.mp4")
-        ff("-ss", f"{t0 + 2.5:.2f}", "-i", src, "-frames:v", "1", "-vf", "scale=640:360:force_original_aspect_ratio=increase,crop=640:360",
-           "-c:v", "libwebp", "-quality", "78", out / f"{lc}.webp")
-        meta[tid] = {"source": src.name, "window_s": [t0, t0 + 5], "preview_bytes": (out / f"{lc}_5s.mp4").stat().st_size, "thumb_bytes": (out / f"{lc}.webp").stat().st_size}
-        print(tid, meta[tid])
-    (out / "templates.json").write_text(json.dumps(meta, indent=1))
+def choose(p, win=5.0, fps=10, skip=0.5):
+    f = frames(p, fps); diff = np.abs(np.diff(f, axis=0)).mean(axis=(1, 2))          # motion between consecutive samples
+    n = int(win * fps); best, s0 = -1.0, 0
+    for s in range(int(skip * fps), max(int(skip * fps) + 1, len(diff) - n + 1)):
+        v = float(diff[s:s + n].sum())
+        if v > best: best, s0 = v, s
+    # thumbnail: most content (edge density at 192 px — thin serif type and cards count, flat backgrounds don't) and
+    # still (low change to its neighbours: not a cut / whip / fade in progress)
+    g = frames(p, fps, 192); edge = np.abs(np.diff(g, axis=1)).mean(axis=(1, 2)) + np.abs(np.diff(g, axis=2)).mean(axis=(1, 2))
+    idx = range(s0 + 3, min(len(f) - 2, s0 + n - 3))
+    def score(i): return float(edge[i]) - 1.5 * float(diff[max(0, i - 1)] + diff[min(len(diff) - 1, i)])
+    ti = max(idx, key=score) if len(idx) else s0
+    return s0 / fps, ti / fps, best / n
+
+
+def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+
+def build(out, tid, ar, src):
+    d = Path(out) / tid; d.mkdir(parents=True, exist_ok=True); base = d / f"{tid.lower()}_{ar}"
+    dur, size, audio = probe(src); sm, full = SIZES[ar]["small"], SIZES[ar]["full"]
+    t0, tt, motion = choose(src)
+    fit = lambda wh: f"scale={wh[0]}:{wh[1]}:force_original_aspect_ratio=increase,crop={wh[0]}:{wh[1]},setsar=1"
+    ff("-ss", f"{t0:.2f}", "-i", src, "-t", "5", "-an", "-vf", fit(sm) + ",fps=30", "-c:v", "libx264", "-preset", "slow", "-crf", "27",
+       "-pix_fmt", "yuv420p", "-movflags", "+faststart", f"{base}_5s.mp4")
+    ff("-ss", f"{tt:.2f}", "-i", src, "-frames:v", "1", "-vf", fit(sm), "-c:v", "libwebp", "-quality", "80", "-compression_level", "6", f"{base}.webp")
+    ff("-i", src, "-vf", fit(full), "-c:v", "libx264", "-preset", "slow", "-crf", "26", "-pix_fmt", "yuv420p",
+       *(["-c:a", "aac", "-b:a", "96k"] if audio else ["-an"]), "-movflags", "+faststart", f"{base}_15s.mp4")
+    files = {k: Path(f"{base}{suf}") for k, suf in (("thumb", ".webp"), ("clip5", "_5s.mp4"), ("full15", "_15s.mp4"))}
+    rec = {"template_id": tid, "aspect": {"169": "16:9", "916": "9:16"}[ar], "source": Path(src).name, "source_sha256": sha(src),
+           "source_duration_s": round(dur, 2), "window_s": [round(t0, 2), round(t0 + 5, 2)], "thumb_t_s": round(tt, 2),
+           "motion": round(motion, 2), "audio_in_full": audio,
+           "files": {k: {"name": f"{tid}/{p.name}", "bytes": p.stat().st_size, "sha256": sha(p)} for k, p in files.items()}}
+    print(tid, rec["aspect"], "window", rec["window_s"], "thumb", tt, {k: v["bytes"] for k, v in rec["files"].items()})
+    return rec
+
+
+def main(out, specs):
+    recs = []
+    for s in specs:
+        key, src = s.split("=", 1); tid, ar = key.split(":")
+        recs.append(build(out, tid, ar, src))
+    Path(out, "gallery_build.json").write_text(json.dumps(recs, indent=1))
 
 
 if __name__ == "__main__":

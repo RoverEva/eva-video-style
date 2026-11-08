@@ -103,17 +103,56 @@
 
     // template chips (multi-select) + "let us choose"
     const tc = $("#tplChips");
-    // template cards: WebP thumbnail, 5 s muted preview on hover/focus (made from the 15 s demos, see saas/tools/template_previews.py)
+    // Template Gallery (GET /api/v2/gallery: 15-min signed links to approved assets only). Per card: static WebP for the
+    // chosen aspect, ▶ plays the 5 s demo inline (muted), "Full preview" opens the 15 s demo. Selection is the chip.
+    // No gallery (API down / assets not published): plain chips, the studio still works.
+    let gallery = {};
+    const dlg = el("dialog", { class: "tpldlg", "aria-label": "Template preview" });
+    const dv = el("video", { controls: "", playsinline: "", preload: "none" });
+    const close = el("button", { type: "button", class: "btn ghost", text: "Close" });
+    dlg.append(dv, close); document.body.append(dlg);
+    close.onclick = () => dlg.close(); dlg.addEventListener("close", () => { dv.pause(); dv.removeAttribute("src"); dv.load(); });
+    const aspectNow = () => ($("[name=aspect]:checked") || {}).value || "9:16";
+    const assetsFor = (id, ar) => { const g = gallery[id]; if (!g) return null; return g.assets[ar] || g.assets[ar === "16:9" ? "9:16" : "16:9"] || null; };
+    const cards = {};
     Object.entries(TEMPLATES).forEach(([id, name], i) => {
-      const lc = id.toLowerCase(), thumb = el("img", { src: `demos/templates/${lc}.webp`, alt: "", loading: "lazy", width: "320", height: "180" });
-      thumb.onerror = () => thumb.remove();   // assets not published yet: plain chip
-      const vid = el("video", { src: `demos/templates/${lc}_5s.mp4`, muted: "", loop: "", playsinline: "", preload: "none" }); vid.muted = true; vid.hidden = true;
-      vid.onerror = () => vid.remove();
-      const card = el("label", { class: "chip tplcard" }, [thumb, vid, el("input", { type: "checkbox", name: "tpl", value: id, ...(i === 0 ? { checked: "" } : {}) }), el("span", { text: name })]);
-      const on = () => { if (!vid.isConnected) return; vid.hidden = false; vid.play().catch(() => {}); }, off = () => { if (!vid.isConnected) return; vid.pause(); vid.hidden = true; };
-      card.addEventListener("mouseenter", on); card.addEventListener("mouseleave", off); card.addEventListener("focusin", on); card.addEventListener("focusout", off);
+      const media = el("div", { class: "tplmedia", hidden: "" });
+      const play = el("button", { type: "button", class: "tplplay", "aria-label": `Play the ${name} demo`, "aria-pressed": "false" });
+      const full = el("button", { type: "button", class: "tplfull", text: "Full preview", hidden: "" });
+      media.append(play);
+      const chip = el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tpl", value: id, ...(i === 0 ? { checked: "" } : {}) }), el("span", { text: name })]);
+      const card = el("div", { class: "tplcard", "data-tpl": id }, [media, chip, full]);
+      cards[id] = { card, media, play, full, name };
       tc.append(card);
     });
+    const paint = () => {
+      const ar = aspectNow();
+      Object.entries(cards).forEach(([id, c]) => {
+        const a = assetsFor(id, ar);
+        c.media.hidden = !a; c.full.hidden = !(a && a.full15); c.card.classList.toggle("has-media", !!a);
+        c.play.innerHTML = ""; c.play.setAttribute("aria-pressed", "false");
+        if (!a) return;
+        // the card always follows the chosen aspect; a template without approved assets for it shows its other-aspect
+        // assets letterboxed (e.g. T17 16:9 while that demo awaits review)
+        c.media.classList.toggle("wide", ar === "16:9"); c.media.classList.toggle("fallback", !gallery[id].assets[ar]);
+        const img = el("img", { src: a.thumb.url, alt: `${c.name} template`, loading: "lazy", decoding: "async" });
+        c.play.append(img, el("span", { class: "tplbadge", "aria-hidden": "true", text: "▶ 5 s" }));
+        c.play.onclick = () => {
+          const v = c.play.querySelector("video");
+          if (v) { v.remove(); c.play.setAttribute("aria-pressed", "false"); return; }
+          document.querySelectorAll(".tplplay video").forEach(x => { x.parentNode.setAttribute("aria-pressed", "false"); x.remove(); });
+          const vid = el("video", { src: a.clip5.url, muted: "", autoplay: "", loop: "", playsinline: "", preload: "auto" }); vid.muted = true;
+          c.play.append(vid); c.play.setAttribute("aria-pressed", "true"); vid.play().catch(() => {});
+        };
+        c.full.onclick = () => { if (!a.full15) return; dv.src = a.full15.url; dlg.showModal(); dv.play().catch(() => {}); };
+      });
+    };
+    document.querySelectorAll("[name=aspect]").forEach(r => r.addEventListener("change", paint));
+    const loadGallery = () => fetch(`${API}/api/v2/gallery`).then(r => r.ok ? r.json() : null).then(j => {
+      if (!j) return; (j.templates || []).forEach(t => { gallery[t.id] = t; }); paint();
+      setTimeout(loadGallery, Math.max(60, (j.expires_in || 900) - 60) * 1000);   // signed links last 15 min: refresh before expiry
+    }).catch(() => {});
+    loadGallery();
     tc.append(el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tplauto", value: "auto" }), el("span", { text: "Let us choose" })]));
     tc.addEventListener("change", e => { if (e.target.name === "tplauto" && e.target.checked) tc.querySelectorAll("[name=tpl]").forEach(x => x.checked = false);
       if (e.target.name === "tpl" && e.target.checked) $("[name=tplauto]").checked = false; });

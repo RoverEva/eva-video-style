@@ -179,11 +179,21 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 .vcard .row { gap: 8px; margin: 0; }
 .empty { margin-top: 30px; }
 @media (max-width: 640px) { .vgrid { grid-template-columns: repeat(2, 1fr); gap: 12px; } .top nav .acct { display: block; margin: 6px 0 0; } }
-/* template cards (thumbnail + 5 s hover preview); without assets they fall back to plain chips */
-.tplcard { display: inline-flex; flex-direction: column; gap: 6px; width: 160px; vertical-align: top; }
-.tplcard img, .tplcard video { width: 160px; height: 90px; object-fit: cover; border-radius: 10px; background: var(--line); display: block; }
-.tplcard video { position: absolute; top: 0; left: 0; }
-.tplcard video[hidden] { display: none; }
-.tplcard:not(:has(img)) { width: auto; }   /* no thumbnail published: plain chip */
-.tplcard span { text-align: center; }
-@media (max-width: 480px) { .tplcard { width: calc(50% - 8px); } .tplcard img, .tplcard video { width: 100%; height: auto; aspect-ratio: 16 / 9; } }
+/* Template Gallery cards: static WebP, ▶ plays the 5 s demo inline, "Full preview" opens the 15 s demo; plain chip without assets */
+.tplcard { display: inline-flex; flex-direction: column; gap: 6px; vertical-align: top; }
+.tplcard.has-media { width: 168px; }
+.tplmedia { position: relative; }
+.tplplay { display: block; position: relative; width: 168px; aspect-ratio: 9 / 16; padding: 0; border: 0; border-radius: 12px; overflow: hidden; background: var(--line); cursor: pointer; }
+.tplmedia.wide .tplplay { aspect-ratio: 16 / 9; }
+.tplplay img, .tplplay video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.tplmedia.fallback .tplplay { background: var(--ink); }
+.tplmedia.fallback .tplplay img, .tplmedia.fallback .tplplay video { object-fit: contain; }
+.tplbadge { position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 999px; background: rgba(16, 26, 61, .78); color: #fff; font: 600 12px/1.3 var(--body); }
+.tplplay[aria-pressed="true"] .tplbadge { display: none; }
+.tplfull { align-self: flex-start; padding: 2px 0; border: 0; background: none; color: var(--cobalt); font: 500 14px/1.3 var(--body); cursor: pointer; text-decoration: underline; }
+.tplcard.has-media .chip span { display: block; text-align: center; }
+.tpldlg { border: 0; border-radius: 16px; padding: 12px; background: var(--ink); max-width: min(92vw, 960px); }
+.tpldlg::backdrop { background: rgba(16, 26, 61, .6); }
+.tpldlg video { display: block; max-width: 100%; max-height: 78vh; border-radius: 10px; background: #000; }
+.tpldlg .btn { margin-top: 10px; color: #fff; }
+@media (max-width: 480px) { .tplcard.has-media { width: calc(50% - 8px); } .tplplay { width: 100%; } }

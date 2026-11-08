@@ -9,7 +9,8 @@ Pricing (shown before anything is charged; integer credits, $9.99 = 100 credits)
     HD       38-52 credits by duration, rendered from the original upload + the saved version's exact configuration
 Retention (env): previews EVA_PREVIEW_DAYS=30, HD EVA_HD_DAYS=90, source upload = preview retention.
 """
-import os, re, secrets, time
+from pathlib import Path
+import json, os, re, secrets, time
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
@@ -27,6 +28,26 @@ ID_RE = re.compile(r"^[a-z0-9]{12}$")
 TEMPLATES = {"T23": "Creative Pop", "T21": "Clean & Minimal", "T17": "Sci-Fi Network", "T02": "Electric Blue", "T01": "Bold Lime"}
 NAMES = dict(TEMPLATES, T19="Footage Intro", T20="Soft Pop", T09="Gallery Wall")   # labels, incl. templates of older saved versions
 TRACKS = {"bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Inspire", "luxury-ambient": "Luxury Ambient"}
+
+
+GALLERY = json.loads((Path(__file__).resolve().parent / "gallery.json").read_text())
+GALLERY_PREFIX = os.environ.get("EVA_GALLERY_PREFIX", "staging/template-demos/gallery/")
+GALLERY_TTL = 900
+
+
+def gallery_payload(store_):
+    """public Template Gallery: signed 15-min links to the approved, optimised assets of SELECTABLE templates only
+    (T19 and anything pending review never leave the bucket). Signing is local: no R2 call per request."""
+    out = []
+    for t in GALLERY["templates"]:
+        if t["id"] not in TEMPLATES: continue
+        assets = {}
+        for ar, a in t["assets"].items():
+            if a.get("status") != "approved": continue
+            assets[ar] = {k: {"url": store_.presign_get(GALLERY_PREFIX + a[k]["key"], GALLERY_TTL), "bytes": a[k]["bytes"]}
+                          for k in ("thumb", "clip5", "full15") if k in a}
+        out.append({"id": t["id"], "name": TEMPLATES[t["id"]], "assets": assets})
+    return {"templates": out, "expires_in": GALLERY_TTL}
 
 
 def _d(sec): return max(1.0, min(float(sec or MAX_SECONDS), MAX_SECONDS))
@@ -231,10 +252,13 @@ def routes(acc: Accounts, site_of):
         r = acc.delete(u, pid=req.path_params["pid"]); return JSONResponse(r) if r["ok"] else err("A version is still rendering.", 409)
     async def topup(req, u): return JSONResponse(acc.topup(u, site_of(req), (await body(req)).get("return_to")))
 
+    async def gallery(req): return JSONResponse(gallery_payload(acc.s), headers={"Cache-Control": "private, max-age=600"})
+
     P = "/api/v2"
     return [Route(P + "/me", guarded(me)), Route(P + "/quote", guarded(quote)), Route(P + "/library", guarded(library)),
             Route(P + "/projects", guarded(projects), methods=["POST"]), Route(P + "/projects/{pid}/previews", guarded(previews), methods=["POST"]),
             Route(P + "/projects/{pid}/delete", guarded(del_project), methods=["POST"]),
             Route(P + "/versions/{vid}", guarded(version)), Route(P + "/versions/{vid}/hd", guarded(hd), methods=["POST"]),
             Route(P + "/versions/{vid}/favorite", guarded(favorite), methods=["POST"]), Route(P + "/versions/{vid}/cancel", guarded(cancel), methods=["POST"]),
-            Route(P + "/versions/{vid}/delete", guarded(del_version), methods=["POST"]), Route(P + "/topup", guarded(topup), methods=["POST"])]
+            Route(P + "/versions/{vid}/delete", guarded(del_version), methods=["POST"]), Route(P + "/topup", guarded(topup), methods=["POST"]),
+            Route(P + "/gallery", gallery)]   # public, read-only
