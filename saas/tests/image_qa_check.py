@@ -27,7 +27,7 @@ hc = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml") 
 R["env"]["opencv"] = cv2.__version__
 R["env"]["haar_cascade"] = bool(hc and os.path.exists(hc) and not cv2.CascadeClassifier(hc).empty())
 sys.path.insert(0, str(versions.ENGINE)); import qa.face as QF
-try: R["env"]["qa_face_detector"] = QF.Detector().name if hasattr(QF, "Detector") else "see qa/face.py"
+try: R["env"]["qa_face_detector"] = QF.Detector().name
 except Exception as e: R["env"]["qa_face_detector"] = f"error: {e}"
 R["env"]["chrome"] = os.environ.get("CHROME") or "playwright default"
 R["env"]["asr_models"] = [p.name for p in Path(os.environ.get("HF_HOME", "/root/.cache/huggingface")).glob("hub/models--*")][:6]
@@ -67,7 +67,9 @@ for kind in ("preview", "hd"):
                        "seconds": {"prepare": round(t_prep, 1), "qa_pre": round(t_pre, 1), "render": round(t_render, 1), "finish": round(t_finish, 1),
                                    "qa_post": round(t_post, 1), "total": round(time.time() - t0, 1)}}
 
+faces = [json.loads(p.read_text()).get("source", "") for p in (out / "jobs").rglob("face.json")]
+R["env"]["worker_face"] = faces[:2]
 (out / "summary.json").write_text(json.dumps(R, indent=1)); print(json.dumps(R, indent=1))
-ok = all(r.get("status") == "done" for r in R["runs"].values()) and len(R["runs"]) == 2 \
+ok = R["env"]["haar_cascade"] and R["env"]["qa_face_detector"] == "opencv-haar" and all(f.startswith("opencv") for f in faces) and all(r.get("status") == "done" for r in R["runs"].values()) and len(R["runs"]) == 2 \
      and all(r["qa"]["post"]["status"] in ("pass", "warn", "fail") for r in R["runs"].values())
 sys.exit(0 if ok else 1)

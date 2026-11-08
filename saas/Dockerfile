@@ -14,11 +14,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && curl -fsSL https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz | tar -xJ -C /usr/local --strip-components=1 \
  && fc-cache -f && rm -rf /var/lib/apt/lists/*
 
+# OpenCV pinned to 4.x: 5.x wheels ship without the Haar face cascade (worker face locator + QA face checks need it)
 # eva-asr (WhisperX fork) on CPU torch, plus the engine's Python deps
 ARG EVA_ASR_REF=main
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu "torch~=2.8.0" "torchaudio~=2.8.0" "torchvision~=0.23.0" \
  && pip install "git+https://github.com/RoverEva/eva-asr@${EVA_ASR_REF}" \
- && pip install numpy pillow opencv-python-headless boto3 requests starlette
+ && pip install numpy pillow "opencv-python-headless>=4.10,<5" boto3 requests starlette \
+ && python -c "import cv2, os; p = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'; assert os.path.isfile(p) and not cv2.CascadeClassifier(p).empty(), 'no Haar cascade'; print('opencv', cv2.__version__, 'haar ok')"
 
 WORKDIR /app
 COPY package.json ./

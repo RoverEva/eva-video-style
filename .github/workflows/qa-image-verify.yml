@@ -12,6 +12,7 @@ concurrency: { group: qa-image-verify, cancel-in-progress: true }
 jobs:
   verify:
     runs-on: ubuntu-latest
+    defaults: { run: { shell: bash } }   # -eo pipefail: a failing command fails the step even when piped
     timeout-minutes: 110
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
@@ -23,7 +24,7 @@ jobs:
           t=$(date +%s); docker build -f saas/Dockerfile -t eva-worker . ; echo "image build $(( $(date +%s) - t )) s"
       - name: QA module tests inside the image
         run: |
-          docker run --rm -v $PWD:/src -w /src eva-worker sh -c "pip install -q 'pytest~=8.3' && python -m pytest -q qa/tests" 2>&1 | tail -5
+          docker run --rm -v $PWD:/src -w /src eva-worker sh -c "pip install -q 'pytest~=8.3' && python -m pytest -q -rfEs qa/tests" 2>&1 | tail -40
       - name: Real renders with QA (education 9:16 T17+T20, real estate 16:9 T20+T01)
         run: |
           mkdir -p out && chmod 777 out
