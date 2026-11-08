@@ -33,6 +33,10 @@ jobs:
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       EVA_MAIL_FROM: ${{ secrets.EVA_MAIL_FROM }}
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -44,15 +48,27 @@ jobs:
       - name: Unit + server-side post-payment tests (signed webhook events, order state, render job, delivery, render failure, retry, refund)
         run: |
           pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1"
-          python saas/tests/test_planner.py && python saas/tests/test_api.py
+          python saas/tests/test_planner.py && python saas/tests/test_api.py && python saas/tests/test_versions_qa.py
+          # credits / free previews / library SQL on a throwaway Postgres 16 (same functions Supabase runs), incl. concurrency
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          docker run -d --name evapg -e POSTGRES_HOST_AUTH_METHOD=trust -p 54329:5432 postgres:16 >/dev/null
+          for i in $(seq 1 30); do pg_isready -h 127.0.0.1 -p 54329 -q && break; sleep 1; done
+          psql -h 127.0.0.1 -p 54329 -U postgres -q -c "create role anon; create role authenticated; create role service_role;"
+          EVA_PG_HOST=127.0.0.1 EVA_PG_PORT=54329 python saas/tests/test_db.py
       - name: Which accounts are configured
         id: have
         run: |
-          echo "modal=$([ -n "$MODAL_TOKEN_ID" ] && [ -n "$R2_ACCOUNT_ID" ] && [ -n "$STRIPE_SECRET_KEY" ] && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          echo "modal=$([ -n "$MODAL_TOKEN_ID" ] && [ -n "$R2_ACCOUNT_ID" ] && [ -n "$STRIPE_SECRET_KEY" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] && [ -n "$SUPABASE_DB_URL" ] && echo 1 || echo 0)" >> $GITHUB_OUTPUT
           echo "vercel=$([ -n "$VERCEL_TOKEN" ] && echo 1 || echo 0)" >> $GITHUB_OUTPUT
           case "$STRIPE_SECRET_KEY" in sk_test_*|rk_test_*) echo "stripe_test=1" >> $GITHUB_OUTPUT;; *) echo "stripe_test=0" >> $GITHUB_OUTPUT;; esac
-          for v in MODAL_TOKEN_ID MODAL_TOKEN_SECRET R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY STRIPE_SECRET_KEY VERCEL_TOKEN RESEND_API_KEY ANTHROPIC_API_KEY; do
+          for v in SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL MODAL_TOKEN_ID MODAL_TOKEN_SECRET R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY STRIPE_SECRET_KEY VERCEL_TOKEN RESEND_API_KEY ANTHROPIC_API_KEY; do
             [ -n "${!v}" ] && echo "secret $v: set" || echo "secret $v: MISSING"; done
+      - name: Database migration (Supabase Postgres, additive + idempotent, one transaction)
+        if: steps.have.outputs.modal == '1'
+        run: |
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          for f in saas/db/[0-9]*.sql; do echo "applying $f"; psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -v ON_ERROR_STOP=1 -q -1 -f "$f"; done
+          psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -At -c "select max(version) from public.eva_schema"
       - name: Modal secrets + deploy
         if: steps.have.outputs.modal == '1'
         id: modal
@@ -63,6 +79,7 @@ jobs:
           SITE_PROD="https://eva-video-studio.vercel.app"
           modal secret create eva-r2 R2_ACCOUNT_ID="$(c "$R2_ACCOUNT_ID")" R2_ACCESS_KEY_ID="$(c "$R2_ACCESS_KEY_ID")" R2_SECRET_ACCESS_KEY="$(c "$R2_SECRET_ACCESS_KEY")" R2_BUCKET="$(c "$R2_BUCKET")" --force >/dev/null
           modal secret create eva-stripe STRIPE_SECRET_KEY="$(c "$STRIPE_SECRET_KEY")" --force >/dev/null
+          modal secret create eva-supabase SUPABASE_URL="$(c "$SUPABASE_URL")" SUPABASE_SERVICE_ROLE_KEY="$(c "$SUPABASE_SERVICE_ROLE_KEY")" --force >/dev/null
           modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" --force >/dev/null
           modal secret create eva-config EVA_SITE_URL="$SITE_PROD" EVA_ALLOWED_ORIGINS="$SITE_PROD" --force >/dev/null
           python saas/deploy/stripe_webhook.py placeholder
@@ -77,7 +94,7 @@ jobs:
         run: |
           sudo apt-get install -y -qq ffmpeg >/dev/null
           python saas/music/compose.py /tmp/tracks --mp3 && mkdir -p site/demos/music && cp /tmp/tracks/*.mp3 site/demos/music/
-          echo "window.EVA_API = \"$API_URL\";" > site/config.js
+          printf 'window.EVA_API = "%s";\nwindow.EVA_SUPABASE_URL = "%s";\nwindow.EVA_SUPABASE_ANON = "%s";\n' "$API_URL" "$(printf %s "$SUPABASE_URL" | tr -d '[:space:]')" "$(printf %s "$SUPABASE_ANON_KEY" | tr -d '[:space:]')" > site/config.js   # anon key is public by design
           python saas/deploy/vercel_deploy.py site eva-video-studio   # REST API, no CLI; writes site= to GITHUB_OUTPUT
       - name: Pin CORS + links to the real site, Stripe webhook (secret → Modal secret manager), redeploy
         if: steps.have.outputs.modal == '1' && steps.have.outputs.vercel == '1'
@@ -122,12 +139,9 @@ jobs:
           # private test clip: R2 testdata/new30.mp4 (upload it in the Cloudflare dashboard) or saas/tests/media/new30.mp4
           pip install -q "boto3~=1.35" && python -c "import sys; sys.path.insert(0,'saas/web'); import store; s=store.R2(); s.size('testdata/new30.mp4') and s.download('testdata/new30.mp4','e2e/new30.mp4')" || true
           V=e2e/new30.mp4; [ -f $V ] || V=$M/new30.mp4; [ -f $V ] || { echo "::warning::saas/tests/media/new30.mp4 missing; using the 20 s real-upload pair"; ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[a];[1:v]fps=30,scale=720:1280,setsar=1[b];[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][au]" -map "[v]" -map "[au]" -c:v libx264 -crf 20 -c:a aac e2e/fallback.mp4; V=e2e/fallback.mp4; }
-          # 1. real browser: upload → AI preview → our checkout → Stripe-hosted Checkout opens; the TEST-mode Checkout Session is
-          #    verified via the Stripe API. Progress is sampled every second (never backwards, 100 % only when playable) and
-          #    Regenerate preview is exercised with a double click (exactly one new render, same upload + settings).
-          #    verified via the Stripe API. Stripe protects its hosted card fields from automation, so card entry is not
-          #    automated; payment → webhook → render → delivery/refund is tested server-side above + by a manual sandbox purchase.
-          python saas/tests/browser_e2e.py "$SITE_URL" $V e2e/purchase --aspect 9:16 --templates T17,T20,T01 --music mix --regenerate --mobile-shots --checkout-only
+          # 1. account features on the deployed stack (throwaway test users, deleted afterwards): lifetime free previews,
+          #    real Modal renders, cached ASR, privacy, failure release, Stripe TEST top-up session, HD export, concurrency
+          python saas/tests/live_accounts_e2e.py "$API_URL" "$SITE_URL" $V e2e/accounts.json
           # 2. security + privacy + rejection probes against the live API and bucket
           python saas/tests/live_checks.py "$API_URL" e2e/purchase/summary.json e2e/checks.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0

@@ -33,7 +33,7 @@ LLM = [_S("eva-anthropic")] if os.environ.get("EVA_USE_LLM") == "1" else []
 STAGE_SECRETS = [_S("eva-r2")]
 ORCH_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-mail"), _S("eva-config")]
 API_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-stripe-webhook"), _S("eva-config"), _S("eva-supabase")]
-VERSION_SECRETS = [_S("eva-r2"), _S("eva-config"), _S("eva-supabase")]
+VERSION_SECRETS = [_S("eva-r2"), _S("eva-config"), _S("eva-supabase"), _S("eva-stripe")]   # Stripe key only to know test vs live mode
 RETRY = modal.Retries(max_retries=2, backoff_coefficient=2.0, initial_delay=5.0)
 # Modal list prices (USD) used for the per-video cost estimate: CPU per physical core-second, memory per GiB-second
 CPU_S, MEM_GIB_S = 0.0000131, 0.00000222
@@ -181,6 +181,9 @@ def render_version(kind: str, vid: str):
     try:
         opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=10)
         ver = {"vid": vid, "pid": v["project_id"], "upload_key": v["upload_key"], "plan_from": None if preview else v["source_version"]}
+        import stripe_lite
+        if (v.get("project_title") or "").startswith("e2e-fail") and stripe_lite.mode() == "test":
+            raise RuntimeError("injected test failure (e2e-fail project, Stripe test mode only)")   # live proof that failures release credits
         p = prepare.remote(job, opts, pk, ver)
         if p.get("duration"): D.rpc("eva_set_duration", project_id=v["project_id"], duration_s=p["duration"])
         if p["rc"] == 2: return D.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=p["rejected"])
