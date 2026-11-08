@@ -1,0 +1,47 @@
+# QA module tests on the production face detector: same base image, FFmpeg/fonts (Debian bookworm apt), Node and
+# Playwright, and OpenCV pin as saas/Dockerfile (opencv-python-headless >=4.10,<5, which ships the Haar cascade).
+# torch / eva-asr are left out (QA does not use them). No credentials, no deployment.
+name: qa · tests (production detector)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/video-qa]
+    paths: [qa/**, scripts/render.mjs, scripts/assemble.sh, engine/**, .github/workflows/qa-tests.yml]
+permissions: { contents: read }
+concurrency:
+  group: qa-tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    container: python:3.12-slim-bookworm
+    env: { DEBIAN_FRONTEND: noninteractive, PIP_NO_CACHE_DIR: "1", FONTSDIR: /usr/share/fonts, EVA_QA_CACHE: "off" }
+    steps:
+      - name: System packages (as saas/Dockerfile)
+        run: |
+          apt-get update && apt-get install -y --no-install-recommends ffmpeg fontconfig fonts-inter fonts-noto-cjk \
+            fonts-noto-cjk-extra fonts-noto-color-emoji curl ca-certificates git xz-utils
+          curl -fsSL https://nodejs.org/dist/v22.11.0/node-v22.11.0-linux-x64.tar.xz | tar -xJ -C /usr/local --strip-components=1
+          fc-cache -f
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - name: Python + Node deps (as saas/Dockerfile)
+        run: |
+          pip install numpy pillow "opencv-python-headless>=4.10,<5" "pytest~=8.3"
+          python -c "import cv2, os; p = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'; assert os.path.isfile(p) and not cv2.CascadeClassifier(p).empty(); print('opencv', cv2.__version__, 'haar ok')"
+          python -c "from qa import face; print('QA face backend:', face.Detector().name)"
+          npm install --omit=dev --no-audit --no-fund && npx playwright install --with-deps chromium
+          ffmpeg -version | head -1
+      - name: QA tests (all 40)
+        run: python -m pytest -q -rfEs -p no:cacheprovider --basetemp=out/pytest qa/tests 2>&1 | tee out-pytest.log; exit ${PIPESTATUS[0]}
+        shell: bash
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        if: always()
+        with:
+          name: qa-tests
+          if-no-files-found: ignore
+          path: |
+            out-pytest.log
+            out/pytest/**/qa-report.json
+            out/pytest/**/evidence/*.jpg
