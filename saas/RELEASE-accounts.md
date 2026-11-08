@@ -1,6 +1,6 @@
 # Release: accounts, 3 lifetime free previews, credits, My Videos (branch `feat/saas-accounts`)
 
-Status: **built and tested locally; NOT deployed.** Live site unchanged (last approved deploy, tag `release/pre-accounts`).
+Status: **built and tested locally; NOT deployed.** Live site unchanged (last approved deploy = commit `7428bb0` on `feat/mvp-launch`).
 
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.
@@ -40,6 +40,6 @@ Status: **built and tested locally; NOT deployed.** Live site unchanged (last ap
 
 ## Rollback
 - Site: Vercel → Deployments → previous production deployment → Promote (instant).
-- API/workers: `modal app rollback eva-video-studio` (previous version), or re-deploy tag `release/pre-accounts`.
+- API/workers: `modal app rollback eva-video-studio` (previous version), or re-deploy commit `7428bb0` (reset `feat/mvp-launch` to it and approve the deploy).
 - Database: nothing to undo (additive; old code ignores it). `saas/db/rollback_001.sql` only if no real data exists.
 - Data: no existing accounts or balances (none existed); anonymous orders and their files are untouched.
