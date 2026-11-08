@@ -38,7 +38,7 @@ def price(run, kind):
     wall = w_prep + per + w_fin + 10                     # chunks in parallel; +10 s scheduling
     orch = container("render_job", wall, 0)[0]
     qa = (container("prepare", s["qa_pre"], u.get("qa_pre", 0))[0] + container("finish", s["qa_post"], u.get("qa_post", 0))[0])
-    asr_s = run.get("asr_s") or 0
+    asr_s = 0 if (kind == "hd" or run.get("asr_cached")) else (run.get("asr_s") or 0)   # HD export reuses the transcript
     asr = container("prepare", asr_s, asr_s * 3 * VCPU_PER_CORE)[0] if asr_s else 0.0     # upper bound: ASR keeps all 3 cores busy
     storage = (run.get("output_bytes") or 0) / 1e9 * R2_GB_MONTH * RETAIN[kind] / 30
     us = run.get("planner_usage") or {}
