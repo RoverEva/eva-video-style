@@ -67,7 +67,68 @@ def main():
 
     FAKE = {}
     svc = api.Service(S, KV, worker, FakeStripe())
-    app = api.make_app(svc, lambda: SECRET, local_store=S)
+    # ── account features (My Videos, credits): local Postgres + stand-in sign-in + fake Stripe top-up ──
+    import db as DBM, api_v2, versions, uuid
+    DB = DBM.LocalPG()
+    subprocess.run(["psql", *DB.args, "-q", "-1", "-f", str(REPO / "saas/db/001_accounts_credits.sql")], check=True, capture_output=True)
+
+    def run_version(kind, vid):
+        import pipeline, progress
+        preview = kind == "preview"; pk = "preview" if preview else "final"; t0 = time.time()
+        v = DB.rpc("eva_version", version_id=vid)
+        if not v or v["status"] not in ("queued", "running"): return
+        DB.rpc("eva_set_running", version_id=vid); progress.reset(KV, vid, pk, [])
+        pipeline.PROGRESS.set(progress.Reporter(KV, vid, pk))
+        w = versions.work_dir(st / "jobs", v["project_id"], v["n"]); retain = 30 if preview else 90
+        try:
+            inp = versions.before_prepare(S, v["project_id"], v["upload_key"], w, None if preview else v["source_version"])
+            if "e2e-fail" in (v.get("project_title") or ""): raise RuntimeError("injected local failure")
+            if a.fixture_asr and not (w / "srt/.restored").exists() and not (w / "stages/asr.json").exists():
+                dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", inp], capture_output=True, text=True).stdout or 10)
+                subprocess.run([sys.executable, HERE / "make_fixture.py", w, "-", str(min(dur, 30)), a.fixture_asr], check=True, stdout=subprocess.DEVNULL)
+                progress.Reporter(KV, vid, pk)("asr", "start"); time.sleep(2)
+            opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=10)
+            if pipeline.prepare(inp, w, opts) == 2:
+                return DB.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=json.loads((w / "job.json").read_text()).get("rejected"))
+            versions.after_prepare(S, v["project_id"], w)
+            if versions.duration(w): DB.rpc("eva_set_duration", project_id=v["project_id"], duration_s=versions.duration(w))
+            J = pipeline.Job(w); idx = pipeline.preview_chunks(J) if preview else list(range(len(J.j["chunks"])))
+            KV[progress.key(vid, pk, "meta")] = {"chunks": idx, "t": time.time()}
+            for i in idx:
+                if (DB.rpc("eva_version", version_id=vid) or {}).get("status") == "canceled": return
+                pipeline.render(w, i)
+            pipeline.finish(w, preview)
+            keys, qa, rep = versions.outputs(S, vid, w, preview)
+            DB.rpc("eva_finish", version_id=vid, status=versions.gate(qa), retain_days=retain, qa=qa, report=rep,
+                   cost={"timing": {"total_s": round(time.time() - t0, 1)}, "asr_cached": (w / "srt/.restored").exists()}, **keys)
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            DB.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=str(e)[:300])
+
+    class FakeStripeV2:
+        StripeError = stripe_lite.StripeError
+        def call(self, method, path, data=None, idem=None):
+            sid = "cs_test_local_" + uuid.uuid4().hex[:10]; TOP[sid] = data; return {"id": sid, "url": f"http://127.0.0.1:8000/_fakepay_topup/{sid}"}
+    TOP = {}
+    acc = api_v2.Accounts(DB, S, KV, lambda kind, vid: threading.Thread(target=run_version, args=(kind, vid), daemon=True).start(), FakeStripeV2())
+    app = api.make_app(svc, lambda: SECRET, local_store=S, accounts=acc)
+
+    async def signin(req):   # stand-in for Supabase Auth: email → stable user id + bearer token
+        email = req.query_params.get("email", "tester@example.com"); tok = "tok_" + uuid.uuid4().hex
+        DB.tokens[tok] = {"id": str(uuid.uuid5(uuid.NAMESPACE_URL, "eva:" + email)), "email": email}
+        from starlette.responses import JSONResponse
+        return JSONResponse({"access_token": tok, "email": email})
+
+    async def fakepay_topup(req):   # "pays" then sends the signed webhook exactly like Stripe (twice: retries must not double-credit)
+        sid = req.path_params["sid"]; d = TOP[sid]
+        ev = json.dumps({"type": "checkout.session.completed", "data": {"object": {"id": sid, "payment_status": "paid", "amount_total": 999,
+              "metadata": d["metadata"], "livemode": False}}}).encode()
+        import requests
+        from starlette.concurrency import run_in_threadpool
+        for _ in range(2):
+            r = await run_in_threadpool(requests.post, "http://127.0.0.1:8000/api/stripe/webhook", data=ev, headers={"stripe-signature": stripe_lite.sign(ev, SECRET)})
+            print("topup webhook:", r.status_code, r.text, flush=True)
+        return RedirectResponse(d["success_url"].replace("https://eva-video-studio.vercel.app", "http://127.0.0.1:8080"))
 
     async def fakepay(req):   # stands in for Stripe's hosted page: "pays", then sends the signed webhook like Stripe does
         job = req.path_params["job"]
@@ -79,8 +140,10 @@ def main():
         print("webhook:", r.status_code, r.text, flush=True)
         return RedirectResponse(FAKE[job].replace("https://eva-video-studio.vercel.app", "http://127.0.0.1:8080"))
     app.router.routes.insert(0, Route("/_fakepay/{job}", fakepay))
+    app.router.routes.insert(0, Route("/_fakepay_topup/{sid}", fakepay_topup))
+    app.router.routes.insert(0, Route("/_local_signin", signin))
 
-    site = REPO / "site"; (site / "config.js").write_text('window.EVA_API = "http://127.0.0.1:8000";\n')
+    site = REPO / "site"; (site / "config.js").write_text('window.EVA_API = "http://127.0.0.1:8000";\nwindow.EVA_LOCAL_AUTH = true;\n')
     h = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(site))
     threading.Thread(target=http.server.ThreadingHTTPServer(("127.0.0.1", 8080), h).serve_forever, daemon=True).start()
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="warning")

@@ -123,13 +123,21 @@ def prepare(inp, jd, opts):
 
     def asr():
         (J.d / "srt").mkdir(exist_ok=True)
-        for f in (J.d / "srt").glob("talk.*"): f.unlink()     # retry after a partial run
-        sh([PY, ENGINE_REPO / "scripts/asr.py", J.d / "src.mp4", J.d / "srt/talk", "--config", CFG / "asr.en.json"], J.log)
+        if (J.d / "srt/.restored").exists():   # transcript restored from the project cache (same source): no second ASR
+            J.log.write("asr: reusing cached transcript\n")
+        else:
+            for f in (J.d / "srt").glob("talk.*"): f.unlink()     # retry after a partial run
+            sh([PY, ENGINE_REPO / "scripts/asr.py", J.d / "src.mp4", J.d / "srt/talk", "--config", CFG / "asr.en.json"], J.log)
         J.j["language"] = json.loads((J.d / "srt/talk.asr.json").read_text()).get("source", {}).get("language") or "en"
 
-    def face(): sh([PY, HERE / "face.py", J.d / "media/eva", J.d / "face.json"], J.log)
+    def face():
+        if (J.d / "face.json").exists() and (J.d / "srt/.restored").exists(): return   # cached with the transcript
+        sh([PY, HERE / "face.py", J.d / "media/eva", J.d / "face.json"], J.log)
 
     def plan():
+        if o.get("reuse_plan") and (J.d / "plan.json").exists():   # HD export of a saved version: its exact plan, no planner/AI call
+            J.log.write("plan: reusing the saved version plan\n")
+            (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt"); return
         sh([PY, HERE / "planner.py", J.d / "srt/talk.transcript.js", J.d, "--duration", J.j["end"],
             "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json"], J.log)
         (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt")   # music.py speech map

@@ -245,7 +245,7 @@ class CatchErrors:
             await JSONResponse({"error": "Something went wrong on our side. Please try again in a minute."}, status_code=500)(scope, receive, send)
 
 
-def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK_SECRET"), local_store=None):
+def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK_SECRET"), local_store=None, accounts=None):
     async def body(req):
         try: return await req.json()
         except Exception: return {}
@@ -297,7 +297,10 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
         except stripe.StripeError as e: return err(str(e), 400)
         ev = json.loads(raw); typ = ev.get("type", "")
         if typ in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
-            res = svc.on_paid(ev["data"]["object"])
+            obj = ev["data"]["object"]
+            if (obj.get("metadata") or {}).get("type") == "topup":   # credit top-up (account API); legacy per-video otherwise
+                res = accounts.on_topup(obj) if accounts else "top-ups not enabled"
+            else: res = svc.on_paid(obj)
         else: res = "ignored"
         return JSONResponse({"received": True, "result": res})
 
@@ -306,6 +309,10 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
     routes = [Route("/api/config", config), Route("/api/health", health), Route("/api/uploads", uploads, methods=["POST"]),
               Route("/api/jobs/{job}", job), Route("/api/jobs/{job}/preview", preview, methods=["POST"]),
               Route("/api/jobs/{job}/regenerate", regenerate, methods=["POST"]), Route("/api/jobs/{job}/checkout", checkout, methods=["POST"]), Route("/api/stripe/webhook", webhook, methods=["POST"])]
+    if accounts is not None:
+        try: from . import api_v2
+        except ImportError: import api_v2
+        routes += api_v2.routes(accounts, site_of)
     if local_store is not None:   # tests / local runs: stands in for R2 presigned PUT/GET
         async def local(req):
             p = local_store.r / req.path_params["key"]
@@ -318,6 +325,6 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
     # Order matters: CORS is outermost, the error catcher sits inside it, so even a crash returns a JSON 500 that still
     # carries Access-Control-Allow-Origin (the browser then shows the real error instead of a misleading "CORS" block).
     mw = [Middleware(CORSMiddleware, allow_origins=ALLOWED_ORIGINS, allow_methods=["GET", "POST", "PUT", "OPTIONS"],
-                     allow_headers=["content-type"], allow_credentials=False, max_age=600),
+                     allow_headers=["content-type", "authorization"], allow_credentials=False, max_age=600),
           Middleware(CatchErrors)]
     return Starlette(routes=routes, middleware=mw)

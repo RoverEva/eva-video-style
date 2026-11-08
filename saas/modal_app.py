@@ -32,7 +32,8 @@ _S = lambda n: modal.Secret.from_name(n)
 LLM = [_S("eva-anthropic")] if os.environ.get("EVA_USE_LLM") == "1" else []
 STAGE_SECRETS = [_S("eva-r2")]
 ORCH_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-mail"), _S("eva-config")]
-API_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-stripe-webhook"), _S("eva-config")]
+API_SECRETS = [_S("eva-r2"), _S("eva-stripe"), _S("eva-stripe-webhook"), _S("eva-config"), _S("eva-supabase")]
+VERSION_SECRETS = [_S("eva-r2"), _S("eva-config"), _S("eva-supabase")]
 RETRY = modal.Retries(max_retries=2, backoff_coefficient=2.0, initial_delay=5.0)
 # Modal list prices (USD) used for the per-video cost estimate: CPU per physical core-second, memory per GiB-second
 CPU_S, MEM_GIB_S = 0.0000131, 0.00000222
@@ -75,14 +76,22 @@ def api():
     def webhook_secret():   # Modal secret `eva-stripe-webhook`, set by saas/deploy/stripe_webhook.py ("unset" until then)
         v = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
         return v if v.startswith("whsec_") else None
-    return A.make_app(svc, webhook_secret)
+    return A.make_app(svc, webhook_secret, accounts=_accounts())
 
 
 # ───────────────────────────── render ─────────────────────────────
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS + LLM, cpu=3.0, memory=6144, timeout=1200, retries=RETRY)
-def prepare(job: str, opts: dict, kind: str = "preview"):
-    _paths(); import store, pipeline, progress
+def prepare(job: str, opts: dict, kind: str = "preview", ver: dict = None):
+    _paths(); import store, pipeline, progress, versions
     jobs.reload(); d = Path(f"/jobs/{job}"); d.mkdir(parents=True, exist_ok=True); t = time.time()
+    if ver:   # account version: shared project source + transcript cache + (HD) the saved plan
+        S = store.from_env(); inp = versions.before_prepare(S, ver["pid"], ver["upload_key"], d / "work", ver.get("plan_from"))
+        pipeline.PROGRESS.set(progress.Reporter(counters, ver["vid"], kind))
+        rc = pipeline.prepare(inp, d / "work", opts); cached = versions.after_prepare(S, ver["pid"], d / "work") if rc == 0 else 0; jobs.commit()
+        j = json.loads((d / "work/job.json").read_text())
+        return {"rc": rc, "chunks": j.get("chunks", []), "rejected": j.get("rejected"), "duration": versions.duration(d / "work"),
+                "wall_s": round(time.time() - t, 1), "asr_cached": (d / "work/srt/.restored").exists(), "cache_saved": cached,
+                "stages": {k: v.get("wall_s") for k, v in pipeline.Job(d / "work").stages().items()}}
     if not (d / "input.mp4").exists(): store.from_env().download(f"uploads/{job}/input.mp4", d / "input.mp4")
     rn, mk = int(opts.get("regen_n") or 0), d / "work/regen_n"
     if kind == "preview" and rn and (d / "work").exists() and (mk.read_text().strip() if mk.exists() else "0") != str(rn):
@@ -95,18 +104,21 @@ def prepare(job: str, opts: dict, kind: str = "preview"):
 
 
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=1.0, memory=3072, timeout=900, retries=RETRY)
-def render_chunk(job: str, i: int, kind: str = "preview"):
+def render_chunk(job: str, i: int, kind: str = "preview", pkey: str = None):
     _paths(); import pipeline, progress
-    pipeline.PROGRESS.set(progress.Reporter(counters, job, kind))
+    pipeline.PROGRESS.set(progress.Reporter(counters, pkey or job, kind))
     jobs.reload(); t = time.time(); pipeline.render(f"/jobs/{job}/work", i); jobs.commit()
     return {"chunk": i, "wall_s": round(time.time() - t, 1)}
 
 
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=2.0, memory=4096, timeout=900, retries=RETRY)
-def finish(job: str, preview: bool):
-    _paths(); import store, pipeline, progress
-    pipeline.PROGRESS.set(progress.Reporter(counters, job, "preview" if preview else "final"))
+def finish(job: str, preview: bool, vid: str = None):
+    _paths(); import store, pipeline, progress, versions
+    pipeline.PROGRESS.set(progress.Reporter(counters, vid or job, "preview" if preview else "final"))
     jobs.reload(); w = Path(f"/jobs/{job}/work"); t = time.time(); pipeline.finish(w, preview); jobs.commit()
+    if vid:
+        keys, qa, rep = versions.outputs(store.from_env(), vid, w, preview)
+        return {"keys": keys, "qa": qa, "report": rep, "finish_wall_s": round(time.time() - t, 1)}
     tag = "preview" if preview else "final"; rep = json.loads((w / f"out/report_{tag}.json").read_text())
     S = store.from_env(); ct = {".mp4": "video/mp4", ".srt": "text/plain", ".json": "application/json"}
     S.upload(w / "out" / ("preview.mp4" if preview else "final.mp4"), f"outputs/{job}/{tag}.mp4")
@@ -154,13 +166,67 @@ def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
     return st
 
 
+# ───────────────────────────── account versions (My Videos) ─────────────────────────────
+@app.function(image=image, secrets=VERSION_SECRETS, cpu=0.25, memory=512, timeout=3600)
+def render_version(kind: str, vid: str):
+    """One preview or HD export of an account project. The reservation made by the API is captured only when the video
+    (and, when the QA gate is on, its QA) succeeded; any failure / cancel releases it (free slot or credits back)."""
+    _paths(); import db as DB, progress, versions
+    D = DB.from_env(); t0 = time.time(); preview = kind == "preview"; pk = "preview" if preview else "final"
+    v = D.rpc("eva_version", version_id=vid)
+    if not v or v["status"] not in ("queued", "running"): return {"skipped": True}
+    D.rpc("eva_set_running", version_id=vid); progress.reset(counters, vid, pk, [])
+    job = f"{v['project_id']}/v{v['n']}"; retain = int(os.environ.get("EVA_PREVIEW_DAYS" if preview else "EVA_HD_DAYS", 30 if preview else 90))
+    canceled = lambda: (D.rpc("eva_version", version_id=vid) or {}).get("status") == "canceled"
+    try:
+        opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=10)
+        ver = {"vid": vid, "pid": v["project_id"], "upload_key": v["upload_key"], "plan_from": None if preview else v["source_version"]}
+        p = prepare.remote(job, opts, pk, ver)
+        if p.get("duration"): D.rpc("eva_set_duration", project_id=v["project_id"], duration_s=p["duration"])
+        if p["rc"] == 2: return D.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=p["rejected"])
+        if canceled(): return {"canceled": True}
+        idx = [i for i, (a, b) in enumerate(p["chunks"]) if a < 10] if preview else list(range(len(p["chunks"])))
+        counters[progress.key(vid, pk, "meta")] = {"chunks": idx, "t": time.time()}
+        renders = list(render_chunk.starmap([(job, i, pk, vid) for i in idx]))
+        if canceled(): return {"canceled": True}
+        f = finish.remote(job, preview, vid)
+        walls = {"prepare": p["wall_s"], "render_chunk": sum(r["wall_s"] for r in renders), "finish": f["finish_wall_s"]}
+        compute = sum(cost(fn, w) for fn, w in walls.items()) + cost("render_job", time.time() - t0)
+        costs = {"compute_usd": round(compute, 4), "storage_usd_est": versions.storage_usd(f["report"].get("bytes"), retain),
+                 "ai_calls": 1 if (preview and f["report"].get("planner") == "llm") else 0, "asr_cached": p.get("asr_cached"),
+                 "timing": {"total_s": round(time.time() - t0, 1), "prepare_s": p["wall_s"], "chunk_s": [r["wall_s"] for r in renders],
+                            "finish_s": f["finish_wall_s"], "prepare_stages": p["stages"]}}
+        status = versions.gate(f["qa"])
+        return D.rpc("eva_finish", version_id=vid, status=status, retain_days=retain, qa=f["qa"], report=f["report"], cost=costs,
+                     error="critical QA failure" if status == "qa_failed" else None, **f["keys"])
+    except Exception as e:
+        traceback.print_exc()
+        qa_fail = "exit status 3" in str(e) and "assemble" in str(e)   # QA module (EVA_QA=block) stops assemble with exit 3
+        return D.rpc("eva_finish", version_id=vid, status="qa_failed" if qa_fail else "failed", retain_days=0, error=f"{type(e).__name__}: {e}"[:400])
+
+
+def _accounts():
+    _paths(); import api_v2, db as DB, store
+    def spawn(kind, vid):
+        call = render_version.spawn(kind, vid)
+        counters[f"call:{vid}"] = call.object_id
+    def cancel(vid):
+        cid = counters.get(f"call:{vid}")
+        if cid: modal.FunctionCall.from_id(cid).cancel()
+    return api_v2.Accounts(DB.from_env(), store.from_env(), counters, spawn, cancel=cancel)
+
+
 # ───────────────────────────── operations ─────────────────────────────
-@app.function(image=web_image, secrets=ORCH_SECRETS, schedule=modal.Period(minutes=10), timeout=300)
+@app.function(image=web_image, secrets=ORCH_SECRETS + [_S("eva-supabase")], schedule=modal.Period(minutes=10), timeout=300)
 def reconcile():
-    acts = _svc().reconcile(); print("reconcile:", acts); return acts
+    acts = _svc().reconcile()
+    acc = _accounts()
+    for vid in acc.db.rpc("eva_stuck", minutes=45):   # lost workers: release their reservations
+        acts[vid] = acc.db.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error="stalled: no progress").get("reservation")
+    print("reconcile:", acts); return acts
 
 
-@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, schedule=modal.Cron("17 3 * * *"), timeout=600)
+@app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS + [_S("eva-supabase")], schedule=modal.Cron("17 3 * * *"), timeout=600)
 def cleanup():
     """Volume working folders hold copies of customer media: remove after 2 days (R2 lifecycle rules handle the bucket)."""
     jobs.reload(); cut = time.time() - 2 * 86400; gone = 0
@@ -169,6 +235,10 @@ def cleanup():
     jobs.commit()
     _paths(); import store
     S = store.from_env(); dropped = S.expire()   # same periods as the bucket lifecycle rules; works with an object-only token
+    acc = _accounts()
+    for k in acc.db.rpc("eva_expire")["keys"]:    # My Videos retention: previews 30 d, HD 90 d, source = preview period
+        try: S.delete(k); dropped += 1
+        except Exception: pass
     print("cleanup: removed", gone, "job folders;", dropped, "expired objects"); return {"folders": gone, "objects": dropped}
 
 

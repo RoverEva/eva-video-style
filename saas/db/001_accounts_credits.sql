@@ -188,6 +188,11 @@ begin
   return jsonb_build_object('ok', true, 'reservation', case when ok then 'captured' else 'released' end);
 end $$;
 
+-- the worker measured the real duration (prices use it from then on)
+create or replace function public.eva_set_duration(p jsonb) returns jsonb language sql security definer set search_path = public as $$
+  update projects set duration_s = (p->>'duration_s')::numeric where id = p->>'project_id' returning jsonb_build_object('ok', true, 'duration_s', duration_s);
+$$;
+
 create or replace function public.eva_set_running(p jsonb) returns jsonb language sql security definer set search_path = public as $$
   update versions set status = 'running' where id = p->>'version_id' and status = 'queued' returning jsonb_build_object('ok', true);
 $$;
@@ -208,9 +213,9 @@ end $$;
 
 create or replace function public.eva_create_project(p jsonb) returns jsonb language plpgsql security definer set search_path = public as $$
 begin
-  insert into projects(id, user_id, title, upload_key, upload_bytes, source_expires_at)
+  insert into projects(id, user_id, title, upload_key, upload_bytes, duration_s, source_expires_at)
     values (p->>'id', (p->>'user_id')::uuid, coalesce(nullif(p->>'title', ''), 'Untitled video'), p->>'upload_key', (p->>'upload_bytes')::bigint,
-            now() + make_interval(days => (p->>'source_days')::int));
+            least(greatest(coalesce((p->>'duration_s')::numeric, 30), 1), 30.5), now() + make_interval(days => (p->>'source_days')::int));
   return jsonb_build_object('ok', true, 'id', p->>'id');
 end $$;
 
