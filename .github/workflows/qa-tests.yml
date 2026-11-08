@@ -45,8 +45,8 @@ jobs:
             out-pytest.log
             out/pytest/**/qa-report.json
             out/pytest/**/evidence/*.jpg
-      - name: Face diagnostics (Haar candidates and tracking per sample, failing fixtures)
-        if: always()
+      - name: Face diagnostics (Haar candidates and tracking per sample) when a test fails
+        if: failure()
         shell: bash
         run: |
           python - <<'PY'

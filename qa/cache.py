@@ -10,7 +10,7 @@ the measurements and re-judges them.
 import hashlib, json, os
 from pathlib import Path
 
-VERSION = "2"   # bump when a cached measurement changes meaning
+VERSION = "3"   # bump when a cached measurement changes meaning
 
 
 def _dir():
