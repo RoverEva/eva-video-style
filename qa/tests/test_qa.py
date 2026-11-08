@@ -368,3 +368,16 @@ def test_report_files_and_issue_fields(fx, tmp_path):
         assert i["severity"] in ("WARN", "FAIL")
     assert (tmp_path / "qa/qa-summary.md").read_text().startswith("# Eva Video QA")
     assert any((tmp_path / "qa" / i["evidence"]).exists() for i in js["issues"] if i["evidence"])
+
+
+# ───────────────────────── face detector box choice (OpenCV-version independent) ─────────────────────────
+def test_source_face_choice_rejects_large_weak_box():
+    """OpenCV 4.x Haar can return a second, larger but weak box on a textured shirt next to the real face
+    (seen at frame 135 of the fixture: face weight 8.3, shirt 362 px box weight 1.0). The face must be kept, and a
+    sample whose only box is far from the presenter's consistent position must fall back to that position."""
+    from qa import face as F
+    face_b, shirt = (244, 386, 238, 238, 8.3), (144, 876, 362, 362, 1.0)
+    samples = [[face_b]] * 6 + [[shirt, face_b], [shirt], []]
+    picks = F.consistent([sorted(c, key=lambda b: -b[4]) for c in samples])
+    assert all(abs(b[1] - 386) < 1 for b, _ in picks), picks     # never the shirt
+    assert [how for _, how in picks[-3:]] == ["detector", "reference", "reference"]

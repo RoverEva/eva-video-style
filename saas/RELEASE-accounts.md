@@ -58,7 +58,8 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
   preview. 9:16 360×640 / 540×960, 16:9 640×360 / 960×540. Per asset set: WebP 13–36 KB, 5 s 70–222 KB, 15 s 0.28–1.27 MB.
 - **T17 16:9 held back** (`status: pending_review`): its source is flagged in the manifest (made before the face-safe
   headline fix). Reviewed every 0.5 s plus 0.1 s close-ups at the risky beats: no headline or caption crosses her face. Not
-  uploaded and never signed until Eva approves; the T17 card shows the approved 9:16 assets letterboxed meanwhile.
+  uploaded and never signed until Eva approves. In 16:9 the T17 card shows "16:9 preview coming soon" (still selectable);
+  a 9:16 demo is never shown as a 16:9 preview.
 - `saas/web/gallery.json` (keys, bytes, sha256, status — no media in git) → public read-only `GET /api/v2/gallery`: 15-min
   signed R2 links (signed locally, no R2 call) for approved assets of selectable templates only. Prefix
   `EVA_GALLERY_PREFIX` (default `staging/template-demos/gallery/`, outside the retention deletions).
@@ -75,6 +76,35 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
   are in the `production` environment and Modal's `eva-r2`), the workspace and the Mac's sandboxed shell cannot reach
   R2, and GitHub releases are off-limits. Ready: `template-demos/_gallery/upload_gallery.sh` (curl SigV4 + python3,
   credentials only from the terminal, approved files only, checksum-guarded, HEAD-verified; dry run: 27 files, 7.49 MB).
+
+## Final staging preparation (2026-11-08 PM)
+- Gallery assets unchanged: the 30 files in `template-demos/_gallery/` (27 approved + 3 pending) still match gallery.json.
+- After Eva's upload: `python3 verify_gallery.py` in `_gallery/` (stdlib only; SigV4 signer checked against AWS's published
+  example) → exact 27-key listing (no T17 16:9, no T19, nothing extra), bucket private (unsigned GET refused), every object
+  via a 15-min signed link byte-identical (sha256/size) with the right Content-Type, and `gallery_check.html` to play
+  every 5 s / 15 s demo per aspect (delete it afterwards — signed links). Logic exercised against a simulated bucket:
+  clean → pass; truncated file, extra pending object, public bucket → each caught.
+- QA regression fix `1f64a52` (feat/video-qa) integrated: its `qa/` code was already identical here (f0a42a8); its one
+  extra unit test (`test_source_face_choice_rejects_large_weak_box`) added → `qa/` identical to 1f64a52. Full QA suite
+  41/41 under OpenCV Haar (production detector) and 41/41 under LBP.
+- Full local regression (Postgres 16 + Supabase roles, real renders, signed fake-Stripe webhooks): test_db ok · test_api ok
+  · planner ok · gallery 181/181 · accounts e2e 34/34 · browser account journey (no page errors) · browser gallery 62/62.
+
+## Production release checklist
+| # | Item | State |
+|---|---|---|
+| 1 | Supabase project; `production` secrets SUPABASE_URL / ANON_KEY / SERVICE_ROLE_KEY / DB_URL (Session pooler) | **Eva — blocker** |
+| 2 | Supabase Auth: Site URL + redirect `https://eva-video-studio.vercel.app/**`, email (magic link) on | **Eva — blocker** |
+| 3 | Custom SMTP (built-in Supabase email is a few per hour) | before public launch |
+| 4 | Gallery on R2 staging uploaded + `verify_gallery.py` OK | **Eva — pending** |
+| 5 | Gallery prefix for production: keep `staging/template-demos/gallery/` or copy to e.g. `gallery/v1/` and add EVA_GALLERY_PREFIX to `eva-config` (deploy currently rewrites eva-config without it → default = staging prefix) | **decision** |
+| 6 | T17 16:9 Gallery assets: approve (status → approved, re-run uploader + verifier) or keep "coming soon" | **Eva — decision** |
+| 7 | Stripe stays in TEST mode (live keys refused unless EVA_ALLOW_LIVE=1); deploy's live account test creates a TEST top-up session; Eva does one manual sandbox top-up (4242…) → HD export → download | in deploy run |
+| 8 | DB migration `001_accounts_credits.sql` (additive, idempotent, one transaction) | in deploy run |
+| 9 | QA in report mode (`EVA_QA=report`, `EVA_QA_GATE=report`) | set in image |
+| 10 | T19 not selectable (API + planner refuse) | done |
+| 11 | Explicit approval from Eva | **required** |
+| — | Not yet verified on real infrastructure (needs the deploy): Supabase Auth emails, Stripe sandbox webhook to the real API, R2 signed links from the real API, Vercel build with Supabase config | deploy run |
 
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.

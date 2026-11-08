@@ -14,6 +14,8 @@ from playwright.sync_api import sync_playwright
 
 site, out = sys.argv[1].rstrip("/"), Path(sys.argv[2]); out.mkdir(parents=True, exist_ok=True)
 R, errors, fails = {}, [], []
+G = json.loads((Path(__file__).resolve().parents[1] / "web/gallery.json").read_text())
+PENDING = {(t["id"], ar) for t in G["templates"] for ar, a in t["assets"].items() if a["status"] != "approved"}
 def check(c, m):
     print(("PASS " if c else "FAIL ") + m, flush=True)
     if not c: fails.append(m)
@@ -29,13 +31,20 @@ with sync_playwright() as p:
         check("T19" not in ids and len(ids) == 5, f"{ar}: 5 template cards, no T19 ({ids})")
         for tid in ids:
             c = f".tplcard[data-tpl={tid}]"
+            pending = (tid, ar) in PENDING
             info = pg.eval_on_selector(c, """c => { const i = c.querySelector('.tplplay img'); return i && { w: i.naturalWidth, h: i.naturalHeight,
                       wide: c.querySelector('.tplmedia').classList.contains('wide'), src: i.src } }""")
+            if pending:   # no approved asset for this aspect: no picture/video at all, a "coming soon" card, still selectable
+                s_ = pg.eval_on_selector(c, """c => ({ media: !c.querySelector('.tplmedia').hidden, vids: c.querySelectorAll('video, img').length,
+                         soon: !c.querySelector('.tplsoon').hidden && c.querySelector('.tplsoon').textContent,
+                         wide: c.querySelector('.tplsoon').classList.contains('wide'), full: !c.querySelector('.tplfull').hidden })""")
+                check(not s_["media"] and s_["vids"] == 0 and not s_["full"] and s_["soon"] == f"{ar} preview coming soon" and s_["wide"] == (ar == "16:9"),
+                      f"{ar} {tid}: pending — no other-aspect demo shown, '{s_['soon']}' card")
+                pg.check(f"{c} [name=tpl]"); check(pg.is_checked(f"{c} [name=tpl]"), f"{ar} {tid}: still selectable")
+                R[f"{ar} {tid}"] = {"pending": True}; continue
             check(bool(info and info["w"] > 0), f"{ar} {tid}: WebP thumbnail loaded {info and (info['w'], info['h'])}")
             if not info: continue
-            fb = pg.eval_on_selector(c, "c => c.querySelector('.tplmedia').classList.contains('fallback')")
-            check(info["wide"] == (ar == "16:9") and (fb or info["wide"] == (info["w"] > info["h"])),
-                  f"{ar} {tid}: card follows the chosen aspect{' (other-aspect asset letterboxed: pending review)' if fb else ''}")
+            check(info["wide"] == (ar == "16:9") == (info["w"] > info["h"]), f"{ar} {tid}: card, thumbnail and chosen aspect agree ({info['w']}x{info['h']})")
             R[f"{ar} {tid}"] = {"thumb": [info["w"], info["h"]], "orientation": "16:9" if info["wide"] else "9:16"}
             before = pg.is_checked(f"{c} [name=tpl]")
             pg.click(f"{c} .tplplay"); pg.wait_for_timeout(1800)
@@ -52,7 +61,7 @@ with sync_playwright() as p:
         el = pg.query_selector("#tplChips"); el.scroll_into_view_if_needed(); el.screenshot(path=str(out / f"gallery_{ar.replace(':', 'x')}.png"))
     urls = pg.evaluate("async () => { const j = await (await fetch((window.EVA_API||'') + '/api/v2/gallery')).json(); return j.templates.flatMap(t => Object.values(t.assets).flatMap(a => Object.values(a).map(x => x.url))) }")
     codes = [pg.request.get(u).status for u in urls]
-    check(all(c == 200 for c in codes) and len(codes) >= 27, f"all {len(codes)} signed gallery links answer 200")
+    check(all(c == 200 for c in codes) and len(codes) == 27, f"all {len(codes)} signed gallery links (27 approved) answer 200")
     # phone width
     m = b.new_page(viewport={"width": 390, "height": 844}); m.on("pageerror", lambda e: errors.append(str(e)))
     m.goto(site + "/"); m.wait_for_selector(".tplcard.has-media img", timeout=15000)

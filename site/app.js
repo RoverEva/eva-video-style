@@ -113,7 +113,8 @@
     dlg.append(dv, close); document.body.append(dlg);
     close.onclick = () => dlg.close(); dlg.addEventListener("close", () => { dv.pause(); dv.removeAttribute("src"); dv.load(); });
     const aspectNow = () => ($("[name=aspect]:checked") || {}).value || "9:16";
-    const assetsFor = (id, ar) => { const g = gallery[id]; if (!g) return null; return g.assets[ar] || g.assets[ar === "16:9" ? "9:16" : "16:9"] || null; };
+    // only assets made for the chosen aspect: a 9:16 demo is never shown as a 16:9 preview (or the reverse)
+    const assetsFor = (id, ar) => { const g = gallery[id]; return (g && g.assets[ar]) || null; };
     const cards = {};
     Object.entries(TEMPLATES).forEach(([id, name], i) => {
       const media = el("div", { class: "tplmedia", hidden: "" });
@@ -121,20 +122,21 @@
       const full = el("button", { type: "button", class: "tplfull", text: "Full preview", hidden: "" });
       media.append(play);
       const chip = el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tpl", value: id, ...(i === 0 ? { checked: "" } : {}) }), el("span", { text: name })]);
-      const card = el("div", { class: "tplcard", "data-tpl": id }, [media, chip, full]);
-      cards[id] = { card, media, play, full, name };
+      const soon = el("div", { class: "tplsoon", hidden: "", text: "" });
+      const card = el("div", { class: "tplcard", "data-tpl": id }, [media, soon, chip, full]);
+      cards[id] = { card, media, play, full, name, soon };
       tc.append(card);
     });
     const paint = () => {
       const ar = aspectNow();
       Object.entries(cards).forEach(([id, c]) => {
         const a = assetsFor(id, ar);
-        c.media.hidden = !a; c.full.hidden = !(a && a.full15); c.card.classList.toggle("has-media", !!a);
+        const other = gallery[id] && Object.keys(gallery[id].assets).length > 0;   // template in the gallery, not in this aspect yet
+        c.media.hidden = !a; c.full.hidden = !(a && a.full15); c.card.classList.toggle("has-media", !!a || other);
+        c.soon.hidden = !!a || !other; c.soon.textContent = other && !a ? `${ar} preview coming soon` : "";
+        c.media.classList.toggle("wide", ar === "16:9"); c.soon.classList.toggle("wide", ar === "16:9");
         c.play.innerHTML = ""; c.play.setAttribute("aria-pressed", "false");
         if (!a) return;
-        // the card always follows the chosen aspect; a template without approved assets for it shows its other-aspect
-        // assets letterboxed (e.g. T17 16:9 while that demo awaits review)
-        c.media.classList.toggle("wide", ar === "16:9"); c.media.classList.toggle("fallback", !gallery[id].assets[ar]);
         const img = el("img", { src: a.thumb.url, alt: `${c.name} template`, loading: "lazy", decoding: "async" });
         c.play.append(img, el("span", { class: "tplbadge", "aria-hidden": "true", text: "▶ 5 s" }));
         c.play.onclick = () => {
