@@ -89,8 +89,29 @@ scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --apply      
 
 Requirements: Node 18+ with `playwright` (Chromium), Python 3 with `numpy`, FFmpeg with libass and libx264, and the fonts listed in `engine/fonts/README.md`.
 
+## Quality checks (QA)
+
+Every video goes through `qa/` (details: `qa/README.md`). QA only reports. It never moves captions, rescales the
+presenter or changes a template to make a check pass.
+
+```bash
+python3 -m qa pre --page s1/index.html --aspect 16:9 --template T17 --srt raw/talk.srt --input raw/talk.mp4   # before the full render
+node scripts/render.mjs s1/index.html --out sec/s1.mp4     # stops (exit 4) on a missing file/frame or a JS error; --no-qa to skip
+scripts/assemble.sh ...                                    # runs `python3 -m qa post` itself -> out/NAME_qa/qa-summary.md
+python3 -m qa post out/NAME_CN-EN.mp4 --clean out/NAME_Clean.mp4 --source raw/talk.mp4 --ass out/NAME_CN-EN.ass \
+    --srt out/NAME_CN-EN.srt --template T17 --out out/NAME_qa                           # standalone, on any existing render
+```
+
+- **FAIL blocks delivery** (assemble.sh exits 3; `EVA_QA=report` to deliver anyway and say why, `EVA_QA=off` to skip). Fix
+  the cause it names (face cropped or enlarged, caption over the face or past the frame edge, missing asset, wrong
+  size/fps, truncated, bad SRT timing), re-render, and re-run QA.
+- **WARN**: look at the evidence image and decide. Tell the user about any warning you leave in.
+- Pass `--template`/`--plan` so template rules apply (T17/T19/T26/T27 text stays off the face, T26/T28 keep the footage's
+  own scale, T24/T25 clarity). Mark intended still parts with `--static`. Checks listed as "Not run" are unverified.
+
 ## Before delivering, verify
 
+- The QA report (`out/NAME_qa/qa-summary.md`) has no FAIL; warnings were reviewed.
 - The frame count of the final equals the source video's frame count. Section boundaries must be frame-exact.
 - The whole video decodes without errors, and loudness is about -16 LUFS.
 - On a contact sheet (`scripts/contact_sheet.sh`), no text sits under the Eva window, nothing is cut off at the frame edge, captions don't collide with graphics, and the face is never cropped.
