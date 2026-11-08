@@ -61,10 +61,11 @@ def qa_result(w, tag):
         if p.exists():
             try: r = json.loads(p.read_text())
             except Exception: return {"status": "unreadable"}, p
-            verdict = str(r.get("verdict") or r.get("status") or r.get("result") or r.get("overall") or "").upper()
-            crit = r.get("critical") or r.get("failures") or []
-            return {"status": "pass" if verdict.startswith("PASS") else "fail" if verdict.startswith("FAIL") else (verdict.lower() or "unknown"),
-                    "critical": len(crit) if isinstance(crit, list) else crit, "summary": r.get("summary")}, p
+            # schema eva-qa/1 (qa/report.py): verdict PASS|WARN|FAIL, blocking = FAIL, counts per severity, issues
+            verdict = str(r.get("verdict") or "").upper()
+            return {"status": {"PASS": "pass", "WARN": "warn", "FAIL": "fail"}.get(verdict, "unknown"), "blocking": bool(r.get("blocking")),
+                    "counts": r.get("counts"), "issues": len(r.get("issues") or []), "not_run": len(r.get("not_run") or []),
+                    "schema": r.get("schema"), "qa_version": r.get("qa_version")}, p
     return {"status": "pending_module"}, None
 
 
@@ -88,7 +89,7 @@ def outputs(S, vid, w, preview):
 
 def gate(qa):
     """critical QA failure blocks completion only when the gate is on (EVA_QA_GATE=block); default records the report"""
-    return "qa_failed" if os.environ.get("EVA_QA_GATE", "report") == "block" and qa.get("status") == "fail" else "done"
+    return "qa_failed" if os.environ.get("EVA_QA_GATE", "report") == "block" and (qa.get("blocking") or qa.get("status") == "fail") else "done"
 
 
 def storage_usd(bytes_, days):   # R2 standard storage $0.015 per GB-month, egress free
