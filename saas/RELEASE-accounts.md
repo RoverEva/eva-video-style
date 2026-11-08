@@ -12,8 +12,13 @@ Status: **built and tested locally; NOT deployed.** Live site unchanged (last ap
 - Retention (env): previews + source 30 days, HD 90 days; daily job deletes expired files.
 - Reuse: transcript/face cached per project (no second ASR), HD reuses the saved plan (no AI call) and full-res chunks.
 - Costs per version: compute (Modal), storage estimate (R2), AI calls, timings.
-- QA hooks (module `feat/video-qa`): report stored with each version; `EVA_QA_GATE=block` makes a blocking FAIL `qa_failed`
-  (released, not charged). Defaults to report-only. QA code is NOT merged here.
+- Video QA v1.0 (cherry-pick of `feat/video-qa` 377ed15 only, no T27/T28 history), **report mode** (`EVA_QA=report`,
+  `EVA_QA_GATE=report`): pre-render QA before rendering, post-render QA after; both reports + summaries saved with each
+  version (`qa-pre-report.json`, `qa-report.json`); HD export reuses the version's pre-render report. QA never blocks
+  delivery; QA errors are recorded, not fatal; normal render failures still release free previews / credits.
+  `EVA_QA_GATE=block` (later) → blocking FAIL = `qa_failed`, released, not charged.
+- Worker image fix: OpenCV pinned to 4.x. The unpinned install had moved to OpenCV 5.0, which ships no Haar face cascade,
+  so the **live** worker's face locator silently used a default face position. Build now fails if the cascade can't load.
 - Legacy anonymous video links keep working (old routes untouched).
 
 ## Evidence (local: real pipeline renders, real Postgres 16, signed webhooks)
@@ -22,7 +27,18 @@ Status: **built and tested locally; NOT deployed.** Live site unchanged (last ap
 - `test_accounts_e2e.py`: 32/32 (preview 86 s, cached-ASR version 84 s, HD export 25 s on 2 vCPU).
 - `browser_accounts.py`: sign-in → free preview → new version → HD confirm → top-up → back on the same version → export
   → 1080×1920 download; phone width; no page errors.
-- QA trial (local branch, not pushed): QA v1.0 report stored with the version: 33 PASS / 1 WARN / 0 FAIL, +28 s.
+- `test_accounts_e2e.py` with QA: 34/34 (preview, regenerate, HD export; pre/post reports saved; failures refunded).
+- Worker image on CI (`qa-image-verify.yml`, run 42450195269, no credentials): OpenCV 4.14 + Haar OK, QA detector
+  `opencv-haar`, worker face locator `opencv:9/9`, real eva-asr. Real renders, preview + HD export each:
+  - real estate 16:9: delivered 1280×720 / 1920×1080; QA pre 24 PASS, post 36 PASS, 0 WARN, 0 FAIL.
+  - education 9:16: delivered 720×1280 / 1080×1920; QA post 34 PASS / 1 WARN / 1 FAIL — CAP_FACE "caption covers 5% of
+    the presenter's face" (real layout finding, delivered in report mode); FACE_VISIBLE 23 % and SRT_READ 0.26 s cue warnings.
+  - QA time per render ≈ 2 s pre + 22–26 s post.
+- QA's own tests in the image: 37/40. 3 face tests fail with the OpenCV Haar detector (v1.0 was verified with the
+  scikit-image fallback): `test_good_9x16_full_context_passes`, `test_t26_moved_right_and_enlarged_fails`,
+  `test_face_not_found_is_unverified_not_pass` → for the QA session; not blocking in report mode.
+- Not yet run: QA in the actual Modal environment (`staging-modal-qa.yml`, ephemeral app `eva-qa-check`; needs GitHub
+  environment `staging` with `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET`).
 
 ## Needed before release (Eva)
 1. Supabase project (free tier) → GitHub environment `production` secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
@@ -30,10 +46,11 @@ Status: **built and tested locally; NOT deployed.** Live site unchanged (last ap
 2. Supabase → Authentication → URL configuration: Site URL `https://eva-video-studio.vercel.app`, redirect URL
    `https://eva-video-studio.vercel.app/**`. Email provider on (magic link). Built-in email is rate-limited (few per hour):
    fine for testing; custom SMTP (e.g. Resend + your domain) before public launch.
-3. Decide: merge QA v1.0 (report-only) into the release, or ship without it.
+3. GitHub environment `staging` (branch `feat/saas-accounts`) with `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET` → run the
+   Modal QA check. 4. Whether the 3 QA face tests must be fixed by the QA session before release (report mode either way).
 
 ## Release steps (after approval)
-1. Fast-forward `feat/mvp-launch` to `feat/saas-accounts` (+ QA if approved) and push → deploy run waits for approval.
+1. Fast-forward `feat/mvp-launch` to `feat/saas-accounts` and push → deploy run waits for approval.
 2. Approve → tests (incl. DB on Postgres 16) → migration → Modal → Vercel → CORS pin → webhook → R2 checks →
    live account test with throwaway users (deleted afterwards).
 3. Eva: one manual Stripe sandbox top-up (card 4242…) → HD export → download.
