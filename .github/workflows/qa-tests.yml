@@ -45,3 +45,25 @@ jobs:
             out-pytest.log
             out/pytest/**/qa-report.json
             out/pytest/**/evidence/*.jpg
+      - name: Face diagnostics (Haar candidates and tracking per sample, failing fixtures)
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import cv2, numpy as np, tempfile
+          from pathlib import Path
+          from qa import media, face as F
+          d = Path(tempfile.gettempdir()) / "eva-qa-fixtures-v2"; det = F.Detector(); c = det._d
+          src = media.Source(str(d / "src.mp4"))
+          for vid in ("good_clean", "t26_bad_clean", "crop_gone_clean"):
+              out = media.read_frames(str(d / f"{vid}.mp4"), range(0, 150, 15))
+              print(f"== {vid}")
+              for n, o in out.items():
+                  s = src.frames_at([n / 30])[n / 30]; H, W = s.shape[:2]; k = 360 / W
+                  g = cv2.cvtColor(cv2.resize(s, (360, int(round(H * k))), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
+                  b, _, w = c.detectMultiScale3(g, scaleFactor=1.1, minNeighbors=6, minSize=(24, 24), outputRejectLevels=True)
+                  cands = [(tuple(int(v / k) for v in bb), round(float(np.ravel(ww)[0]), 1)) for bb, ww in zip(b, w)]
+                  pick = det.detect(s); m = F.track(s, pick, o) if pick else None
+                  mm = {kk: (round(v, 3) if isinstance(v, float) else v) for kk, v in (m or {}).items() if kk in ("score", "scale", "aspect", "out_frac", "inframe", "box")}
+                  print(n, "cands", cands, "pick", tuple(int(v) for v in pick) if pick else None, "track", mm)
+          PY
