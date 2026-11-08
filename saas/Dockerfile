@@ -33,5 +33,8 @@ RUN chmod +x scripts/*.sh && python saas/worker/warm_models.py
 RUN python saas/music/compose.py saas/music/tracks
 
 ENV EVA_MUSIC_LIBRARY=/app/music-library
+# Video QA (module from branch feat/video-qa, merged separately): record reports, never block, until real-job reports
+# are reviewed (then EVA_QA=block / EVA_QA_GATE=block). No effect while the module is absent.
+ENV EVA_QA=report EVA_QA_GATE=report
 
 CMD ["python", "saas/worker/pipeline.py", "--help"]

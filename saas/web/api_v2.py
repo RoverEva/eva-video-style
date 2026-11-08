@@ -72,7 +72,7 @@ class Accounts:
             w = {"state": "running", "updated_ts": time.time() if v.get("status") == "queued" else 0}
             x["progress"] = progress.summary(self.kv, v["id"], v["kind"] if v["kind"] == "preview" else "final", w)
         elif v.get("status") == "done": x["progress"] = {"progress": 100}
-        if duration is not None and v.get("kind") == "preview": x["hd_cost"] = hd_cost(duration)
+        if duration is not None: x["hd_cost"], x["preview_cost"] = hd_cost(duration), preview_cost(duration)
         return x
 
     # ── flow ──

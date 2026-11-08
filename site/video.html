@@ -5,6 +5,7 @@
 <meta name="robots" content="noindex">
 <title>Your video · EVA Video Studio</title>
 <link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -28,7 +29,7 @@
       </div>
       <ol class="steps" id="jobSteps"></ol>
       <div class="submit" id="jobAction"></div>
-      <p class="hint" style="margin-top:28px">Keep this page's link: it is the private key to your video. Uploads and previews are deleted after 3 days, HD videos after 7 days.</p>
+      <p class="hint" id="jobKeep" style="margin-top:28px">Keep this page's link: it is the private key to your video. Uploads and previews are deleted after 3 days, HD videos after 7 days.</p>
     </div>
   </main>
 </div>

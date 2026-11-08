@@ -101,7 +101,7 @@ class Local:
     def delete_prefix(self, prefix):
         for k, _ in self.list(prefix): self._p(k).unlink()
     def presign_put(self, key, size, ctype="video/mp4", seconds=1800): return f"{self.base}/_local/{key}?size={size}"
-    def presign_get(self, key, seconds=3600, filename=None): return f"{self.base}/_local/{key}"
+    def presign_get(self, key, seconds=3600, filename=None): return f"{self.base}/_local/{key}" + (f"?dl={filename}" if filename else "")
     def delete(self, key): self._p(key).unlink(missing_ok=True)
     def expire(self):
         n = 0

@@ -320,7 +320,9 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
                 data = await req.body()
                 if req.query_params.get("size") and len(data) != int(req.query_params["size"]): return err("size mismatch", 403)
                 p.parent.mkdir(parents=True, exist_ok=True); p.write_bytes(data); return Response(status_code=200)
-            return Response(p.read_bytes(), media_type="video/mp4") if p.exists() else err("missing", 404)
+            dl = req.query_params.get("dl"); hdr = {"Content-Disposition": f'attachment; filename="{dl}"'} if dl else {}   # like R2's signed download links
+            ctype = "image/jpeg" if p.suffix == ".jpg" else "application/json" if p.suffix == ".json" else "video/mp4"
+            return Response(p.read_bytes(), media_type=ctype, headers=hdr) if p.exists() else err("missing", 404)
         routes.append(Route("/_local/{key:path}", local, methods=["GET", "PUT"]))
     # Order matters: CORS is outermost, the error catcher sits inside it, so even a crash returns a JSON 500 that still
     # carries Access-Control-Allow-Origin (the browser then shows the real error instead of a misleading "CORS" block).
