@@ -2,7 +2,11 @@
 # secrets/volumes/endpoints/schedules) that stops when the run ends. Needs GitHub Environment "staging" with
 # MODAL_TOKEN_ID + MODAL_TOKEN_SECRET (branch rule: feat/saas-accounts). Manual trigger only.
 name: staging · QA on Modal (ephemeral, no deploy)
-on: { workflow_dispatch: {} }
+on:
+  workflow_dispatch: {}
+  push:   # only when the staging check itself changes (dispatch needs the file on the default branch)
+    branches: [feat/saas-accounts]
+    paths: [saas/modal_qa_check.py, .github/workflows/staging-modal-qa.yml]
 permissions: { contents: read }
 jobs:
   modal-qa:
@@ -13,16 +17,40 @@ jobs:
     env:
       MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      MODAL_ENVIRONMENT: staging   # isolated Modal environment: production apps, secrets, volumes, dicts are not visible here
+    defaults: { run: { shell: bash } }
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with: { persist-credentials: false }
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
-      - name: QA check in a Modal container (education 9:16, real estate 16:9)
+      - name: Verify staging credentials + isolation
         run: |
           pip install -q "modal~=1.0"
+          test -n "$MODAL_TOKEN_ID" && test -n "$MODAL_TOKEN_SECRET" || { echo "staging Modal token secrets missing"; exit 1; }
+          modal environment list > envs.txt && echo "token valid" && cat envs.txt
+          grep -qw staging envs.txt || modal environment create staging
+          [ "$MODAL_ENVIRONMENT" = staging ] || exit 1
+          echo "apps in staging:"; modal app list --env staging
+          modal app list --env main --json > prod_before.json 2>/dev/null || echo "[]" > prod_before.json
+          python3 -c "import json; a=json.load(open('prod_before.json')); print('production apps (read-only view):', [(x.get('Description') or x.get('description'), x.get('State') or x.get('state')) for x in a])"
+      - name: QA check in a Modal container (education 9:16, real estate 16:9)
+        run: |
           modal run saas/modal_qa_check.py --video saas/tests/media/education.mp4 --aspect 9:16 --templates T17,T20 && mv modal_qa_check.json education.json
           modal run saas/modal_qa_check.py --video saas/tests/media/realestate.mp4 --aspect 16:9 --templates T20,T01 && mv modal_qa_check.json realestate.json
+      - name: Production untouched
+        if: always()
+        run: |
+          modal app list --env main --json > prod_after.json 2>/dev/null || echo "[]" > prod_after.json
+          python3 - <<'PY'
+          import json
+          key = lambda f: sorted((x.get("App ID") or x.get("app_id"), x.get("State") or x.get("state"), str(x.get("Created at") or x.get("created_at"))) for x in json.load(open(f)) if (x.get("State") or x.get("state")) == "deployed")
+          b, a = key("prod_before.json"), key("prod_after.json")
+          print("deployed production apps before:", b); print("after:", a)
+          assert a == b, "production app list changed"
+          print("production unchanged: ok")
+          PY
+          echo "staging apps after run:"; modal app list --env staging
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
         if: always()
         with: { name: modal-qa-check, path: "*.json", if-no-files-found: ignore }
