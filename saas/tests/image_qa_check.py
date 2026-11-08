@@ -67,8 +67,8 @@ for kind in ("preview", "hd"):
                        "seconds": {"prepare": round(t_prep, 1), "qa_pre": round(t_pre, 1), "render": round(t_render, 1), "finish": round(t_finish, 1),
                                    "qa_post": round(t_post, 1), "total": round(time.time() - t0, 1)}}
 
-faces = [json.loads(p.read_text()).get("source", "") for p in (out / "jobs").rglob("face.json")]
-R["env"]["worker_face"] = faces[:2]
+faces = [json.loads((w / "face.json").read_text()).get("source", "")] if (w / "face.json").exists() else [""]   # the worker's face locator result
+R["env"]["worker_face"] = faces[0]
 (out / "summary.json").write_text(json.dumps(R, indent=1)); print(json.dumps(R, indent=1))
 ok = R["env"]["haar_cascade"] and R["env"]["qa_face_detector"] == "opencv-haar" and all(f.startswith("opencv") for f in faces) and all(r.get("status") == "done" for r in R["runs"].values()) and len(R["runs"]) == 2 \
      and all(r["qa"]["post"]["status"] in ("pass", "warn", "fail") for r in R["runs"].values())
