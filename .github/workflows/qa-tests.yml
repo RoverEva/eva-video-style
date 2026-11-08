@@ -34,7 +34,7 @@ jobs:
           npm install --omit=dev --no-audit --no-fund && npx playwright install --with-deps chromium
           ffmpeg -version | head -1
       - name: QA tests (all 40)
-        run: python -m pytest -q -rfEs -p no:cacheprovider --basetemp=out/pytest qa/tests 2>&1 | tee out-pytest.log; exit ${PIPESTATUS[0]}
+        run: mkdir -p out && python -m pytest -q -rfEs -p no:cacheprovider --basetemp=out/pytest qa/tests 2>&1 | tee out-pytest.log; exit ${PIPESTATUS[0]}
         shell: bash
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
         if: always()
