@@ -37,17 +37,20 @@ Status: **built and tested locally; NOT deployed.** Live site unchanged (last ap
 - QA's own tests in the image: 37/40. 3 face tests fail with the OpenCV Haar detector (v1.0 was verified with the
   scikit-image fallback): `test_good_9x16_full_context_passes`, `test_t26_moved_right_and_enlarged_fails`,
   `test_face_not_found_is_unverified_not_pass` → for the QA session; not blocking in report mode.
-- Not yet run: QA in the actual Modal environment (`staging-modal-qa.yml`, ephemeral app `eva-qa-check`; needs GitHub
-  environment `staging` with `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET`).
-
+- **Real Modal runtime** (`staging-modal-qa.yml`, run 42510121699): isolated Modal environment `staging` (created by the
+  run), ephemeral app `eva-qa-check` (no secrets/volumes/endpoints; stopped after each run). Staging token valid.
+  Production app `eva-video-studio` (env `main`, ap-cvYzf2p632HFomn3ixi2qu, deployed 2026-11-06) identical before/after.
+  Same results as the CI image: OpenCV 4.14 + Haar, QA detector opencv-haar, worker face opencv:9/9, real eva-asr;
+  real estate 16:9 preview + HD all PASS (24 pre / 36 post); education 9:16 preview + HD delivered, QA FAIL CAP_FACE 5 %
+  (report mode), FACE_VISIBLE 27 % + SRT_READ warnings. Per render on Modal (3 CPU): ≈128 s preview incl. ≈30 s QA,
+  ≈40 s HD export; image build 150 s (first run only).
 ## Needed before release (Eva)
 1. Supabase project (free tier) → GitHub environment `production` secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
    `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL` (Session pooler connection string).
 2. Supabase → Authentication → URL configuration: Site URL `https://eva-video-studio.vercel.app`, redirect URL
    `https://eva-video-studio.vercel.app/**`. Email provider on (magic link). Built-in email is rate-limited (few per hour):
    fine for testing; custom SMTP (e.g. Resend + your domain) before public launch.
-3. GitHub environment `staging` (branch `feat/saas-accounts`) with `MODAL_TOKEN_ID` / `MODAL_TOKEN_SECRET` → run the
-   Modal QA check. 4. Whether the 3 QA face tests must be fixed by the QA session before release (report mode either way).
+3. ~~Staging Modal check~~ done. 4. Whether the 3 QA face tests must be fixed by the QA session before release (report mode either way).
 
 ## Release steps (after approval)
 1. Fast-forward `feat/mvp-launch` to `feat/saas-accounts` and push → deploy run waits for approval.
