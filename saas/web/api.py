@@ -18,8 +18,8 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
-try: from . import stripe_lite as stripe
-except ImportError: import stripe_lite as stripe
+try: from . import stripe_lite as stripe, progress
+except ImportError: import stripe_lite as stripe, progress
 
 PRICE_CENTS = 999
 MAX_BYTES, MAX_SECONDS, PREVIEW_SECONDS = 200 * 1024 * 1024, 30, 10
@@ -102,8 +102,36 @@ class Service:
             opts["_fail_final"] = True   # live failure test: paid render fails → retry → automatic refund (never with live keys)
         if not self.bump(f"pv:{today()}", LIMITS["preview_global_day"]): raise PermissionError("We've hit today's free preview capacity. Please try again tomorrow.")
         if not self.bump(f"pv:{today()}:{h(ip)[:16]}", LIMITS["preview_per_ip_day"]): raise PermissionError("Free preview limit reached (3 per day).")
-        o.update(options=opts, state="preview", preview_started=time.time()); self.save(o)
+        o.update(options=opts, state="preview", preview_started=time.time(), preview_n=0); self.save(o)
+        self.s.put_json(f"jobs/{o['id']}/preview.json", {"kind": "preview", "attempt": 0, "state": "running", "stage": "queued", "updated_ts": time.time()})
         self.spawn("preview", o["id"], dict(opts, paid=False), attempt=0)
+        return o
+
+    def previews_left(self, ip):
+        used = self.cnt.get(f"pv:{today()}:{h(ip)[:16]}") or 0
+        return max(0, LIMITS["preview_per_ip_day"] - used)
+
+    def regenerate(self, o, ip, n):
+        """Regenerate preview: same upload, same settings. Free; a successful earlier preview uses one of today's free
+        previews, a failed/stalled one does not. `n` = the attempt number the page is showing, so a double click or a
+        second tab can't start two renders (only the first request with the current n is accepted)."""
+        if o.get("paid"): raise ValueError("This video is already paid; its HD render runs automatically.")
+        if not o.get("preview_started"): raise ValueError("Make the first preview first.")
+        if n is None or int(n) != int(o.get("preview_n", 0)): raise LookupError("A new preview is already being made.")
+        pv = self.worker(o["id"], "preview"); st = pv.get("state") or "running"   # no status yet = just queued
+        pg = progress.summary(self.cnt, o["id"], "preview", pv)
+        if st == "running" and not pg["stalled"]: raise LookupError("A preview is already being made.")
+        if st == "rejected": raise ValueError("This upload can't be processed; please upload another video.")
+        if not self.s.size(f"uploads/{o['id']}/input.mp4"): raise ValueError("The original upload has expired (uploads are kept 3 days). Please upload it again.")
+        counts = st == "done"   # retrying after our failure or a stall is free
+        if counts:
+            if not self.bump(f"pv:{today()}", LIMITS["preview_global_day"]): raise PermissionError("We've hit today's free preview capacity. Please try again tomorrow.")
+            if not self.bump(f"pv:{today()}:{h(ip)[:16]}", LIMITS["preview_per_ip_day"]): raise PermissionError("You've used today's 3 free previews. They reset at 4 pm Pacific time.")
+        k = int(o.get("preview_n", 0)) + 1
+        o.update(preview_n=k, preview_regen_at=time.time()); o.setdefault("preview_history", []).append({"n": k, "at": time.time(), "counted": counts, "after": st})
+        self.save(o)
+        self.s.put_json(f"jobs/{o['id']}/preview.json", {"kind": "preview", "attempt": k, "state": "running", "stage": "queued", "updated_ts": time.time()})
+        self.spawn("preview", o["id"], dict(o["options"], paid=False, regen_n=k), attempt=k)
         return o
 
     def checkout(self, o, site, token):
@@ -112,7 +140,7 @@ class Service:
         if o.get("paid"): raise ValueError("This video is already paid.")
         n = o.get("checkout_n", 0) + 1; base = f"{site}/video.html?id={o['id']}"
         # the private token rides in the URL fragment (never sent to a server) so the buyer lands back on their video page
-        s = self.stripe.checkout(o["id"], f"{base}&paid=1#t={token}", f"{base}#t={token}", PRICE_CENTS, "EVA Video Studio · HD video", attempt=n)
+        s = self.stripe.checkout(o["id"], f"{base}&paid=1#t={token}", f"{base}&canceled=1#t={token}", PRICE_CENTS, "EVA Video Studio · HD video", attempt=n)
         o.update(checkout_n=n, checkout={"session": s["id"], "at": time.time()}); self.save(o)
         return s["url"]
 
@@ -162,6 +190,10 @@ class Service:
         for key, _ in self.s.list("orders/"):
             o = self.s.get_json(key)
             if not o: continue
+            if not o.get("paid") and o.get("preview_started"):   # a silent preview (worker lost) → failed; the retry is free
+                w = self.worker(o["id"], "preview")
+                if w.get("state") == "running" and time.time() - max(w.get("updated_ts", 0), progress.summary(self.cnt, o["id"], "preview", w)["updated"] or 0) > LIMITS["stuck_minutes"] * 60:
+                    self.s.put_json(f"jobs/{o['id']}/preview.json", dict(w, state="failed", error="stalled: no progress")); acts[o["id"]] = "preview failed (stalled)"
             if o.get("paid") and o.get("state") == "rendering":
                 w = self.worker(o["id"], "final")
                 if w.get("state") in ("done", "failed", "rejected"): acts[o["id"]] = self.on_final_result(o["id"])
@@ -170,18 +202,23 @@ class Service:
                     acts[o["id"]] = self.on_final_result(o["id"])
         return acts
 
-    def view(self, o):
+    def view(self, o, ip=None):
         pv, fn = self.worker(o["id"], "preview"), self.worker(o["id"], "final")
         v = {"id": o["id"], "state": o.get("state"), "options": o.get("options"), "upload": o.get("upload"), "price": PRICE_CENTS / 100,
-             "preview": {k: pv.get(k) for k in ("state", "stage", "reason", "progress")}, "paid": bool(o.get("paid")),
-             "stripe_mode": o.get("stripe_mode")}
+             "preview": {k: pv.get(k) for k in ("state", "stage", "reason")}, "paid": bool(o.get("paid")),
+             "stripe_mode": o.get("stripe_mode"), "preview_n": o.get("preview_n", 0)}
+        if o.get("preview_started"): v["preview"].update(progress.summary(self.cnt, o["id"], "preview", pv))
+        if ip is not None: v["previews_left"] = self.previews_left(ip)
+        v["can_regenerate"] = bool(o.get("preview_started") and not o.get("paid")
+                                   and (pv.get("state") in ("done", "failed") or v["preview"].get("stalled", False)))
         if o.get("state") == "uploading" and self.s.size(f"uploads/{o['id']}/input.mp4"): v["state"] = "uploaded"
         if pv.get("state") == "done":
             v["preview"]["url"] = self.s.presign_get(f"outputs/{o['id']}/preview.mp4", URL_TTL)
             v["preview"]["metrics"] = {"total_s": (pv.get("timing") or {}).get("total_s"), "compute_usd": pv.get("compute_usd")}
         if pv.get("state") in ("failed", "rejected"): v["preview"]["error"] = pv.get("reason") or "We couldn't render this video. Please try another file."
         if o.get("paid"):
-            v["final"] = {k: fn.get(k) for k in ("state", "stage", "progress")}
+            v["final"] = {k: fn.get(k) for k in ("state", "stage")}
+            v["final"].update(progress.summary(self.cnt, o["id"], "final", fn) if fn else {"progress": 5, "stages": [], "stalled": False})
             if o.get("state") == "delivered" or fn.get("state") == "done":
                 v["final"]["url"] = self.s.presign_get(f"outputs/{o['id']}/final.mp4", URL_TTL, f"EVA_{o['id']}.mp4")
                 v["final"]["expires"] = (o.get("delivered_at") or time.time()) + 7 * 86400
@@ -229,13 +266,21 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
 
     async def job(req):
         o = svc.auth(req.path_params["job"], req.query_params.get("t"))
-        return JSONResponse(svc.view(o)) if o else err("not found", 404)
+        return JSONResponse(svc.view(o, client_ip(req))) if o else err("not found", 404)
 
     async def preview(req):
         b = await body(req); o = svc.auth(req.path_params["job"], b.get("token"))
         if not o: return err("not found", 404)
-        try: return JSONResponse(svc.view(svc.preview(o, client_ip(req), b)))
+        try: return JSONResponse(svc.view(svc.preview(o, client_ip(req), b), client_ip(req)))
         except ValueError as e: return err(str(e))
+        except PermissionError as e: return err(str(e), 429)
+
+    async def regenerate(req):
+        b = await body(req); o = svc.auth(req.path_params["job"], b.get("token"))
+        if not o: return err("not found", 404)
+        try: return JSONResponse(svc.view(svc.regenerate(o, client_ip(req), b.get("n")), client_ip(req)))
+        except ValueError as e: return err(str(e))
+        except LookupError as e: return JSONResponse(dict(svc.view(o, client_ip(req)), notice=str(e), error=str(e)), status_code=409)
         except PermissionError as e: return err(str(e), 429)
 
     async def checkout(req):
@@ -260,7 +305,7 @@ def make_app(svc: Service, webhook_secret=lambda: os.environ.get("STRIPE_WEBHOOK
 
     routes = [Route("/api/config", config), Route("/api/health", health), Route("/api/uploads", uploads, methods=["POST"]),
               Route("/api/jobs/{job}", job), Route("/api/jobs/{job}/preview", preview, methods=["POST"]),
-              Route("/api/jobs/{job}/checkout", checkout, methods=["POST"]), Route("/api/stripe/webhook", webhook, methods=["POST"])]
+              Route("/api/jobs/{job}/regenerate", regenerate, methods=["POST"]), Route("/api/jobs/{job}/checkout", checkout, methods=["POST"]), Route("/api/stripe/webhook", webhook, methods=["POST"])]
     if local_store is not None:   # tests / local runs: stands in for R2 presigned PUT/GET
         async def local(req):
             p = local_store.r / req.path_params["key"]

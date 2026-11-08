@@ -112,7 +112,8 @@
     });
   }
 
-  /* private video page: polls the job, shows preview, checkout, HD download */
+  /* private video page: real backend progress, preview, regenerate, checkout, HD download. Survives refreshes: all
+     state comes from the API; the private token is kept in this browser (and in the link). */
   async function video() {
     const q = new URLSearchParams(location.search), id = q.get("id");
     const hashT = new URLSearchParams(location.hash.slice(1)).get("t"); if (hashT) store.set("eva:" + id, hashT);
@@ -120,58 +121,121 @@
     const root = $("#job");
     if (!id || !token) { root.innerHTML = "<div><h1>We can't find this video</h1><p>Open the link from the device you uploaded on, or from your payment email.</p><a class='btn' href='/#studio'>Make a new video</a></div>"; return; }
     const phone = $("#jobPhone"), h1 = $("#jobTitle"), sub = $("#jobSub"), steps = $("#jobSteps"), act = $("#jobAction");
-    let shownSrc = null, payBusy = false;
-    const show = (src, landscape) => { if (src === shownSrc) return; shownSrc = src; phone.innerHTML = ""; phone.classList.toggle("landscape", landscape);
-      const vid = Object.assign(el("video", { src, controls: "", playsinline: "", loop: "" }), { autoplay: true });
-      vid.onerror = () => { shownSrc = null; setTimeout(tick, 500); };   // expired signed link: fetch a fresh one
-      phone.append(vid); };
-    const stepList = (items) => { steps.innerHTML = ""; items.forEach(([t, s]) => steps.append(el("li", { class: s, text: t }))); };
+    const prog = $("#jobProg"), pctEl = $("#jobPct"), bar = $("#jobBar"), note = $("#jobProgNote");
+    let shownSrc = null, payBusy = false, regenBusy = false, confirmOpen = false, timer = null, playable = false, seen = { key: "", pct: 0 };
+    const again = ms => { clearTimeout(timer); timer = setTimeout(tick, ms); };
 
-    async function tick() {
-      let v; try { v = await call(`/api/jobs/${id}?t=${encodeURIComponent(token)}`); } catch (e) { sub.textContent = e.message; return setTimeout(tick, 8000); }
-      const land = (v.options || {}).aspect === "16:9"; const pv = v.preview || {}, fn = v.final || {};
-      const stage = (s, keys) => keys.indexOf(s);
+    // progress: the number is the backend's; it never moves backwards within one render and only reads 100% once the
+    // video can actually play in this browser
+    function setProgress(key, pct, opts = {}) {
+      if (key !== seen.key) seen = { key, pct: 0 };
+      seen.pct = Math.max(seen.pct, Math.min(99, pct | 0));
+      const shown = opts.playable ? 100 : seen.pct;
+      prog.hidden = false; prog.classList.toggle("idle", !!opts.playable); prog.classList.toggle("stopped", !!opts.stopped);
+      pctEl.textContent = shown + "%"; bar.firstElementChild.style.width = shown + "%";
+      bar.setAttribute("aria-valuenow", String(shown)); bar.setAttribute("aria-valuetext", `${shown}% ${opts.label || ""}`.trim());
+      note.textContent = opts.note || "";
+    }
+    const stageList = list => { steps.innerHTML = ""; (list || []).forEach(s => steps.append(el("li", { class: s.status === "active" ? "now" : s.status, text: s.label }))); };
+    const loading = (text, landscape) => { if (shownSrc === "loading:" + text) return; shownSrc = "loading:" + text; playable = false;
+      phone.innerHTML = ""; phone.classList.toggle("landscape", landscape); phone.classList.add("loading");
+      phone.append(el("div", { class: "soon", text })); };
+    const show = (src, landscape, onPlayable) => {
+      if (src === shownSrc) return; shownSrc = src; playable = false;
+      const vid = Object.assign(el("video", { src, controls: "", playsinline: "", loop: "", muted: "" }), { autoplay: true, muted: true });
+      vid.addEventListener("loadeddata", () => { playable = true; phone.classList.remove("loading"); onPlayable && onPlayable(); }, { once: true });
+      vid.onerror = () => { shownSrc = null; again(500); };   // expired 15-minute signed link: fetch a fresh one
+      phone.classList.toggle("landscape", landscape); phone.replaceChildren(vid);
+    };
+
+    function regenerateControls(v) {
+      const pv = v.preview || {}, failed = pv.state === "failed" || pv.stalled, left = v.previews_left;
+      const cost = failed ? "Free, and it doesn't count toward today's free previews." :
+        `Free: uses 1 of your 3 free previews today (${left ?? "?"} left).`;
+      const btn = el("button", { class: "btn ghost", type: "button", text: "Regenerate preview" });
+      if (!failed && left === 0) { btn.disabled = true; btn.title = "You've used today's 3 free previews. They reset at 4 pm Pacific time."; }
+      btn.onclick = () => { confirmOpen = true; render(v); };
+      if (!confirmOpen) return [btn];
+      const yes = el("button", { class: "btn", type: "button", text: "Yes, regenerate" }), no = el("button", { class: "btn ghost", type: "button", text: "Cancel" });
+      no.onclick = () => { confirmOpen = false; render(v); };
+      yes.onclick = async () => {
+        if (regenBusy) return; regenBusy = true; yes.disabled = no.disabled = true; yes.textContent = "Starting…";
+        try { await call(`/api/jobs/${id}/regenerate`, { token, n: v.preview_n }); }
+        catch (e) { if (!/already being made/i.test(e.message)) sub.textContent = e.message; }   // a duplicate request just keeps polling the running one
+        regenBusy = false; confirmOpen = false; shownSrc = null; again(300);
+      };
+      return [el("div", { class: "confirm" }, [el("p", { text: `Make a new preview from the same upload and settings? ${cost} No payment is taken.` }), el("div", { class: "row" }, [yes, no])])];
+    }
+
+    let last = null;
+    function render(v) {
+      last = v; const land = (v.options || {}).aspect === "16:9", pv = v.preview || {}, fn = v.final || {};
       act.innerHTML = "";
+      if (q.get("canceled") && !v.paid) act.append(el("p", { class: "note", text: "Checkout was canceled. You haven't been charged." }));
       if (v.state === "refunded") {
         h1.textContent = "Your payment was refunded"; sub.textContent = "We couldn't render this video, even after retrying. The full amount is on its way back to your card; banks usually show it within 5–10 days.";
-        stepList([]); return;
+        setProgress("final", fn.progress || 0, { stopped: true, label: "refunded" }); stageList(fn.stages); return;
       }
       if (v.paid) {
         if (fn.url) {
-          h1.textContent = "Your video is ready"; show(fn.url, land);
+          h1.textContent = "Your video is ready";
           sub.textContent = `Full HD, ${fn.width}×${fn.height}, ${Math.round(fn.duration || 0)} seconds. The download link works until ${new Date(fn.expires * 1000).toLocaleDateString()}.`;
+          show(fn.url, land, () => setProgress("final", 100, { playable: true, label: "ready" }));
+          setProgress("final", 99, { playable, label: "ready", note: playable ? "" : "Loading your video…" });
           const dl = el("a", { class: "btn", href: fn.url, download: `EVA_${id}.mp4`, text: "Download MP4" });
           dl.onclick = async e => { e.preventDefault();   // signed links live 15 minutes: always ask for a fresh one
             try { const f = (await call(`/api/jobs/${id}?t=${encodeURIComponent(token)}`)).final; location.href = f.url; } catch (err) { sub.textContent = err.message; } };
-          act.append(dl);
-          stepList([["Payment confirmed", "done"], ["HD video rendered", "done"], ["Ready to download", "done"]]); return;
+          act.append(dl); stageList(fn.stages); return;
         }
-        h1.textContent = "Payment confirmed. Rendering your HD video"; sub.textContent = "This usually takes about 5 minutes. You can keep this page open or come back later with the same link.";
-        const s = stage(fn.stage, ["preparing", "rendering", "finishing"]);
-        stepList([["Payment confirmed", "done"], ["Rendering full HD", s <= 1 ? "now" : "done"], ["Final checks", s === 2 ? "now" : ""], ["Ready to download", ""]]);
-        if (pv.url) show(pv.url, land);
-        return setTimeout(tick, 5000);
+        h1.textContent = "Payment confirmed. Rendering your HD video";
+        sub.textContent = "This usually takes a few minutes. You can keep this page open, or come back later with the same link.";
+        setProgress("final", fn.progress || 0, { label: "rendering HD",
+          note: fn.stalled ? "This is taking longer than usual. We're still on it, and if it can't finish you're refunded automatically." : "" });
+        stageList(fn.stages);
+        if (pv.url) show(pv.url, land); else loading("Rendering your HD video…", land);
+        return again(4000);
       }
-      if (pv.state === "rejected" || pv.state === "failed") {
+      if (pv.state === "rejected") {
         h1.textContent = "This video couldn't be processed"; sub.textContent = pv.error || "Please try another file.";
-        act.append(el("a", { class: "btn", href: "/#studio", text: "Upload another video" })); stepList([]); return;
+        setProgress("pv" + v.preview_n, pv.progress || 0, { stopped: true }); stageList(pv.stages);
+        act.append(el("a", { class: "btn", href: "/#studio", text: "Upload another video" })); return;
       }
-      if (pv.url) {
-        h1.textContent = "Your free preview is ready"; show(pv.url, land);
+      if (pv.state === "failed") {
+        h1.textContent = "Your preview didn't finish"; sub.textContent = "Something went wrong on our side. You can try again with the same video and settings.";
+        setProgress("pv" + v.preview_n, pv.progress || 0, { stopped: true, label: "failed" }); stageList(pv.stages);
+        loading("Preview not available", land); phone.classList.remove("loading");
+        act.append(...regenerateControls(v), el("a", { class: "btn ghost", href: "/#studio", text: "Upload another video" })); return;
+      }
+      if (pv.url && pv.state === "done") {
+        h1.textContent = q.get("paid") ? "Confirming your payment…" : "Your free preview is ready";
         sub.textContent = `This is the first 10 seconds with a watermark. The full video is 1080p, without the watermark, for $${v.price.toFixed(2)}.`;
+        show(pv.url, land, () => setProgress("pv" + v.preview_n, 100, { playable: true, label: "ready" }));
+        setProgress("pv" + v.preview_n, 99, { playable, label: "ready", note: playable ? "" : "Loading your preview…" });
+        stageList(pv.stages);
         const pay = el("button", { class: "btn", type: "button", text: `Get the full video for $${v.price.toFixed(2)}` });
         pay.onclick = async () => { if (payBusy) return; payBusy = true; pay.disabled = true; pay.textContent = "Opening secure checkout…";
           try { location.href = (await call(`/api/jobs/${id}/checkout`, { token })).url; } catch (e) { sub.textContent = e.message; pay.disabled = false; payBusy = false; pay.textContent = `Get the full video for $${v.price.toFixed(2)}`; } };
-        act.append(pay, el("a", { class: "btn ghost", href: "/#studio", text: "Try a different video" }));
-        if (q.get("paid")) { h1.textContent = "Confirming your payment…"; return setTimeout(tick, 2500); }
+        act.append(pay, ...(v.can_regenerate ? regenerateControls(v) : []));
         if (v.stripe_mode === "test") act.append(el("p", { class: "note", text: "Test mode: use card 4242 4242 4242 4242, any future date and any CVC. No real money moves." }));
-        stepList([["Uploaded", "done"], ["Preview rendered", "done"], ["Pay and get the full HD video", "now"]]); return;
+        if (q.get("paid")) return again(2500);
+        return;
       }
-      h1.textContent = "Making your preview"; sub.textContent = "Listening, planning the cards and rendering. This takes 2–4 minutes.";
-      const s = stage(pv.stage, ["preparing", "rendering", "finishing"]);
-      stepList([["Uploaded", "done"], ["Transcribing and planning", s <= 0 ? "now" : "done"], ["Rendering", s === 1 ? "now" : s > 1 ? "done" : ""], ["Adding captions and music", s === 2 ? "now" : ""]]);
-      setTimeout(tick, 4000);
+      // rendering (first preview or a regeneration)
+      h1.textContent = v.preview_n ? "Making a new preview" : "Making your preview";
+      sub.textContent = "We're listening, planning the cards and rendering. This usually takes 2–4 minutes.";
+      setProgress("pv" + v.preview_n, pv.progress || 0, { label: "rendering preview",
+        note: pv.stalled ? "This is taking longer than usual. You can wait, or start again for free." : "" });
+      stageList(pv.stages); loading("Rendering your preview…", land);
+      if (pv.stalled && v.can_regenerate) act.append(...regenerateControls(v));
+      again(3000);
     }
+
+    async function tick() {
+      let v; try { v = await call(`/api/jobs/${id}?t=${encodeURIComponent(token)}`); }
+      catch (e) { note.textContent = "Connection problem. Retrying…"; return again(8000); }
+      render(v);
+    }
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) again(200); });   // refresh promptly when the tab returns
     tick();
   }
 

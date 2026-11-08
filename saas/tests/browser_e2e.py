@@ -16,6 +16,68 @@ from playwright.sync_api import sync_playwright
 def _fail(msg): raise RuntimeError(msg)
 
 
+def page_state(pg):
+    return pg.evaluate("""() => ({pct: parseInt(document.querySelector('#jobPct').textContent) || 0, shown: !document.querySelector('#jobProg').hidden,
+        title: document.querySelector('#jobTitle').textContent, stages: [...document.querySelectorAll('#jobSteps li')].map(l => l.className || 'pending'),
+        playable: !!(document.querySelector('#jobPhone video') && document.querySelector('#jobPhone video').readyState >= 2),
+        bar: document.querySelector('#jobBar').getAttribute('aria-valuenow')})""")
+
+
+def watch_progress(pg, out, shot, seconds):
+    """sample the page once a second until the preview is ready (or failed): % never decreases, 100 % only when the
+    <video> can play, stages move forward (done never goes back to active/pending), bar and number agree"""
+    order = {"pending": 0, "now": 1, "done": 2, "failed": 2}
+    samples, t0, shot_taken = [], time.time(), False
+    while time.time() - t0 < seconds:
+        st = page_state(pg); st["t"] = round(time.time() - t0, 1); samples.append(st)
+        if not shot_taken and 20 <= st["pct"] < 100: pg.screenshot(path=out / f"{shot}.png"); shot_taken = True
+        if re.search(r"preview is ready|couldn't be processed|didn't finish", st["title"]) and (st["pct"] == 100 or "ready" not in st["title"]): break
+        time.sleep(1)
+    errs = []
+    for x, y in zip(samples, samples[1:]):
+        if y["pct"] < x["pct"]: errs.append(f"progress went back {x['pct']}→{y['pct']} at {y['t']}s")
+        if len(x["stages"]) == len(y["stages"]) and any(order.get(b, 0) < order.get(a_, 0) for a_, b in zip(x["stages"], y["stages"])):
+            errs.append(f"stage went back at {y['t']}s: {x['stages']}→{y['stages']}")
+    for x in samples:
+        if x["pct"] == 100 and not x["playable"]: errs.append(f"100% shown before the video was playable at {x['t']}s")
+        if x["shown"] and str(x["pct"]) != x["bar"]: errs.append(f"bar {x['bar']} ≠ number {x['pct']} at {x['t']}s")
+    distinct = sorted({x["pct"] for x in samples})
+    summary = {"samples": len(samples), "distinct_values": distinct, "final": samples[-1] if samples else None, "errors": errs}
+    print("progress:", json.dumps({k: v for k, v in summary.items() if k != "final"}), flush=True)
+    if errs: raise SystemExit("progress check failed: " + "; ".join(errs[:5]))
+    return summary
+
+
+def regenerate(pg, out):
+    """Regenerate preview: confirmation shows the cost; a double click on Yes must start only one render"""
+    api = pg.evaluate("() => window.EVA_API"); job = pg.url.split("id=")[1].split("&")[0].split("#")[0]
+    tok = pg.evaluate(f"() => localStorage.getItem('eva:{job}')")
+    view = lambda: json.loads(urllib.request.urlopen(f"{api}/api/jobs/{job}?t={urllib.parse.quote(tok)}", timeout=30).read())
+    before = view()
+    pg.get_by_role("button", name="Regenerate preview").click()
+    box = pg.locator(".confirm"); box.wait_for(state="visible", timeout=10_000); text = box.inner_text()
+    assert "free preview" in text.lower() and "no payment" in text.lower(), text
+    pg.screenshot(path=out / "3b_regenerate_confirm.png")
+    yes = pg.get_by_role("button", name="Yes, regenerate"); yes.dblclick()                       # duplicate request on purpose
+    pg.wait_for_function("() => /new preview/i.test(document.querySelector('#jobTitle').textContent)", timeout=60_000)
+    time.sleep(4); mid = view()
+    prog = watch_progress(pg, out, "3c_regen_progress", 20 * 60)
+    after = view()
+    assert mid["preview_n"] == before["preview_n"] + 1, ("duplicate regenerate", before["preview_n"], mid["preview_n"])
+    assert after["options"] == before["options"] and after["upload"] == before["upload"], "settings or upload changed"
+    pg.screenshot(path=out / "3d_regenerated.png")
+    return {"confirm_text": text, "preview_n": [before["preview_n"], after["preview_n"]], "previews_left": [before.get("previews_left"), after.get("previews_left")],
+            "progress": {k: prog[k] for k in ("samples", "distinct_values")}}
+
+
+def mobile_shot(browser, url, path):
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True)
+    m = ctx.new_page(); m.goto(url); m.wait_for_timeout(2500)
+    over = m.evaluate("() => document.documentElement.scrollWidth > innerWidth")
+    m.screenshot(path=path, full_page=True); ctx.close()
+    if over: raise SystemExit("video page scrolls sideways at phone width")
+
+
 def checkout_opened(pg, out, job, redact=()):
     """PASS when our checkout button landed on Stripe-hosted Checkout for a TEST-mode session that belongs to this job.
     The session is re-read server-side from the Stripe API (key from env; read-only call, no new permissions)."""
@@ -60,6 +122,8 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("site"); ap.add_argument("video"); ap.add_argument("out")
     ap.add_argument("--aspect", default="9:16"); ap.add_argument("--templates", default="T17,T20"); ap.add_argument("--music", default="mix")
     ap.add_argument("--email", default="eva-e2e@example.com"); ap.add_argument("--expect", choices=["delivered", "refunded"], default="delivered")
+    ap.add_argument("--regenerate", action="store_true", help="after the preview: Regenerate preview (with a double click) and check it")
+    ap.add_argument("--mobile-shots", action="store_true", help="also screenshot the video page at phone width")
     ap.add_argument("--checkout-only", action="store_true", help="live deploy test: stop once Stripe Checkout has opened and verify "
                     "the Checkout Session through the Stripe API (Stripe blocks automation of its hosted card fields)")
     a = ap.parse_args()
@@ -82,8 +146,11 @@ def main():
         pg.screenshot(path=out / "2_options.png", full_page=True)
         pg.click("#go"); mark("submitted")
         pg.wait_for_url("**/video.html?id=*", timeout=10 * 60_000); mark("uploaded"); res["video_page"] = pg.url.split("#")[0]
-        pg.wait_for_function("() => /preview is ready|couldn't be processed/.test(document.querySelector('#jobTitle').textContent)", timeout=20 * 60_000, polling=2000)
+        res["progress_samples"] = watch_progress(pg, out, "3a_progress", 20 * 60)
         mark("preview_ready"); pg.screenshot(path=out / "3_preview.png")
+        if a.mobile_shots: mobile_shot(b, pg.url, out / "3m_preview_mobile.png")
+        if a.regenerate and "couldn't" not in pg.inner_text("#jobTitle"):
+            res["regenerate"] = regenerate(pg, out); mark("regenerated")
         if "couldn't" in pg.inner_text("#jobTitle"): res["error"] = pg.inner_text("#jobSub"); print(json.dumps(res)); sys.exit(1)
         pv_job = pg.url.split("id=")[1].split("&")[0].split("#")[0]; pv_tok = pg.evaluate(f"() => localStorage.getItem('eva:{pv_job}')")
         api_base = pg.evaluate("() => window.EVA_API")

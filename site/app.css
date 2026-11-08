@@ -110,4 +110,41 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 .note { background: var(--lilac); border-radius: 14px; padding: 16px 18px; margin: 18px 0; }
 .note.bad { background: #fde8ea; }
 @media (max-width: 880px) { .job { grid-template-columns: 1fr; gap: 32px; } }
+
+/* video page: live progress (real backend %), waveform, stage states, preview loading */
+:root { --turq: #19c4d4; --ok: #17a864; --bad: #c2303a; }
+.prog { margin: 22px 0 4px; max-width: 520px; }
+.prog-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.pct { font: 800 56px/1 var(--display); letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.wave { width: 120px; height: 32px; flex: none; }
+.wave rect { transform-box: fill-box; transform-origin: center; animation: wv 1.25s ease-in-out infinite; }
+.wave rect:nth-child(3n+1) { animation-duration: 1.05s; } .wave rect:nth-child(3n+2) { animation-duration: 1.45s; }
+.wave rect:nth-child(1){animation-delay:-.1s}.wave rect:nth-child(2){animation-delay:-.5s}.wave rect:nth-child(3){animation-delay:-.25s}
+.wave rect:nth-child(4){animation-delay:-.8s}.wave rect:nth-child(5){animation-delay:-.35s}.wave rect:nth-child(6){animation-delay:-.65s}
+.wave rect:nth-child(7){animation-delay:-.15s}.wave rect:nth-child(8){animation-delay:-.9s}.wave rect:nth-child(9){animation-delay:-.45s}
+.wave rect:nth-child(10){animation-delay:-.7s}.wave rect:nth-child(11){animation-delay:-.2s}.wave rect:nth-child(12){animation-delay:-.55s}
+@keyframes wv { 0%, 100% { transform: scaleY(.28); opacity: .75; } 50% { transform: scaleY(1); opacity: 1; } }
+.prog.idle .wave rect, .prog.stopped .wave rect { animation: none; transform: scaleY(.28); }
+.pbar { height: 10px; border-radius: 99px; background: var(--line); overflow: hidden; margin-top: 14px; }
+.pbar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--cobalt), var(--turq)); transition: width .8s cubic-bezier(.2, .7, .2, 1); }
+.prog.stopped .pbar i { background: var(--bad); }
+#jobProgNote { margin: 10px 0 0; min-height: 1.4em; }
+.steps li { transition: color .3s; }
+.steps li::before { transition: background .3s, box-shadow .3s; }
+.steps li.done::before { content: "✓"; background: var(--ok); color: #fff; font: 700 11px/16px var(--body); text-align: center; }
+.steps li.now::before { animation: ring 1.6s ease-out infinite; }
+@keyframes ring { 0% { box-shadow: inset 0 0 0 5px var(--cobalt), 0 0 0 0 rgba(31, 79, 224, .45); } 100% { box-shadow: inset 0 0 0 5px var(--cobalt), 0 0 0 9px rgba(31, 79, 224, 0); } }
+.steps li.pending { color: #8a93ab; }
+.steps li.failed { color: var(--bad); } .steps li.failed::before { content: "!"; background: var(--bad); color: #fff; font: 700 11px/16px var(--body); text-align: center; box-shadow: none; }
+.phone.loading { background: linear-gradient(110deg, #0d1430 30%, #1b2a5c 45%, #12306e 52%, #0d1430 68%); background-size: 250% 100%; animation: shim 1.8s linear infinite; }
+.phone.loading .soon { color: #c9d2ee; }
+@keyframes shim { from { background-position: 120% 0; } to { background-position: -120% 0; } }
+.confirm { background: var(--lilac); border-radius: 14px; padding: 16px 18px; margin: 4px 0; max-width: 520px; }
+.confirm p { margin: 0 0 12px; }
+.confirm .row { margin: 0; }
+@media (max-width: 640px) { .pct { font-size: 46px; } .wave { width: 96px; } }
+@media (prefers-reduced-motion: reduce) {
+  .wave rect, .steps li.now::before, .phone.loading { animation: none !important; }
+  .wave rect { transform: scaleY(.6); }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

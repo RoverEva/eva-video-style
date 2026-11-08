@@ -15,6 +15,17 @@
     <div>
       <h1 id="jobTitle">Loading your video…</h1>
       <p id="jobSub" class="hint" style="font-size:18px;max-width:46ch"></p>
+      <div class="prog" id="jobProg" hidden>
+        <div class="prog-top">
+          <span class="pct" id="jobPct" aria-hidden="true">0%</span>
+          <svg class="wave" id="jobWave" viewBox="0 0 120 32" aria-hidden="true" focusable="false">
+            <defs><linearGradient id="wg" x1="0" x2="1"><stop offset="0" stop-color="#1f4fe0"/><stop offset="1" stop-color="#19c4d4"/></linearGradient></defs>
+            <g fill="url(#wg)"><rect x="2" y="4" width="5" height="24" rx="2.5"/><rect x="12" y="4" width="5" height="24" rx="2.5"/><rect x="22" y="4" width="5" height="24" rx="2.5"/><rect x="32" y="4" width="5" height="24" rx="2.5"/><rect x="42" y="4" width="5" height="24" rx="2.5"/><rect x="52" y="4" width="5" height="24" rx="2.5"/><rect x="62" y="4" width="5" height="24" rx="2.5"/><rect x="72" y="4" width="5" height="24" rx="2.5"/><rect x="82" y="4" width="5" height="24" rx="2.5"/><rect x="92" y="4" width="5" height="24" rx="2.5"/><rect x="102" y="4" width="5" height="24" rx="2.5"/><rect x="112" y="4" width="5" height="24" rx="2.5"/></g>
+          </svg>
+        </div>
+        <div class="pbar" id="jobBar" role="progressbar" aria-label="Video progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div>
+        <p class="hint" id="jobProgNote" aria-live="polite"></p>
+      </div>
       <ol class="steps" id="jobSteps"></ol>
       <div class="submit" id="jobAction"></div>
       <p class="hint" style="margin-top:28px">Keep this page's link: it is the private key to your video. Uploads and previews are deleted after 3 days, HD videos after 7 days.</p>

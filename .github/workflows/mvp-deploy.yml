@@ -123,9 +123,11 @@ jobs:
           pip install -q "boto3~=1.35" && python -c "import sys; sys.path.insert(0,'saas/web'); import store; s=store.R2(); s.size('testdata/new30.mp4') and s.download('testdata/new30.mp4','e2e/new30.mp4')" || true
           V=e2e/new30.mp4; [ -f $V ] || V=$M/new30.mp4; [ -f $V ] || { echo "::warning::saas/tests/media/new30.mp4 missing; using the 20 s real-upload pair"; ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[a];[1:v]fps=30,scale=720:1280,setsar=1[b];[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][au]" -map "[v]" -map "[au]" -c:v libx264 -crf 20 -c:a aac e2e/fallback.mp4; V=e2e/fallback.mp4; }
           # 1. real browser: upload → AI preview → our checkout → Stripe-hosted Checkout opens; the TEST-mode Checkout Session is
+          #    verified via the Stripe API. Progress is sampled every second (never backwards, 100 % only when playable) and
+          #    Regenerate preview is exercised with a double click (exactly one new render, same upload + settings).
           #    verified via the Stripe API. Stripe protects its hosted card fields from automation, so card entry is not
           #    automated; payment → webhook → render → delivery/refund is tested server-side above + by a manual sandbox purchase.
-          python saas/tests/browser_e2e.py "$SITE_URL" $V e2e/purchase --aspect 9:16 --templates T17,T20,T01 --music mix --checkout-only
+          python saas/tests/browser_e2e.py "$SITE_URL" $V e2e/purchase --aspect 9:16 --templates T17,T20,T01 --music mix --regenerate --mobile-shots --checkout-only
           # 2. security + privacy + rejection probes against the live API and bucket
           python saas/tests/live_checks.py "$API_URL" e2e/purchase/summary.json e2e/checks.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0

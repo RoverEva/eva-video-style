@@ -62,7 +62,7 @@ if (cues) {
     await frame(f / fps);
     const buf = await page.screenshot({ type: 'jpeg', quality: 95 });
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
-    if ((f - f0) % 150 === 0) console.log(`frame ${f - f0}/${f1 - f0}  ${((Date.now() - t0) / 1000).toFixed(0)}s`);
+    if ((f - f0) % (+process.env.EVA_PROGRESS_EVERY || 150) === 0) console.log(`frame ${f - f0}/${f1 - f0}  ${((Date.now() - t0) / 1000).toFixed(0)}s`);
   }
   ff.stdin.end(); await done;
   console.log('done', out, f1 - f0, 'frames');

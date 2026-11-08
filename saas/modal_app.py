@@ -80,10 +80,14 @@ def api():
 
 # ───────────────────────────── render ─────────────────────────────
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS + LLM, cpu=3.0, memory=6144, timeout=1200, retries=RETRY)
-def prepare(job: str, opts: dict):
-    _paths(); import store, pipeline
+def prepare(job: str, opts: dict, kind: str = "preview"):
+    _paths(); import store, pipeline, progress
     jobs.reload(); d = Path(f"/jobs/{job}"); d.mkdir(parents=True, exist_ok=True); t = time.time()
     if not (d / "input.mp4").exists(): store.from_env().download(f"uploads/{job}/input.mp4", d / "input.mp4")
+    rn, mk = int(opts.get("regen_n") or 0), d / "work/regen_n"
+    if kind == "preview" and rn and (d / "work").exists() and (mk.read_text().strip() if mk.exists() else "0") != str(rn):
+        pipeline.reset_for_regenerate(d / "work"); mk.write_text(str(rn))   # same upload + settings, fresh plan/render
+    pipeline.PROGRESS.set(progress.Reporter(counters, job, kind))
     rc = pipeline.prepare(d / "input.mp4", d / "work", opts); jobs.commit()
     j = json.loads((d / "work/job.json").read_text())
     return {"rc": rc, "chunks": j.get("chunks", []), "rejected": j.get("rejected"), "frames": j.get("frames"), "wall_s": round(time.time() - t, 1),
@@ -91,15 +95,17 @@ def prepare(job: str, opts: dict):
 
 
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=1.0, memory=3072, timeout=900, retries=RETRY)
-def render_chunk(job: str, i: int):
-    _paths(); import pipeline
+def render_chunk(job: str, i: int, kind: str = "preview"):
+    _paths(); import pipeline, progress
+    pipeline.PROGRESS.set(progress.Reporter(counters, job, kind))
     jobs.reload(); t = time.time(); pipeline.render(f"/jobs/{job}/work", i); jobs.commit()
     return {"chunk": i, "wall_s": round(time.time() - t, 1)}
 
 
 @app.function(image=image, volumes={"/jobs": jobs}, secrets=STAGE_SECRETS, cpu=2.0, memory=4096, timeout=900, retries=RETRY)
 def finish(job: str, preview: bool):
-    _paths(); import store, pipeline
+    _paths(); import store, pipeline, progress
+    pipeline.PROGRESS.set(progress.Reporter(counters, job, "preview" if preview else "final"))
     jobs.reload(); w = Path(f"/jobs/{job}/work"); t = time.time(); pipeline.finish(w, preview); jobs.commit()
     tag = "preview" if preview else "final"; rep = json.loads((w / f"out/report_{tag}.json").read_text())
     S = store.from_env(); ct = {".mp4": "video/mp4", ".srt": "text/plain", ".json": "application/json"}
@@ -113,26 +119,30 @@ def finish(job: str, preview: bool):
 @app.function(image=image, secrets=ORCH_SECRETS, cpu=0.25, memory=512, timeout=3600)
 def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
     """Orchestrates one render and records its state in jobs/<job>/<kind>.json (read by the API)."""
-    _paths(); import store
+    _paths(); import store, progress
     S = store.from_env(); key = f"jobs/{job}/{kind}.json"; t0 = time.time(); preview = kind == "preview"
+    if not preview:   # a paid render never runs alongside a regenerating preview (same working folder)
+        while (S.get_json(f"jobs/{job}/preview.json") or {}).get("state") == "running" and time.time() - t0 < 1800: time.sleep(10)
+    progress.reset(counters, job, kind, [])
     st = {"kind": kind, "attempt": attempt, "started": t0}
     def put(**kw): st.update(kw, updated_ts=time.time()); S.put_json(key, st); return st
-    put(state="running", stage="preparing", progress=5)
+    put(state="running", stage="preparing")
     try:
         import stripe_lite
         if not preview and opts.get("_fail_final") and stripe_lite.mode() == "test": raise RuntimeError("injected test failure (e2e-fail-final, test mode only)")
-        p = prepare.remote(job, opts)
+        p = prepare.remote(job, opts, kind)
         if p["rc"] == 2:
             put(state="rejected", stage="rejected", reason=p["rejected"])
         else:
             n = len(p["chunks"]); idx = [i for i, (a, b) in enumerate(p["chunks"]) if a < opts.get("preview_seconds", 10)] if preview else list(range(n))
-            put(stage="rendering", progress=30, chunks=len(idx))
-            renders = list(render_chunk.starmap([(job, i) for i in idx]))
-            put(stage="finishing", progress=80)
+            counters[progress.key(job, kind, "meta")] = {"chunks": idx, "t": time.time()}   # render progress denominator
+            put(stage="rendering", chunks=len(idx))
+            renders = list(render_chunk.starmap([(job, i, kind) for i in idx]))
+            put(stage="finishing")
             rep = finish.remote(job, preview)
             walls = {"prepare": p["wall_s"], "render_chunk": sum(r["wall_s"] for r in renders), "finish": rep["finish_wall_s"]}
             usd = sum(cost(f, w) for f, w in walls.items()) + cost("render_job", time.time() - t0)
-            put(state="done", stage="done", progress=100, report={k: rep.get(k) for k in ("width", "height", "duration", "lufs", "music", "warnings", "bytes", "planner")},
+            put(state="done", stage="done", report={k: rep.get(k) for k in ("width", "height", "duration", "lufs", "music", "warnings", "bytes", "planner")},
                 timing={"total_s": round(time.time() - t0, 1), "prepare_s": p["wall_s"], "prepare_stages": p["stages"],
                         "chunk_s": [r["wall_s"] for r in renders], "finish_s": rep["finish_wall_s"]},
                 compute_usd=round(usd, 4))

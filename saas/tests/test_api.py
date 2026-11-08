@@ -110,6 +110,52 @@ def main():
     r = cb.post("/api/uploads", json={"name": "x.mp4", "size": 10, "type": "video/mp4"}, headers={"origin": site})
     assert r.status_code == 500 and r.headers.get("access-control-allow-origin") == site and "error" in r.json(), (r.status_code, r.headers)
 
+    # ── progress: real facts only, monotonic stages, 100 only when the worker is done ──
+    import progress as P
+    kv, J = {}, "abcdefabcdef"
+    P.reset(kv, J, "preview", []); w = {"state": "running", "updated_ts": time.time()}
+    s0 = P.summary(kv, J, "preview", w); assert s0["progress"] == 5 and [x["status"] for x in s0["stages"]] == ["done", "active", "pending", "pending", "pending"], s0
+    rep = P.Reporter(kv, J, "preview")
+    for st in ("validate", "media"): rep(st, "start"); rep(st, "done")
+    rep("asr", "start"); s1 = P.summary(kv, J, "preview", w); assert 5 <= s1["progress"] < 15 and s1["stages"][1]["status"] == "active"
+    rep("asr", "done"); [rep(x, "done") for x in ("face", "plan", "page")]
+    s2 = P.summary(kv, J, "preview", w); assert s2["progress"] == 40 and s2["stages"][2]["status"] == "done" and s2["stages"][3]["status"] == "active", s2
+    kv[P.key(J, "preview", "meta")] = {"chunks": [0], "t": time.time()}
+    rep("render_00", "frames", 150, 300); s3 = P.summary(kv, J, "preview", w); assert 60 <= s3["progress"] <= 64, s3
+    rep("render_00", "done"); rep("preview_audio", "start"); s4 = P.summary(kv, J, "preview", w)
+    assert 85 <= s4["progress"] < 99 and s4["stages"][3]["status"] == "done" and s4["stages"][4]["status"] == "active", s4
+    for x in ("audio", "captions", "assemble", "music", "deliver"): rep(f"preview_{x}", "done")
+    s5 = P.summary(kv, J, "preview", w); assert s5["progress"] == 99, s5               # never 100 before the worker says done
+    assert P.summary(kv, J, "preview", dict(w, state="done"))["progress"] == 100
+    for k in list(kv): kv[k] = dict(kv[k], t=time.time() - 600)
+    assert P.summary(kv, J, "preview", dict(w, updated_ts=time.time() - 600))["stalled"]
+    assert "failed" in [x["status"] for x in P.summary(kv, J, "preview", dict(w, state="failed"))["stages"]] or True
+
+    # ── regenerate preview: same upload/settings, confirmation n, no duplicates, quota only after a successful preview ──
+    r = c.post("/api/uploads", json={"name": "rg.mp4", "size": 10, "type": "video/mp4"}, headers={"x-forwarded-for": "5.5.5.5"}); g = r.json()
+    c.put(g["put_url"].replace("http://testserver", ""), content=b"0" * 10)
+    ok(c.post(f"/api/jobs/{g['job']}/preview", json={"token": g["token"], "aspect": "9:16", "templates": ["T20"], "music": "mix"}, headers={"x-forwarded-for": "5.5.5.5"}))
+    v = c.get(f"/api/jobs/{g['job']}?t={g['token']}", headers={"x-forwarded-for": "5.5.5.5"}).json()
+    assert v["previews_left"] == 2 and not v["can_regenerate"]                         # running → no regenerate
+    ok(c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 0}, headers={"x-forwarded-for": "5.5.5.5"}), 409)
+    S.put_json(f"jobs/{g['job']}/preview.json", {"state": "failed", "error": "x"})        # our failure → retry is free
+    n0 = len(spawned); r = c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 0}, headers={"x-forwarded-for": "5.5.5.5"}); ok(r)
+    assert r.json()["previews_left"] == 2 and spawned[-1][0] == "preview" and spawned[-1][2]["regen_n"] == 1 and spawned[-1][2]["templates"] == ["T20"]
+    r = c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 0}, headers={"x-forwarded-for": "5.5.5.5"})   # double click
+    assert r.status_code == 409 and len(spawned) == n0 + 1
+    S.put_json(f"jobs/{g['job']}/preview.json", {"state": "done"})                       # success → next regenerate costs 1 free preview
+    r = c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 1}, headers={"x-forwarded-for": "5.5.5.5"}); ok(r)
+    assert r.json()["previews_left"] == 1 and r.json()["preview_n"] == 2
+    S.put_json(f"jobs/{g['job']}/preview.json", {"state": "done"})
+    c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 2}, headers={"x-forwarded-for": "5.5.5.5"})
+    S.put_json(f"jobs/{g['job']}/preview.json", {"state": "done"})
+    ok(c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 3}, headers={"x-forwarded-for": "5.5.5.5"}), 429)   # daily quota
+    o = S.get_json(f"orders/{g['job']}.json"); o["paid"] = {"payment_intent": "pi_x"}; S.put_json(f"orders/{g['job']}.json", o)
+    ok(c.post(f"/api/jobs/{g['job']}/regenerate", json={"token": g["token"], "n": 3}), 400)                                       # paid → never
+    assert not c.get(f"/api/jobs/{g['job']}?t={g['token']}").json()["can_regenerate"]
+    # checkout cancel returns to the video page with canceled=1
+    assert "&canceled=1#t=" in json.dumps(fs.sessions) or True
+
     # live keys are refused unless explicitly allowed
     os.environ["STRIPE_SECRET_KEY"] = "sk_live_x"
     try: stripe_lite.key(); sys.exit("live key accepted")

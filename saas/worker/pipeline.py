@@ -36,6 +36,18 @@ PY = sys.executable
 class Reject(Exception): pass
 
 
+# progress hook (saas/web/progress.py Reporter): PROGRESS.get()(stage, "start"|"done") / (stage, "frames", done, total)
+import contextvars, re as _re
+PROGRESS = contextvars.ContextVar("eva_progress", default=None)
+
+
+def _report(*a):
+    fn = PROGRESS.get()
+    if fn:
+        try: fn(*a)
+        except Exception: pass
+
+
 def sh(cmd, log, **kw):
     t = time.time(); log.write(f"$ {' '.join(map(str, cmd))}\n"); log.flush()
     r = subprocess.run([str(c) for c in cmd], stdout=log, stderr=subprocess.STDOUT, **kw)
@@ -72,12 +84,12 @@ class Job:
     def stage(self, name, fn):
         """run a stage once; a retried job skips stages that already finished (safe retries)."""
         mk = self.d / "stages" / f"{name}.json"
-        if mk.exists(): return
-        t, c = time.time(), cpu_s(); self.log.write(f"\n== {name}\n")
+        if mk.exists(): _report(name, "done"); return
+        t, c = time.time(), cpu_s(); self.log.write(f"\n== {name}\n"); _report(name, "start")
         fn()
         if self.j: self.save()   # facts recorded by the stage (prepare is single-process)
         rec = {"ok": True, "wall_s": round(time.time() - t, 2), "cpu_s": round(cpu_s() - c, 2), "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
-        mk.write_text(json.dumps(rec)); print(f"[{name}] {rec}", flush=True)
+        mk.write_text(json.dumps(rec)); print(f"[{name}] {rec}", flush=True); _report(name, "done")
 
 
 # ───────────────────────────── prepare ─────────────────────────────
@@ -149,8 +161,24 @@ def render(jd, i):
         if out.exists(): out.unlink()   # a half-written chunk from a crashed attempt
         cmd = ["node", ENGINE_REPO / "scripts/render.mjs", J.d / "auto/index.html", "--out", out, "--from", a, "--to", b] + page_args(J)
         if os.environ.get("CHROME"): cmd += ["--browser", os.environ["CHROME"]]
-        sh(cmd, J.log, cwd=ENGINE_REPO)   # render.mjs resolves playwright from the cwd
+        # stream render.mjs output: its "frame N/M" lines are real progress (every 15 frames when EVA_PROGRESS_EVERY is set)
+        J.log.write(f"$ {' '.join(map(str, cmd))}\n"); J.log.flush(); t = time.time()
+        p = subprocess.Popen([str(c) for c in cmd], cwd=ENGINE_REPO, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                             env=dict(os.environ, EVA_PROGRESS_EVERY="15"))
+        for line in p.stdout:
+            J.log.write(line); m = _re.match(r"frame (\d+)/(\d+)", line)
+            if m: _report(f"render_{i:02}", "frames", int(m.group(1)), int(m.group(2)))
+        rc = p.wait(); J.log.write(f"  -> exit {rc} in {time.time() - t:.1f}s\n"); J.log.flush()
+        if rc: raise subprocess.CalledProcessError(rc, cmd)
     J.stage(f"render_{i:02}", run)
+
+
+def reset_for_regenerate(jd):
+    """Regenerate preview: keep the upload, media and transcript (validate/media/asr/face), redo plan → page → render →
+    preview finish from the same options."""
+    st = Path(jd) / "stages"
+    for f in st.glob("*.json"):
+        if f.stem in ("plan", "page") or f.stem.startswith(("render_", "preview_")): f.unlink()
 
 
 def page_args(J):
