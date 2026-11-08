@@ -24,8 +24,9 @@ jobs:
           t=$(date +%s); docker build -f saas/Dockerfile -t eva-worker . ; echo "image build $(( $(date +%s) - t )) s"
       - name: QA module tests inside the image
         run: |
-          docker run --rm -v $PWD:/src -w /src eva-worker sh -c "pip install -q 'pytest~=8.3' && python -m pytest -q -rfEs qa/tests" 2>&1 | tail -40
+          docker run --rm -v $PWD:/src -w /src eva-worker sh -c "ln -sfn /app/node_modules node_modules && pip install -q 'pytest~=8.3' && python -m pytest -q -rfEs qa/tests" 2>&1 | tail -40
       - name: Real renders with QA (education 9:16 T17+T20, real estate 16:9 T20+T01)
+        if: success() || failure()   # renders run even when a QA unit test fails
         run: |
           mkdir -p out && chmod 777 out
           docker run --rm --cpus 4 -v $PWD/saas/tests/media:/media:ro -v $PWD/out:/out eva-worker python3 saas/tests/image_qa_check.py /media/education.mp4 /out/education --aspect 9:16 --templates T17,T20
