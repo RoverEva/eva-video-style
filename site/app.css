@@ -183,5 +183,7 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 .tplcard { display: inline-flex; flex-direction: column; gap: 6px; width: 160px; vertical-align: top; }
 .tplcard img, .tplcard video { width: 160px; height: 90px; object-fit: cover; border-radius: 10px; background: var(--line); display: block; }
 .tplcard video { position: absolute; top: 0; left: 0; }
+.tplcard video[hidden] { display: none; }
+.tplcard:not(:has(img)) { width: auto; }   /* no thumbnail published: plain chip */
 .tplcard span { text-align: center; }
 @media (max-width: 480px) { .tplcard { width: calc(50% - 8px); } .tplcard img, .tplcard video { width: 100%; height: auto; aspect-ratio: 16 / 9; } }
