@@ -116,13 +116,21 @@ lockdown rules in a rolled-back transaction (nothing kept), Auth sign-in links +
 The deploy now runs the same check on the PRODUCTION secrets as its first Supabase step and stops before anything
 changes if one is wrong.
 
+## Authentication — COMPLETE ✅ (2026-11-09, staging)
+- Custom SMTP (Resend, support@evavideostudio.com): Supabase sends the sign-in email (staging-email-check PASS).
+- Staging site https://eva-video-studio-staging.vercel.app (separate Vercel project, no API): automated browser check
+  (staging-site.yml) PASS — magic link → staging, signed in, token removed from URL, session persists across reload and
+  pages, Sign out clears the session. Eva's real-email test PASS (delivery, session persistence, sign-out).
+- Fixes from this: Sign out link added (none existed); sign-out always clears the local session; header shows the email
+  when the API is unavailable.
+
 ## Remaining before production (Eva)
 1. ~~Gallery~~ **complete** (30/30 verified on R2 staging).
 2. Production secrets — run the READ-ONLY `production-preflight.yml` (needs your OK to add that one workflow file to
    `feat/mvp-launch`, then one run approval). Checks, changing nothing: Supabase (same as the staging check, rolled
    back), Stripe key is TEST + can read Checkout/webhooks, R2 bucket private + exact 30-asset gallery listing + no T19,
    Vercel token, Modal token, Resend (optional). Without it, the deploy's own Supabase preflight still stops before any change.
-3. SMTP for sign-in emails (Supabase built-in sender allows only a few emails per hour):
+3. ~~SMTP~~ done (Resend, support@evavideostudio.com). Former steps, for reference:
    - needs a domain you own (a *.vercel.app address cannot be verified for sending);
    - email provider (e.g. Resend): add the domain, publish its SPF + DKIM (+ optional DMARC) DNS records, create an API key;
    - Supabase → Authentication → Emails → SMTP Settings: host `smtp.resend.com`, port 465, user `resend`,
