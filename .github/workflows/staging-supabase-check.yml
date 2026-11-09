@@ -1,0 +1,39 @@
+# Staging check of the real Supabase project WITHOUT changing it: connectivity, migration 001 applied twice + credits /
+# 3 lifetime free previews / My Videos / lockdown checks inside one ROLLED-BACK transaction, Auth sign-in links for the
+# site pages with one throwaway user (deleted at the end). No deploy, no Modal, no Stripe, no R2.
+# Needs the four SUPABASE_* secrets in GitHub Environment "staging" (branch rule: feat/saas-accounts).
+name: staging · Supabase check (rolled back, no deploy)
+on:
+  workflow_dispatch: {}
+  push:   # only when the check itself or the migration changes (dispatch needs the file on the default branch)
+    branches: [feat/saas-accounts]
+    paths: [saas/tests/supabase_staging_check.py, saas/db/**, .github/workflows/staging-supabase-check.yml]
+permissions: { contents: read }
+jobs:
+  supabase:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/saas-accounts'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      EVA_SITE_URL: https://eva-video-studio.vercel.app
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - name: Mask secret-derived values
+        run: |
+          for v in SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL; do [ -n "${!v}" ] && echo "::add-mask::${!v}"; done
+          p=$(python3 -c "import os,urllib.parse as u; print(u.urlparse(os.environ.get('SUPABASE_DB_URL','').strip()).password or '')"); [ -n "$p" ] && echo "::add-mask::$p"; true
+      - name: psql client
+        run: which psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client); psql --version
+      - name: Supabase check (database, rolled-back migration + business rules, Auth)
+        run: python3 saas/tests/supabase_staging_check.py
+      - name: Summary
+        if: always()
+        run: |
+          { echo '### Supabase staging check'; echo '```'; cat supabase_check.json 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
