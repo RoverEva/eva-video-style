@@ -21,6 +21,7 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       EVA_SITE_URL: https://eva-video-studio.vercel.app
+      SUPABASE_PROJECT_REF: kaojcgfcwjhnrxppwikz   # public (dashboard URL); used to catch a wrong SUPABASE_URL
     defaults: { run: { shell: bash } }
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2

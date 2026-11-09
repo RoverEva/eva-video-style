@@ -40,6 +40,8 @@ def http(method, url, key=None, bearer=None, body=None, follow=True):
     try:
         with op.open(req, timeout=30) as r: return r.status, dict(r.headers), r.read()
     except urllib.error.HTTPError as e: return e.code, dict(e.headers), e.read()
+    except (urllib.error.URLError, OSError) as e:          # unreachable host: report, do not crash
+        print(f"INFO network error for {urllib.parse.urlparse(url).hostname}: {type(e).__name__}"); return 0, {}, b""
 
 
 def jl(b):
@@ -64,15 +66,47 @@ def main():
     miss = [k for k, v in E.items() if not v]
     if not check(not miss, "Supabase secrets present in this environment" + (f" (missing: {', '.join(miss)})" if miss else "")):
         return
-    host = urllib.parse.urlparse(E["SUPABASE_URL"]).hostname or ""
-    ref = host.split(".")[0]
+    want = (os.environ.get("SUPABASE_PROJECT_REF") or "").strip()      # public project ref (dashboard link), not a secret
+    try: host = urllib.parse.urlparse(E["SUPABASE_URL"]).hostname or ""
+    except ValueError: host = ""
+    ref = host.split(".")[0] if host.endswith(".supabase.co") else ""
+    url_ok = check(bool(ref) and E["SUPABASE_URL"].rstrip("/") == f"https://{ref}.supabase.co" and (not want or ref == want),
+                   f"SUPABASE_URL is the project URL https://{want or '<ref>'}.supabase.co"
+                   + ("" if ref else f" (it is not: host looks like '{host.split('.')[0] or '?'}…' — use Settings → API → Project URL)"))
+    if not url_ok and want:
+        E["SUPABASE_URL"] = f"https://{want}.supabase.co"; ref = want
+        print(f"INFO continuing the Auth checks with the dashboard project URL https://{want}.supabase.co (fix the secret)")
     R["project_ref"] = ref
-    check(host.endswith(".supabase.co"), f"SUPABASE_URL is a Supabase project URL (ref {ref})")
+    # API keys: format, and for legacy JWT keys the project + role inside them (never the key itself)
+    import base64
+    def key_facts(k):
+        if k.startswith("sb_publishable_"): return {"format": "new publishable"}
+        if k.startswith("sb_secret_"): return {"format": "new secret"}
+        parts = k.split(".")
+        if len(parts) == 3:
+            try:
+                c = json.loads(base64.urlsafe_b64decode(parts[1] + "=" * (-len(parts[1]) % 4)))
+                return {"format": "legacy JWT", "ref": c.get("ref"), "role": c.get("role"), "exp_year": time.gmtime(c.get("exp", 0)).tm_year}
+            except Exception: pass
+        return {"format": "unrecognised"}
+    fa, fs = key_facts(E["SUPABASE_ANON_KEY"]), key_facts(E["SUPABASE_SERVICE_ROLE_KEY"])
+    R["keys"] = {"anon": fa, "service": fs}; print(f"INFO anon key: {fa} | service key: {fs}")
+    check(fa.get("role") == "anon" or fa["format"] == "new publishable", "SUPABASE_ANON_KEY is the anon / publishable key")
+    check(fs.get("role") == "service_role" or fs["format"] == "new secret", "SUPABASE_SERVICE_ROLE_KEY is the service_role / secret key")
+    for n, f in (("anon", fa), ("service", fs)):
+        if f.get("ref"): check(f["ref"] == ref, f"{n} key belongs to project {ref}")
+    applied = database(ref)
+    auth()
+    rest_lockdown(applied)
+
+
+def database(ref):
+    """sections 1 + 2; returns whether migration 001 was already applied before this run"""
     try: dbu = urllib.parse.urlparse(E["SUPABASE_DB_URL"]); dbu.port; dbu.hostname
     except ValueError:
         check(False, "SUPABASE_DB_URL is a valid connection URI (it is not: see the 'shape' step — e.g. square brackets "
                      "left from Supabase's [YOUR-PASSWORD] template, or a password with unencoded special characters)")
-        return
+        return False
     mode = "session pooler" if "pooler.supabase.com" in (dbu.hostname or "") and dbu.port == 5432 else \
            "transaction pooler" if dbu.port == 6543 else "direct" if (dbu.hostname or "").startswith("db.") else "other"
     R["db_mode"] = mode
@@ -81,7 +115,7 @@ def main():
     # 1 · database
     r = psql("-At", sql="select split_part(version(), ' on ', 1) || ' | role=' || current_user || ' | db=' || current_database()")
     check(r.returncode == 0, "database connection" + (f": {r.stdout.strip()}" if r.returncode == 0 else f" FAILED: {r.stderr.strip()[:200]}"))
-    if r.returncode: return
+    if r.returncode: return False
     before = inventory(); R["public_before"] = before
     applied = bool(before and "r:eva_schema" in before[0])
     print(f"INFO public schema before: {len(before[0].split(',')) if before and before[0] else 0} relations, "
@@ -98,6 +132,10 @@ def main():
     after = inventory()
     check(after == before, "rolled back: public schema identical before and after (nothing kept)")
 
+    return applied
+
+
+def auth():
     # 3 · auth
     st, _, b = http("GET", E["SUPABASE_URL"] + "/auth/v1/health", key=E["SUPABASE_ANON_KEY"])
     check(st == 200, f"Auth service healthy ({st})")
@@ -140,6 +178,8 @@ def main():
             st, _, b = http("GET", E["SUPABASE_URL"] + f"/auth/v1/admin/users/{uid}", key=E["SUPABASE_SERVICE_ROLE_KEY"], bearer=E["SUPABASE_SERVICE_ROLE_KEY"])
             check(st == 404, "test user gone")
 
+
+def rest_lockdown(applied):
     # 4 · REST lockdown (only meaningful once the migration is applied for real)
     if applied:
         st, _, _ = http("POST", E["SUPABASE_URL"] + "/rest/v1/rpc/eva_account", key=E["SUPABASE_ANON_KEY"], bearer=E["SUPABASE_ANON_KEY"],
