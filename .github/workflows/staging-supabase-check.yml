@@ -28,7 +28,34 @@ jobs:
       - name: Mask secret-derived values
         run: |
           for v in SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL; do [ -n "${!v}" ] && echo "::add-mask::${!v}"; done
-          p=$(python3 -c "import os,urllib.parse as u; print(u.urlparse(os.environ.get('SUPABASE_DB_URL','').strip()).password or '')"); [ -n "$p" ] && echo "::add-mask::$p"; true
+          # the DB password, whatever the URL looks like (no URL parsing that could fail): text between the first ':' after
+          # '://' and the last '@'
+          python3 - <<'PY'
+          import os
+          u = os.environ.get("SUPABASE_DB_URL", "").strip(); rest = u.split("://", 1)[-1]; cred = rest.rpartition("@")[0]
+          pw = cred.split(":", 1)[1] if ":" in cred else ""
+          for x in {pw, pw.strip("[]")} - {""}: print(f"::add-mask::{x}")
+          PY
+      - name: SUPABASE_DB_URL shape (yes/no facts only — never the value)
+        run: |
+          python3 - <<'PY'
+          import os, re
+          raw = os.environ.get("SUPABASE_DB_URL", ""); u = raw.strip()
+          scheme, _, rest = u.partition("://"); cred, at, hostpart = rest.rpartition("@")
+          hostport = hostpart.split("/", 1)[0].split("?", 1)[0]
+          facts = {
+            "scheme": scheme if scheme in ("postgres", "postgresql") else "unexpected",
+            "leading/trailing whitespace or newline": raw != u, "whitespace inside": bool(re.search(r"\s", u)),
+            "has '@' separator": bool(at), "'@' count": u.count("@"),
+            "square brackets in user:password part": "[" in cred or "]" in cred,
+            "square brackets around host": hostport.startswith("["),
+            "placeholder text left (YOUR-PASSWORD / YOUR_PASSWORD / [REF])": bool(re.search(r"YOUR[-_ ]?PASSWORD|\[REF\]|PROJECT[-_]REF", u, re.I)),
+            "host is a Supabase pooler": "pooler.supabase.com" in hostport, "host is db.<ref>.supabase.co": bool(re.match(r"\[?db\.[a-z0-9]+\.supabase\.co", hostport)),
+            "port": (hostport.rsplit(":", 1)[1] if ":" in hostport.lstrip("[").split("]")[-1] else "none"),
+            "user looks like postgres.<ref>": bool(re.match(r"postgres\.[a-z0-9]{20}:", cred + ":")),
+          }
+          for k, v in facts.items(): print(f"{k}: {v}")
+          PY
       - name: psql client
         run: which psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client); psql --version
       - name: Supabase check (database, rolled-back migration + business rules, Auth)

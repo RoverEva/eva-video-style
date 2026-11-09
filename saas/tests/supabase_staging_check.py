@@ -68,7 +68,11 @@ def main():
     ref = host.split(".")[0]
     R["project_ref"] = ref
     check(host.endswith(".supabase.co"), f"SUPABASE_URL is a Supabase project URL (ref {ref})")
-    dbu = urllib.parse.urlparse(E["SUPABASE_DB_URL"])
+    try: dbu = urllib.parse.urlparse(E["SUPABASE_DB_URL"]); dbu.port; dbu.hostname
+    except ValueError:
+        check(False, "SUPABASE_DB_URL is a valid connection URI (it is not: see the 'shape' step — e.g. square brackets "
+                     "left from Supabase's [YOUR-PASSWORD] template, or a password with unencoded special characters)")
+        return
     mode = "session pooler" if "pooler.supabase.com" in (dbu.hostname or "") and dbu.port == 5432 else \
            "transaction pooler" if dbu.port == 6543 else "direct" if (dbu.hostname or "").startswith("db.") else "other"
     R["db_mode"] = mode
@@ -85,7 +89,7 @@ def main():
 
     # 2 · migration safety (rolled back)
     t = time.time(); r = psql(file=ROOT / "saas/db/tests/tx_check.sql")
-    out = r.stdout + r.stderr; (ROOT / "tx_check.out").write_text(out)
+    out = r.stdout + r.stderr; Path("tx_check.out").write_text(out)
     rows = re.findall(r"^\s*\d+\s*\|\s*(PASS|FAIL)\s*\|\s*([^|]+?)\s*\|", out, re.M)
     for res, name in rows: print(f"{res} db: {name}")
     check(r.returncode == 0 and "TX CHECK: ALL PASS" in out and rows and all(x == "PASS" for x, _ in rows),
