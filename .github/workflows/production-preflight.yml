@@ -1,10 +1,15 @@
 # READ-ONLY check of the PRODUCTION credentials before release. Nothing is deployed, migrated, created or charged:
-#   Supabase: secrets/project, DB connection, migration 001 + 25 rules inside a ROLLED-BACK transaction, Auth sign-in
-#             links (one throwaway user, deleted) — the same check the deploy runs first
+#   Supabase (EVA_READ_ONLY=1): secrets/project, DB connection in a READ-ONLY session (selects only; migration testing
+#             stays in staging), Auth health/settings + admin API read — no test user, no writes
 #   Stripe TEST key, R2 (private bucket, exact gallery listing, no T19), Vercel token, Modal token (lists apps), Resend (optional)
-# Runs only by hand, only from feat/mvp-launch (the production environment's branch rule), after Eva approves the run.
+# Code: the reviewed release-candidate commit pinned below (feat/mvp-launch itself is unchanged apart from this file).
+# Starts when this file is pushed or by hand, only from feat/mvp-launch (the production environment's branch rule), after Eva approves the run.
 name: production · read-only preflight
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/production-preflight.yml]
 permissions: { contents: read }
 concurrency: { group: mvp-deploy, cancel-in-progress: false }   # never overlaps a deploy
 jobs:
@@ -28,14 +33,15 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       EVA_MAIL_FROM: ${{ secrets.EVA_MAIL_FROM }}
+      EVA_READ_ONLY: "1"
       SUPABASE_PROJECT_REF: kaojcgfcwjhnrxppwikz
       EVA_SITE_URL: https://eva-video-studio.vercel.app
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with: { persist-credentials: false }
+        with: { persist-credentials: false, ref: 36884b614d011a5826855e869213aea2dd23067c }   # feat/saas-accounts, read-only code
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
-      - name: Supabase (rolled back, nothing kept)
+      - name: Supabase (read-only)
         id: supa
         continue-on-error: true
         run: |
