@@ -85,11 +85,12 @@ jobs:
           c() { printf %s "$1" | tr -d '[:space:]'; }   # pasted secrets may carry newlines; keys never contain whitespace
           # known production origin goes to Modal BEFORE the first deploy (re-pinned below from Vercel's answer)
           SITE_PROD="https://eva-video-studio.vercel.app"
+          python saas/tools/promote_gallery.py --copy   # approved Gallery assets staging → gallery/v1/ (server-side copy, staging kept)
           modal secret create eva-r2 R2_ACCOUNT_ID="$(c "$R2_ACCOUNT_ID")" R2_ACCESS_KEY_ID="$(c "$R2_ACCESS_KEY_ID")" R2_SECRET_ACCESS_KEY="$(c "$R2_SECRET_ACCESS_KEY")" R2_BUCKET="$(c "$R2_BUCKET")" --force >/dev/null
           modal secret create eva-stripe STRIPE_SECRET_KEY="$(c "$STRIPE_SECRET_KEY")" --force >/dev/null
           modal secret create eva-supabase SUPABASE_URL="$(c "$SUPABASE_URL")" SUPABASE_SERVICE_ROLE_KEY="$(c "$SUPABASE_SERVICE_ROLE_KEY")" --force >/dev/null
           modal secret create eva-mail RESEND_API_KEY="${RESEND_API_KEY:-none}" EVA_MAIL_FROM="${EVA_MAIL_FROM:-none}" --force >/dev/null
-          modal secret create eva-config EVA_SITE_URL="$SITE_PROD" EVA_ALLOWED_ORIGINS="$SITE_PROD" --force >/dev/null
+          modal secret create eva-config EVA_SITE_URL="$SITE_PROD" EVA_ALLOWED_ORIGINS="$SITE_PROD" EVA_GALLERY_PREFIX=gallery/v1/ --force >/dev/null
           python saas/deploy/stripe_webhook.py placeholder
           if [ -n "$ANTHROPIC_API_KEY" ]; then modal secret create eva-anthropic ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" --force >/dev/null; echo "EVA_USE_LLM=1" >> $GITHUB_ENV; export EVA_USE_LLM=1; fi
           t=$(date +%s); modal deploy saas/modal_app.py; echo "first deploy: $(( $(date +%s) - t )) s"
@@ -109,7 +110,7 @@ jobs:
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
         run: |
           # exact origin reported by Vercel; Modal is redeployed below so every API container starts with it
-          modal secret create eva-config EVA_SITE_URL="$SITE_URL" EVA_ALLOWED_ORIGINS="$SITE_URL" --force >/dev/null
+          modal secret create eva-config EVA_SITE_URL="$SITE_URL" EVA_ALLOWED_ORIGINS="$SITE_URL" EVA_GALLERY_PREFIX=gallery/v1/ --force >/dev/null
           echo "API CORS origin: $SITE_URL"
           python saas/deploy/stripe_webhook.py sync "$API_URL"
           modal deploy saas/modal_app.py >/dev/null && echo "redeployed with final secrets"

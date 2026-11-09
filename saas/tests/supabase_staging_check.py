@@ -17,6 +17,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 E = {k: (os.environ.get(k) or "").strip() for k in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_DB_URL")}
+RO = os.environ.get("EVA_READ_ONLY") == "1"   # production preflight: no migration test, no test user, DB session read-only
+if RO: os.environ["PGOPTIONS"] = (os.environ.get("PGOPTIONS", "") + " -c default_transaction_read_only=on").strip()
 SITE = (os.environ.get("EVA_SITE_URL") or "https://eva-video-studio.vercel.app").rstrip("/")
 fails, R = [], {}
 
@@ -50,7 +52,9 @@ def jl(b):
 
 
 def psql(*args, sql=None, file=None):
-    cmd = ["psql", E["SUPABASE_DB_URL"], "-v", "ON_ERROR_STOP=1", "-X", *args] + (["-c", sql] if sql else []) + (["-f", str(file)] if file else [])
+    if RO and file: raise RuntimeError("read-only mode runs no SQL files")
+    ro = ["-q", "-c", "set session characteristics as transaction read only"] if RO else []
+    cmd = ["psql", E["SUPABASE_DB_URL"], "-v", "ON_ERROR_STOP=1", "-X", *args, *ro] + (["-c", sql] if sql else []) + (["-f", str(file)] if file else [])
     return subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
 
@@ -121,6 +125,10 @@ def database(ref):
     print(f"INFO public schema before: {len(before[0].split(',')) if before and before[0] else 0} relations, "
           f"{len(before[1].split(',')) if before and len(before) > 1 and before[1] else 0} functions; migration already applied: {applied}")
 
+    if RO:
+        r = psql("-At", sql="show transaction_read_only")
+        check(r.stdout.strip() == "on", "read-only mode: database session is read-only (no migration test — that ran in staging)")
+        return applied
     # 2 · migration safety (rolled back)
     t = time.time(); r = psql(file=ROOT / "saas/db/tests/tx_check.sql")
     out = r.stdout + r.stderr; Path("tx_check.out").write_text(out)
@@ -143,6 +151,11 @@ def auth():
     check(st == 200 and (s.get("external") or {}).get("email") is True, "email sign-in enabled")
     check(s.get("disable_signup") is False, f"new users can sign up (disable_signup={s.get('disable_signup')})")
     R["auth_settings"] = {k: s.get(k) for k in ("disable_signup", "mailer_autoconfirm", "sms_provider")}
+    if RO:
+        st, _, _ = http("GET", E["SUPABASE_URL"] + "/auth/v1/admin/users?page=1&per_page=1", key=E["SUPABASE_SERVICE_ROLE_KEY"], bearer=E["SUPABASE_SERVICE_ROLE_KEY"])
+        check(st == 200, f"service key accepted by the Auth admin API (read-only list, {st})")
+        st, _, _ = http("GET", E["SUPABASE_URL"] + "/auth/v1/user", key=E["SUPABASE_ANON_KEY"], bearer="not-a-token")
+        check(st in (401, 403), f"invalid token rejected ({st})"); return
     email = f"staging-check-{uuid.uuid4().hex[:10]}@example.com"; uid = None
     try:
         st, _, b = http("POST", E["SUPABASE_URL"] + "/auth/v1/admin/users", key=E["SUPABASE_SERVICE_ROLE_KEY"], bearer=E["SUPABASE_SERVICE_ROLE_KEY"],
@@ -193,5 +206,5 @@ if __name__ == "__main__":
     try: main()
     finally:
         R["fails"] = fails; Path("supabase_check.json").write_text(json.dumps(R, indent=1))
-        print("supabase staging check:", "ok" if not fails else f"{len(fails)} FAILED")
+        print("supabase read-only check:" if RO else "supabase staging check:", "ok" if not fails else f"{len(fails)} FAILED")
     sys.exit(1 if fails else 0)

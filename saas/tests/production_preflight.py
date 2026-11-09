@@ -58,19 +58,24 @@ def r2():
     if not ok: return
     check(selftest(), "R2: SigV4 signer self-test")
     host, B = f"{v['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com", v["R2_BUCKET"]
-    prefix = os.environ.get("EVA_GALLERY_PREFIX") or "staging/template-demos/gallery/"
     g = json.loads((ROOT / "saas/web/gallery.json").read_text())
-    want = {prefix + a[k]["key"] for t in g["templates"] for a in t["assets"].values() if a["status"] == "approved"
-            for k in ("thumb", "clip5", "full15")}
-    st, body = get(presign(host, f"/{B}", v["R2_ACCESS_KEY_ID"], v["R2_SECRET_ACCESS_KEY"], 300,
-                           query={"list-type": "2", "prefix": prefix, "max-keys": "1000"}))
-    keys = []
-    if st == 200:
-        ns = {"s": "http://s3.amazonaws.com/doc/2006-03-01/"}
-        keys = [c.find("s:Key", ns).text for c in ET.fromstring(body).findall("s:Contents", ns)]
+    rel = {a[k]["key"] for t in g["templates"] for a in t["assets"].values() if a["status"] == "approved" for k in ("thumb", "clip5", "full15")}
+    ns = {"s": "http://s3.amazonaws.com/doc/2006-03-01/"}
+    def ls(prefix):
+        st, body = get(presign(host, f"/{B}", v["R2_ACCESS_KEY_ID"], v["R2_SECRET_ACCESS_KEY"], 300,
+                               query={"list-type": "2", "prefix": prefix, "max-keys": "1000"}))
+        return st, [c.find("s:Key", ns).text for c in ET.fromstring(body).findall("s:Contents", ns)] if st == 200 else []
+    src = "staging/template-demos/gallery/"
+    st, keys = ls(src)
     check(st == 200, f"R2: production credentials can list the bucket (HTTP {st})")
-    check(set(keys) == want, f"R2: gallery prefix holds exactly the {len(want)} approved assets ({len(keys)} found)")
+    check(set(keys) == {src + k for k in rel}, f"R2: source {src} holds exactly the {len(rel)} approved assets ({len(keys)} found)")
     check(not any("/T19/" in k or Path(k).name.lower().startswith("t19") for k in keys), "R2: no T19 objects")
+    dst = "gallery/v1/"
+    st, dk = ls(dst)
+    if st == 200:
+        extra = set(dk) - {dst + k for k in rel}
+        check(not extra, f"R2: {dst} has nothing unexpected ({len(extra)} extra)")
+        print(f"INFO R2: {dst} holds {len(dk)}/{len(rel)} assets now — the approved deploy copies them (staging copies kept)")
     if keys:
         st, _ = get(f"https://{host}/{B}/{urllib.parse.quote(keys[0])}")
         check(st in (400, 401, 403), f"R2: bucket private — unsigned GET refused (HTTP {st})")
