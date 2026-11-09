@@ -27,7 +27,7 @@
       const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
       if (error) throw new Error(error.message); return "link-sent";
     },
-    async signOut() { if (window.EVA_LOCAL_AUTH) store.set("eva:auth", ""); else if (sb) await sb.auth.signOut(); location.reload(); },
+    async signOut() { if (window.EVA_LOCAL_AUTH) store.set("eva:auth", ""); else if (sb) { let r = null; try { r = await sb.auth.signOut(); } catch (e) {} if (!r || r.error) await sb.auth.signOut({ scope: "local" }); } location.reload(); },
   };
   async function api2(path, body, method) {
     const t = await auth.token(); if (!t) { const e = new Error("Please sign in."); e.status = 401; throw e; }

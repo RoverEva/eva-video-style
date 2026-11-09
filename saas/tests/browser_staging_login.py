@@ -39,9 +39,10 @@ try:
         check(pg.is_visible(".top nav .signout"), "session persists after reload")
         pg.goto(SITE + "/videos.html"); pg.wait_for_load_state("networkidle")
         check(pg.is_visible(".top nav .signout"), "session persists on another page (My Videos)")
-        pg.click(".top nav .signout"); pg.wait_for_load_state("networkidle"); pg.reload(); pg.wait_for_load_state("networkidle")
+        with pg.expect_navigation(timeout=15000): pg.click(".top nav .signout")   # sign out reloads the page
+        pg.wait_for_load_state("networkidle"); pg.reload(); pg.wait_for_load_state("networkidle")
         left = pg.evaluate("() => Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('auth-token')).length")
-        check(not pg.is_visible(".top nav .signout") and left == 0, "signed out: no session after reload")
+        check(not pg.is_visible(".top nav .signout") and left == 0, f"signed out: no session after reload (sign-out link {'still shown' if pg.is_visible('.top nav .signout') else 'gone'}, stored sessions {left})")
         check(not errs, f"no page errors {errs[:2]}")
         b.close()
 finally:
