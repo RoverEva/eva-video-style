@@ -106,6 +106,27 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
 | 11 | Explicit approval from Eva | **required** |
 | — | Not yet verified on real infrastructure (needs the deploy): Supabase Auth emails, Stripe sandbox webhook to the real API, R2 signed links from the real API, Vercel build with Supabase config | deploy run |
 
+## Supabase staging — VERIFIED 2026-11-08 (staging-supabase-check run 42551199971, attempt 3)
+Secrets, DB connection (PostgreSQL 17.11, session pooler), migration 001 twice + 25 credits / free-preview / My Videos /
+lockdown rules in a rolled-back transaction (nothing kept), Auth sign-in links + redirects + token validation: all PASS.
+The deploy now runs the same check on the PRODUCTION secrets as its first Supabase step and stops before anything
+changes if one is wrong.
+
+## Remaining before production (Eva)
+1. Gallery: `upload_gallery.sh --upload`, then `python3 verify_gallery.py` (not run yet: no gallery_check.html).
+2. Production secrets: same corrected SUPABASE_URL / SUPABASE_DB_URL as staging (checked automatically by the deploy preflight).
+3. SMTP for sign-in emails (Supabase built-in sender allows only a few emails per hour):
+   - needs a domain you own (a *.vercel.app address cannot be verified for sending);
+   - email provider (e.g. Resend): add the domain, publish its SPF + DKIM DNS records, create an SMTP key;
+   - Supabase → Authentication → Emails → SMTP Settings: host/port/user/password from the provider (Resend:
+     smtp.resend.com, 465, user `resend`, password = API key), sender e.g. `no-reply@<domain>`, name "EVA Video Studio";
+   - Supabase → Authentication → Rate limits: raise "emails per hour" to what you expect.
+4. Approval to release = fast-forward `feat/mvp-launch` to `feat/saas-accounts`; the deploy then waits for your approval
+   in the `production` environment and runs: tests → Supabase preflight → migration 001 (permanent, additive) → Modal →
+   Vercel → Stripe webhook → R2 checks → live account test (sign-in, 3 free previews, credits, HD, My Videos, Stripe TEST
+   Checkout session). Then one manual sandbox top-up with card 4242 4242 4242 4242 → HD export → download.
+5. T17 16:9 stays pending.
+
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.
 - Supabase sign-in (email link) + Postgres (`saas/db/001_accounts_credits.sql`): atomic functions, RLS on, browser roles revoked.

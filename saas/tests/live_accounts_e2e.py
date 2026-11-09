@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Release test of the account features against the DEPLOYED stack (Modal API + workers, R2, Supabase, Stripe TEST mode).
-Run by the deploy workflow after an approved deploy; uses throwaway test users (e2e+<run>@eva-video-studio.invalid) that
+Run by the deploy workflow after an approved deploy; uses throwaway test users (e2e-<run>@example.com) that
 it deletes at the end. No real customer data is read or changed.
 
     python3 saas/tests/live_accounts_e2e.py API_URL SITE_URL VIDEO OUT.json
@@ -27,7 +27,7 @@ def check(name, cond, detail=None):
 
 
 def signin(tag):
-    email, pw = f"e2e+{RUN}-{tag}@eva-video-studio.invalid", secrets.token_urlsafe(18)
+    email, pw = f"e2e-{RUN}-{tag}@example.com", secrets.token_urlsafe(18)
     r = requests.post(f"{SB}/auth/v1/admin/users", headers={"apikey": SVC, "Authorization": f"Bearer {SVC}"}, json={"email": email, "password": pw, "email_confirm": True}, timeout=30)
     r.raise_for_status(); USERS.append(r.json()["id"])
     t = requests.post(f"{SB}/auth/v1/token?grant_type=password", headers={"apikey": ANON}, json={"email": email, "password": pw}, timeout=30).json()["access_token"]

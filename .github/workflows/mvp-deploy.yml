@@ -63,6 +63,14 @@ jobs:
           case "$STRIPE_SECRET_KEY" in sk_test_*|rk_test_*) echo "stripe_test=1" >> $GITHUB_OUTPUT;; *) echo "stripe_test=0" >> $GITHUB_OUTPUT;; esac
           for v in SUPABASE_URL SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY SUPABASE_DB_URL MODAL_TOKEN_ID MODAL_TOKEN_SECRET R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY STRIPE_SECRET_KEY VERCEL_TOKEN RESEND_API_KEY ANTHROPIC_API_KEY; do
             [ -n "${!v}" ] && echo "secret $v: set" || echo "secret $v: MISSING"; done
+      - name: Supabase preflight on the PRODUCTION secrets — stops the deploy before anything changes
+        # same check as staging-supabase-check.yml: secrets shape + project, DB connection, migration + 25 rules in a
+        # ROLLED-BACK transaction, Auth sign-in links (one throwaway user, deleted). Nothing is kept.
+        if: steps.have.outputs.modal == '1'
+        env: { SUPABASE_PROJECT_REF: kaojcgfcwjhnrxppwikz, EVA_SITE_URL: "https://eva-video-studio.vercel.app" }
+        run: |
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          python3 saas/tests/supabase_staging_check.py
       - name: Database migration (Supabase Postgres, additive + idempotent, one transaction)
         if: steps.have.outputs.modal == '1'
         run: |
