@@ -61,7 +61,7 @@ with sync_playwright() as p:
         el = pg.query_selector("#tplChips"); el.scroll_into_view_if_needed(); el.screenshot(path=str(out / f"gallery_{ar.replace(':', 'x')}.png"))
     urls = pg.evaluate("async () => { const j = await (await fetch((window.EVA_API||'') + '/api/v2/gallery')).json(); return j.templates.flatMap(t => Object.values(t.assets).flatMap(a => Object.values(a).map(x => x.url))) }")
     codes = [pg.request.get(u).status for u in urls]
-    check(all(c == 200 for c in codes) and len(codes) == 27, f"all {len(codes)} signed gallery links (27 approved) answer 200")
+    check(all(c == 200 for c in codes) and len(codes) == 3 * sum(1 for t in G["templates"] for a in t["assets"].values() if a["status"] == "approved"), f"all {len(codes)} signed gallery links (every approved asset) answer 200")
     # phone width
     m = b.new_page(viewport={"width": 390, "height": 844}); m.on("pageerror", lambda e: errors.append(str(e)))
     m.goto(site + "/"); m.wait_for_selector(".tplcard.has-media img", timeout=15000)

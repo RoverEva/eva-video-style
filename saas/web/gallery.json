@@ -126,8 +126,7 @@
    "name": "Sci-Fi Network",
    "assets": {
     "16:9": {
-     "status": "pending_review",
-     "note": "source flagged in manifest (made before the T17 face-safe headline fix); reviewed 2026-11-08 at 0.5 s + 0.1 s close-ups: no headline crosses her face \u2014 awaiting Eva's approval",
+     "status": "approved",
      "source": "T17_science-network_16x9_15s_v1_EN.mp4",
      "source_sha256": "edc3c2e0fcebddbd243a86110f3a5452c59b0ef96ca105d8036c9d5961133c56",
      "window_s": [
@@ -149,7 +148,8 @@
       "key": "T17/t17_169_15s.mp4",
       "bytes": 1249716,
       "sha256": "4930543f4650eb8b967b1bc537cf2741df587476831b43be0ceaf23140a0336e"
-     }
+     },
+     "approved": "Eva, 2026-11-08 (visual review: no headline crosses the face)"
     },
     "9:16": {
      "status": "approved",
