@@ -49,14 +49,18 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
 - New skins through the real pipeline, 16:9 + 9:16: T23 34 PASS; T21 33 PASS + 1 WARN (RENDER_FREEZE 1.5 s, T21's slow
   motion); T02 34 PASS (16:9) / 33 + 1 WARN (9:16). 0 FAIL.
 
-## Template Gallery (2026-11-08, staging — not on production)
+## Template Gallery — COMPLETE ✅ (2026-11-08, R2 staging; not on production)
+- **Verified by Eva on R2 staging:** all 30 approved assets (5 templates × 2 aspects × WebP + 5 s + 15 s, 8.94 MB)
+  uploaded with `upload_gallery.sh` (boto3), `verify_gallery.py` all PASS: exact listing, bucket private, every object
+  HTTP 200 via signed link with matching sha256 + Content-Type, playback in both aspects. T17 16:9 approved by Eva
+  (existing demo, not re-rendered). T19 excluded (not selectable, no objects). No further Gallery work.
 - Sources: `~/Documents/ChatGPT/Video/template-demos/` (access verified; all 16 launch-template demos match `manifest.json`
   sha256; originals only read, unchanged). EN 16:9 v1-release + 9:16 v1 for T23, T21, T02, T01; T17 9:16 = v2-face-safe.
   Not used: CN-EN duplicates, superseded files, T19, excluded real-presenter demos (not in the folder).
 - `saas/tools/template_previews.py` (FFmpeg only, ~7 s per demo): busiest 5 s window (frame-difference motion, opening
   fade skipped), muted 5 s clip, edge-density thumbnail frame that is not mid-transition (WebP q80), web-optimised 15 s
   preview. 9:16 360×640 / 540×960, 16:9 640×360 / 960×540. Per asset set: WebP 13–36 KB, 5 s 70–222 KB, 15 s 0.28–1.27 MB.
-- **T17 16:9 held back** (`status: pending_review`): its source is flagged in the manifest (made before the face-safe
+- (history) **T17 16:9 was held back** (`status: pending_review`, since approved): its source is flagged in the manifest (made before the face-safe
   headline fix). Reviewed every 0.5 s plus 0.1 s close-ups at the risky beats: no headline or caption crosses her face. Not
   uploaded and never signed until Eva approves. In 16:9 the T17 card shows "16:9 preview coming soon" (still selectable);
   a 9:16 demo is never shown as a 16:9 preview.
@@ -93,12 +97,12 @@ in staging; ≈ $0.002–0.005 per new plan if enabled). Stripe's fee on a $9.99
 ## Production release checklist
 | # | Item | State |
 |---|---|---|
-| 1 | Supabase project; `production` secrets SUPABASE_URL / ANON_KEY / SERVICE_ROLE_KEY / DB_URL (Session pooler) | **Eva — blocker** |
-| 2 | Supabase Auth: Site URL + redirect `https://eva-video-studio.vercel.app/**`, email (magic link) on | **Eva — blocker** |
+| 1 | `production` secrets SUPABASE_URL / ANON_KEY / SERVICE_ROLE_KEY / DB_URL (Session pooler), same corrected format as staging | **Eva — check via production-preflight** |
+| 2 | Supabase Auth: Site URL + redirects | **done ✅** (verified in staging check) |
 | 3 | Custom SMTP (built-in Supabase email is a few per hour) | before public launch |
-| 4 | Gallery on R2 staging uploaded + `verify_gallery.py` OK | **Eva — pending** |
+| 4 | Gallery on R2 staging uploaded + `verify_gallery.py` OK (30/30) | **done ✅** |
 | 5 | Gallery prefix for production: keep `staging/template-demos/gallery/` or copy to e.g. `gallery/v1/` and add EVA_GALLERY_PREFIX to `eva-config` (deploy currently rewrites eva-config without it → default = staging prefix) | **decision** |
-| 6 | T17 16:9 Gallery assets: approve (status → approved, re-run uploader + verifier) or keep "coming soon" | **Eva — decision** |
+| 6 | T17 16:9 Gallery assets approved | **done ✅** |
 | 7 | Stripe stays in TEST mode (live keys refused unless EVA_ALLOW_LIVE=1); deploy's live account test creates a TEST top-up session; Eva does one manual sandbox top-up (4242…) → HD export → download | in deploy run |
 | 8 | DB migration `001_accounts_credits.sql` (additive, idempotent, one transaction) | in deploy run |
 | 9 | QA in report mode (`EVA_QA=report`, `EVA_QA_GATE=report`) | set in image |
@@ -113,19 +117,27 @@ The deploy now runs the same check on the PRODUCTION secrets as its first Supaba
 changes if one is wrong.
 
 ## Remaining before production (Eva)
-1. Gallery: `upload_gallery.sh --upload`, then `python3 verify_gallery.py` (not run yet: no gallery_check.html).
-2. Production secrets: same corrected SUPABASE_URL / SUPABASE_DB_URL as staging (checked automatically by the deploy preflight).
+1. ~~Gallery~~ **complete** (30/30 verified on R2 staging).
+2. Production secrets — run the READ-ONLY `production-preflight.yml` (needs your OK to add that one workflow file to
+   `feat/mvp-launch`, then one run approval). Checks, changing nothing: Supabase (same as the staging check, rolled
+   back), Stripe key is TEST + can read Checkout/webhooks, R2 bucket private + exact 30-asset gallery listing + no T19,
+   Vercel token, Modal token, Resend (optional). Without it, the deploy's own Supabase preflight still stops before any change.
 3. SMTP for sign-in emails (Supabase built-in sender allows only a few emails per hour):
    - needs a domain you own (a *.vercel.app address cannot be verified for sending);
-   - email provider (e.g. Resend): add the domain, publish its SPF + DKIM DNS records, create an SMTP key;
-   - Supabase → Authentication → Emails → SMTP Settings: host/port/user/password from the provider (Resend:
-     smtp.resend.com, 465, user `resend`, password = API key), sender e.g. `no-reply@<domain>`, name "EVA Video Studio";
-   - Supabase → Authentication → Rate limits: raise "emails per hour" to what you expect.
-4. Approval to release = fast-forward `feat/mvp-launch` to `feat/saas-accounts`; the deploy then waits for your approval
+   - email provider (e.g. Resend): add the domain, publish its SPF + DKIM (+ optional DMARC) DNS records, create an API key;
+   - Supabase → Authentication → Emails → SMTP Settings: host `smtp.resend.com`, port 465, user `resend`,
+     password = API key, sender `no-reply@<domain>`, name "EVA Video Studio";
+   - Supabase → Authentication → Rate limits: raise "emails per hour" to what you expect;
+   - optional: GitHub `production` secrets `RESEND_API_KEY` + `EVA_MAIL_FROM` → the preflight checks the domain is verified.
+4. Stripe sandbox end-to-end: automatic in the deploy (live account test creates a TEST Checkout session and verifies
+   it with Stripe; webhook registered against the real API). Then one manual top-up with card 4242 4242 4242 4242 →
+   HD export → download. Live keys stay refused (no EVA_ALLOW_LIVE).
+5. Decision: production Gallery prefix — keep `staging/template-demos/gallery/` (works as is) or copy to `gallery/v1/`
+   and set EVA_GALLERY_PREFIX.
+6. Approval to release = fast-forward `feat/mvp-launch` to `feat/saas-accounts`; the deploy then waits for your approval
    in the `production` environment and runs: tests → Supabase preflight → migration 001 (permanent, additive) → Modal →
    Vercel → Stripe webhook → R2 checks → live account test (sign-in, 3 free previews, credits, HD, My Videos, Stripe TEST
-   Checkout session). Then one manual sandbox top-up with card 4242 4242 4242 4242 → HD export → download.
-5. T17 16:9 stays pending.
+   Checkout session). Rollback: re-point `feat/mvp-launch` to 7428bb0 and re-run the deploy (migration 001 is additive).
 
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.
@@ -176,7 +188,7 @@ changes if one is wrong.
    `https://eva-video-studio.vercel.app/**`. Email provider on (magic link). Built-in email is rate-limited (few per hour):
    fine for testing; custom SMTP (e.g. Resend + your domain) before public launch.
 3. ~~Staging Modal check~~ done. ~~3 QA face tests~~ fixed (40/40).
-4. ~~Demo MP4s~~ done → Gallery assets built. Upload: run `_gallery/upload_gallery.sh --upload` in Terminal; approve or not T17 16:9.
+4. ~~Demo MP4s~~ done → ~~Gallery~~ complete (30/30 on R2 staging, T17 16:9 approved).
 5. T19 decision: ship later with matte + optional B-roll upload, or keep as gallery-only for launch.
 6. Optional: `ANTHROPIC_API_KEY` (Modal secret `eva-anthropic`, `EVA_USE_LLM=1`) for better card text.
 
