@@ -53,7 +53,14 @@ def main():
     # VERCEL_PROJECT_ID (or --existing-only): reuse an existing project, never create one (staging)
     pid = os.environ.get("VERCEL_PROJECT_ID", "").strip()
     if pid or "--existing-only" in sys.argv:
-        proj = call("GET", f"/v9/projects/{pid or name}")   # exits with Vercel's exact error (e.g. 403 forbidden / 404 not found)
+        try: proj = call("GET", f"/v9/projects/{pid or name}")   # Vercel's exact error (e.g. 403 forbidden / 404 not found)
+        except SystemExit as e:
+            print(e)   # diagnostics: which projects can this token see? (names only)
+            for label, params in (("with VERCEL_SCOPE", q()), ("without scope (token's own account)", {})):
+                r = requests.get(API + "/v9/projects", headers=H, params={**params, "limit": 20}, timeout=30)
+                names = [x.get("name") for x in r.json().get("projects", [])] if r.ok else (r.json().get("error", {}).get("message") if r.content else "")
+                print(f"projects visible {label}: HTTP {r.status_code} {names}")
+            raise SystemExit("staging project not reachable with this token — not deploying")
         if proj.get("name") != name: raise SystemExit(f"project {pid} is '{proj.get('name')}', expected '{name}' — not deploying")
         print("using existing project", proj["name"], proj["id"])
     else:
