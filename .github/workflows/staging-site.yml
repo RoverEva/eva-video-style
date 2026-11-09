@@ -1,0 +1,39 @@
+# STAGING site for sign-in testing: separate Vercel project "eva-video-studio-staging" (production project untouched),
+# same site code as feat/saas-accounts, real Supabase Auth (magic link via Custom SMTP), no API backend (EVA_API empty:
+# rendering/payments are off here — login, redirect, session and logout only). Environment "staging" only.
+# Needs in GitHub env "staging": VERCEL_TOKEN (+ VERCEL_SCOPE if a team), SUPABASE_URL, SUPABASE_ANON_KEY.
+# Supabase → Auth → URL configuration → Redirect URLs: add https://eva-video-studio-staging.vercel.app/**
+name: staging · site (Vercel staging project)
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [feat/saas-accounts]
+    paths: [site/**, .github/workflows/staging-site.yml]
+permissions: { contents: read }
+jobs:
+  site:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/saas-accounts'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 10
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - name: Staging config
+        run: |
+          [ -n "$VERCEL_TOKEN" ] || { echo "::error::VERCEL_TOKEN is not in the staging environment"; exit 1; }
+          c() { printf %s "$1" | tr -d '[:space:]'; }
+          printf 'window.EVA_API = "";\nwindow.EVA_STAGING = true;\nwindow.EVA_SUPABASE_URL = "%s";\nwindow.EVA_SUPABASE_ANON = "%s";\n' "$(c "$SUPABASE_URL")" "$(c "$SUPABASE_ANON_KEY")" > site/config.js
+          # keep search engines out of staging
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("site/vercel.json"); j = json.loads(p.read_text()) if p.exists() else {}
+          j.setdefault("headers", []).append({"source": "/(.*)", "headers": [{"key": "X-Robots-Tag", "value": "noindex, nofollow"}]})
+          p.write_text(json.dumps(j, indent=1))
+          PY
+      - run: pip install -q "requests~=2.32" && python saas/deploy/vercel_deploy.py site eva-video-studio-staging
