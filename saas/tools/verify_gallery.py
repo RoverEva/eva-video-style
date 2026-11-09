@@ -6,7 +6,7 @@
     python3 verify_gallery.py
 
 Checks (exit 1 on any failure):
-  1. listing of <prefix> holds exactly the approved keys of gallery.json — nothing pending (T17 16:9), no T19, no extras
+  1. listing of <prefix> holds exactly the approved keys of gallery.json — nothing non-approved, no T19, no extras
   2. the bucket is private: an unsigned GET of an approved object is refused
   3. every approved object, fetched through a 15-minute signed link (the same SigV4 query signing the API uses), is
      byte-identical to gallery.json (sha256 + size) and has the right Content-Type (image/webp, video/mp4)
@@ -87,7 +87,11 @@ def main():
         keys = [c.find("s:Key", ns).text for c in ET.fromstring(body).findall("s:Contents", ns)]
     check(st == 200, f"list {prefix} (HTTP {st})")
     check(set(keys) == set(want), f"exactly the {len(want)} approved keys on R2 ({len(keys)} found; missing {sorted(set(want) - set(keys))[:3]}, extra {sorted(set(keys) - set(want))[:3]})")
-    check(not any("t17_169" in k or "/T19/" in k for k in keys), "no pending T17 16:9 and no T19 objects")
+    # derived from gallery.json (not hard-coded): nothing of a non-approved asset, and nothing of T19 (not selectable)
+    pending = {prefix + a[k]["key"] for t in g["templates"] for a in t["assets"].values() if a["status"] != "approved"
+               for k in ("thumb", "clip5", "full15")}
+    check(not any(k in pending for k in keys), f"no objects of non-approved assets ({len(pending)} pending in gallery.json)")
+    check(not any(k.startswith(prefix + "T19/") or Path(k).name.lower().startswith("t19") for k in keys), "no T19 objects (T19 stays excluded)")
     # 2 · private
     any_key = next(iter(want))
     st, _, _ = fetch(f"https://{host}/{B}/{urllib.parse.quote(any_key)}")
