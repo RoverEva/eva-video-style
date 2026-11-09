@@ -43,11 +43,12 @@ def main():
         t = requests.get(API + "/v2/teams", headers=H, timeout=30)
         teams = [x.get("slug") for x in (t.json().get("teams", []) if t.ok else [])]
         print(f"/v2/teams: HTTP {t.status_code} {teams}")
-        if not (t.ok and (SCOPE or len(teams) == 1)):
+        if not (SCOPE or (t.ok and len(teams) == 1)):   # team-scoped tokens may not list teams: trust VERCEL_SCOPE
             raise SystemExit("Vercel did not accept VERCEL_TOKEN for a personal account. Create a new token (Account Settings → Tokens) "
                              "with scope = your account, or add secret VERCEL_SCOPE = your team slug.")
         if not SCOPE:
             globals()["SCOPE"] = teams[0]; print("using team", SCOPE)
+    if SCOPE: print("using scope", SCOPE)
     # 2. project
     try: proj = call("GET", f"/v9/projects/{name}")
     except SystemExit as e:
