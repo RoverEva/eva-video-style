@@ -50,10 +50,17 @@ def main():
             globals()["SCOPE"] = teams[0]; print("using team", SCOPE)
     if SCOPE: print("using scope", SCOPE)
     # 2. project
-    try: proj = call("GET", f"/v9/projects/{name}")
-    except SystemExit as e:
-        if "404" not in str(e): raise
-        proj = call("POST", "/v10/projects", json={"name": name, "framework": None}); print("created project", name)
+    # VERCEL_PROJECT_ID (or --existing-only): reuse an existing project, never create one (staging)
+    pid = os.environ.get("VERCEL_PROJECT_ID", "").strip()
+    if pid or "--existing-only" in sys.argv:
+        proj = call("GET", f"/v9/projects/{pid or name}")   # exits with Vercel's exact error (e.g. 403 forbidden / 404 not found)
+        if proj.get("name") != name: raise SystemExit(f"project {pid} is '{proj.get('name')}', expected '{name}' — not deploying")
+        print("using existing project", proj["name"], proj["id"])
+    else:
+        try: proj = call("GET", f"/v9/projects/{name}")
+        except SystemExit as e:
+            if "404" not in str(e): raise
+            proj = call("POST", "/v10/projects", json={"name": name, "framework": None}); print("created project", name)
     # 3. files
     files = []
     for p in sorted(x for x in site.rglob("*") if x.is_file() and ".vercel" not in x.parts):
