@@ -83,7 +83,14 @@ def main():
         pr = json.loads(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "stream=codec_type,width,height:format=duration", "-of", "json", f], capture_output=True, text=True).stdout)
     vs = next(x for x in pr["streams"] if x["codec_type"] == "video")
     check("HD 1080x1920 full length, downloaded", (vs["width"], vs["height"]) == (1080, 1920) and float(pr["format"]["duration"]) > 9.5, [vs["width"], vs["height"], pr["format"]["duration"]])
-    C, _ = signin("c"); projs = [upload(C, f"c{i}")["project"] for i in range(6)]
+    # paid preview that fails → its credits are refunded (the last free preview is held by a running preview, then cancelled)
+    hold = call(A, "POST", f"/projects/{upload(A, 'e2e-hold')['project']}/previews", json=OPTS).json()["version"]
+    c0 = call(A, "GET", "/me").json()["credits"]
+    r = call(A, "POST", f"/projects/{upload(A, 'e2e-fail paid')['project']}/previews", json=OPTS).json()
+    c1 = call(A, "GET", "/me").json()["credits"]; v, _, _ = wait(A, r["version"]); call(A, "POST", f"/versions/{hold}/cancel")
+    check("failed paid preview: 13 credits charged, then refunded", c0 - c1 == 13 and v["status"] == "failed" and call(A, "GET", "/me").json()["credits"] == c0,
+          {"charged": c0 - c1, "status": v["status"]})
+    C, _ = signin("c"); projs =[upload(C, f"c{i}")["project"] for i in range(6)]
     with ThreadPoolExecutor(6) as ex: res = list(ex.map(lambda pid: call(C, "POST", f"/projects/{pid}/previews", json=OPTS), projs))
     started = [x.json()["version"] for x in res if x.status_code == 200]
     for vid in started: call(C, "POST", f"/versions/{vid}/cancel")

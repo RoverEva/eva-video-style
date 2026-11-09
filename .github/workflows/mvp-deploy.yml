@@ -151,6 +151,8 @@ jobs:
           # 1. account features on the deployed stack (throwaway test users, deleted afterwards): lifetime free previews,
           #    real Modal renders, cached ASR, privacy, failure release, Stripe TEST top-up session, HD export, concurrency
           python saas/tests/live_accounts_e2e.py "$API_URL" "$SITE_URL" $V e2e/accounts.json
+          # 1b. Template Gallery on the live site (gallery/v1/): cards, 5 s + 15 s demos both aspects, T19 absent, signed links
+          python saas/tests/browser_gallery.py "$SITE_URL" e2e/gallery
           # 2. security + privacy + rejection probes against the live API and bucket
           python saas/tests/live_checks.py "$API_URL" e2e/purchase/summary.json e2e/checks.json
       - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
