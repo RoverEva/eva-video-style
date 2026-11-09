@@ -54,7 +54,10 @@
     if (!nav.querySelector(".mv")) nav.append(el("a", { href: "videos.html", class: "mv", text: "My Videos" }));
     let acct = nav.querySelector(".acct"); if (!acct) { acct = el("span", { class: "acct" }); nav.append(acct); }
     try { ME = await api2("/me"); acct.textContent = `${ME.credits} credits · ${ME.free_left} free`; acct.title = (await auth.email()) || ""; }
-    catch (e) { ME = null; acct.replaceChildren(el("a", { href: "videos.html", text: "Sign in" })); }
+    catch (e) { ME = null; const em = await auth.email(); if (em) acct.textContent = em; else acct.replaceChildren(el("a", { href: "videos.html", text: "Sign in" })); }
+    let so = nav.querySelector(".signout");
+    if (await auth.token()) { if (!so) { so = el("a", { href: "#", class: "signout", text: "Sign out" }); so.onclick = e => { e.preventDefault(); auth.signOut(); }; nav.append(so); } }
+    else if (so) so.remove();
     return ME;
   }
 

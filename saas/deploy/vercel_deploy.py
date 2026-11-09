@@ -84,6 +84,10 @@ def main():
         time.sleep(4); d = call("GET", f"/v13/deployments/{d['id']}")
     if d.get("readyState") != "READY": raise SystemExit(f"deployment {d.get('id')} ended {d.get('readyState')}")
     doms = [x["name"] for x in call("GET", f"/v9/projects/{proj['id']}/domains").get("domains", [])]
+    want = os.environ.get("VERCEL_DOMAIN", "").strip()   # staging: give the existing project its expected *.vercel.app name
+    if want and want not in doms:
+        call("POST", f"/v10/projects/{proj['id']}/domains", json={"name": want}); print("added domain", want); doms.insert(0, want)
+    if want: doms.sort(key=lambda x: x != want)
     dom = next((x for x in doms if x.endswith(".vercel.app")), doms[0] if doms else d.get("alias", [d["url"]])[0])
     print("deployment", d["url"], "READY; production domain:", dom)
     if os.environ.get("GITHUB_OUTPUT"):

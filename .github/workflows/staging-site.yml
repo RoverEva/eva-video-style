@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
   push:
     branches: [feat/saas-accounts]
-    paths: [site/**, .github/workflows/staging-site.yml]
+    paths: [site/**, saas/deploy/vercel_deploy.py, saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
 permissions: { contents: read }
 jobs:
   site:
@@ -22,6 +22,8 @@ jobs:
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}   # optional; else found by name
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}   # test step only (throwaway user)
+      VERCEL_DOMAIN: eva-video-studio-staging.vercel.app
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with: { persist-credentials: false }
@@ -37,4 +39,10 @@ jobs:
           j.setdefault("headers", []).append({"source": "/(.*)", "headers": [{"key": "X-Robots-Tag", "value": "noindex, nofollow"}]})
           p.write_text(json.dumps(j, indent=1))
           PY
-      - run: pip install -q "requests~=2.32" && python saas/deploy/vercel_deploy.py site eva-video-studio-staging --existing-only
+      - id: deploy
+        run: pip install -q "requests~=2.32" && python saas/deploy/vercel_deploy.py site eva-video-studio-staging --existing-only
+      - name: Browser check — magic link → staging, session persists, sign out
+        env: { SITE: "${{ steps.deploy.outputs.site }}" }
+        run: |
+          pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
+          python saas/tests/browser_staging_login.py
