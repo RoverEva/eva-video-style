@@ -36,7 +36,19 @@ def probe(path):
     return out
 
 
+BATCH = 40   # frames per ffmpeg select expression: the worker image's ffmpeg rejects much longer ones (seen at 116 frames)
+
+
 def read_frames(path, frame_numbers, width=None, gray=False, fps=None):
+    """decode the given frame numbers (0-based, sorted or not); one ffmpeg pass per BATCH frames.
+    Returns {n: HxWx3 BGR uint8 (or HxW gray)}."""
+    want = sorted(set(int(n) for n in frame_numbers if n >= 0))
+    out = {}
+    for i in range(0, len(want), BATCH): out.update(_read_frames(path, want[i:i + BATCH], width, gray, fps))
+    return out
+
+
+def _read_frames(path, frame_numbers, width=None, gray=False, fps=None):
     """decode the given frame numbers (0-based, sorted or not) in ONE pass. Returns {n: HxWx3 BGR uint8 (or HxW gray)}.
     fps: resample to this constant rate first (frame n = time n/fps), as scripts/extract_frames.sh does; needed for
     variable-frame-rate phone uploads, where frame numbers and times do not line up."""
@@ -56,6 +68,7 @@ def read_frames(path, frame_numbers, width=None, gray=False, fps=None):
                             "-f", "rawvideo", "-pix_fmt", pix, "-"], capture_output=True)
     finally:
         os.unlink(script)
+    if r.returncode and not r.stdout: raise RuntimeError("frame decode failed: " + r.stderr.decode(errors="replace")[-200:])
     sz = W * H * ch; buf = r.stdout; got = len(buf) // sz
     frames = {}
     for i, n in enumerate(want[:got]):
@@ -122,6 +135,13 @@ def audio_pcm(path, rate=16000):
 
 
 def render_ass_alpha(ass, size, frame_numbers, fps=30, fontsdir=None):
+    """captions-only render, BATCH frames per ffmpeg pass (see read_frames): {n: HxW uint8 alpha mask}"""
+    want = sorted(set(int(n) for n in frame_numbers if n >= 0)); out = {}
+    for i in range(0, len(want), BATCH): out.update(_render_ass_alpha(ass, size, want[i:i + BATCH], fps, fontsdir))
+    return out
+
+
+def _render_ass_alpha(ass, size, frame_numbers, fps=30, fontsdir=None):
     """render ONLY the captions (.ass) with libass on a transparent canvas: {n: HxW uint8 alpha mask}.
     Exact pixels of the burned subtitles (same renderer as scripts/assemble.sh), no OCR."""
     want = sorted(set(int(n) for n in frame_numbers if n >= 0))

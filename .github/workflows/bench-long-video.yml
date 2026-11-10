@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches: [feat/long-video]
-    paths: [.github/workflows/bench-long-video.yml]
+    paths: [.github/workflows/bench-long-video.yml, qa/media.py]
 permissions: { contents: read }
 jobs:
   runner:
@@ -38,7 +38,8 @@ jobs:
           run() { docker run --rm --cpus 4 -e EVA_MAX_SECONDS=60.5 -v /tmp/in:/in:ro -v /tmp/res:/res eva-worker \
                     python3 saas/tests/image_qa_check.py /in/$1.mp4 /res/$3 --aspect 9:16 --templates $2 > /tmp/res/$3.log 2>&1 || fail=1
                   sudo cp /tmp/res/$3/summary.json /tmp/res/$3.json 2>/dev/null || echo "{}" > /tmp/res/$3.json; echo "$3 done (exit $fail)"; }
-          # 30 s + 45 s measured in run 42737176758 (kept in the report); this run: the two 60 s cases
+          # 30 s measured in run 42737176758; 45 s re-run here to verify the QA batching fix (its HD QA warned there)
+          run s45 T17,T23 s45_T17-T23
           run s60 T17     s60_T17
           run s60 T17,T23 s60_T17-T23
           exit $fail
