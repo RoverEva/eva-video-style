@@ -29,17 +29,16 @@ jobs:
           ff() { docker run --rm -v $PWD:/w -v /tmp/in:/tmp/in -w /w --entrypoint ffmpeg eva-worker "$@"; }
           ff -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 \
              -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[v0];[1:v]fps=30,scale=720:1280,setsar=1[v1];[2:v]fps=30,scale=720:1280,setsar=1[v2];[3:v]fps=30,scale=720:1280,setsar=1[v3];[4:v]fps=30,scale=720:1280,setsar=1[v4];[5:v]fps=30,scale=720:1280,setsar=1[v5];[v0][0:a][v1][1:a][v2][2:a][v3][3:a][v4][4:a][v5][5:a]concat=n=6:v=1:a=1[v][a]" \
-             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart /tmp/in/s60.mp4
-          for d in 30 45; do ff -loglevel error -y -i /tmp/in/s60.mp4 -t $d -c copy -movflags +faststart /tmp/in/s$d.mp4; done
-          ls -la /tmp/in
+             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart /tmp/in/s60full.mp4
+          for d in 30 45 60; do ff -loglevel error -y -i /tmp/in/s60full.mp4 -t $d -c copy -movflags +faststart /tmp/in/s$d.mp4; done
+          ls -la /tmp/in; for f in /tmp/in/s*.mp4; do echo "$f $(docker run --rm -v /tmp/in:/tmp/in --entrypoint ffprobe eva-worker -v error -show_entries format=duration -of csv=p=0 $f)"; done
       - name: Benchmark (preview + HD + QA per run)
         run: |
           fail=0; mkdir -p /tmp/res
           run() { docker run --rm --cpus 4 -e EVA_MAX_SECONDS=60.5 -v /tmp/in:/in:ro -v /tmp/res:/res eva-worker \
                     python3 saas/tests/image_qa_check.py /in/$1.mp4 /res/$3 --aspect 9:16 --templates $2 > /tmp/res/$3.log 2>&1 || fail=1
                   sudo cp /tmp/res/$3/summary.json /tmp/res/$3.json 2>/dev/null || echo "{}" > /tmp/res/$3.json; echo "$3 done (exit $fail)"; }
-          run s30 T17,T23 s30_T17-T23
-          run s45 T17,T23 s45_T17-T23
+          # 30 s + 45 s measured in run 42737176758 (kept in the report); this run: the two 60 s cases
           run s60 T17     s60_T17
           run s60 T17,T23 s60_T17-T23
           exit $fail
@@ -71,8 +70,8 @@ jobs:
           modal app list --env main --json > prod_before.json 2>/dev/null || echo "[]" > prod_before.json
           ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 \
              -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[v0];[1:v]fps=30,scale=720:1280,setsar=1[v1];[2:v]fps=30,scale=720:1280,setsar=1[v2];[3:v]fps=30,scale=720:1280,setsar=1[v3];[4:v]fps=30,scale=720:1280,setsar=1[v4];[5:v]fps=30,scale=720:1280,setsar=1[v5];[v0][0:a][v1][1:a][v2][2:a][v3][3:a][v4][4:a][v5][5:a]concat=n=6:v=1:a=1[v][a]" \
-             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart s60.mp4
-          ffmpeg -loglevel error -y -i s60.mp4 -t 45 -c copy s45.mp4
+             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart s60full.mp4
+          ffmpeg -loglevel error -y -i s60full.mp4 -t 45 -c copy s45.mp4; ffmpeg -loglevel error -y -i s60full.mp4 -t 60 -c copy s60.mp4
           fail=0
           run() { modal run saas/modal_qa_check.py --video $1.mp4 --aspect 9:16 --templates $2 --max-seconds 60.5 || fail=1; mv modal_qa_check.json $3.json 2>/dev/null || true; }
           run s45 T17,T23 m45_T17-T23
