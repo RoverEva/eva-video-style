@@ -11,18 +11,14 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="top"><a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a><nav><a href="/#studio">Make a video</a></nav></header>
+  <header class="top"><a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a><nav><a href="/#examples">Examples</a><a href="/#studio">Make a video</a><a href="/#pricing">Pricing</a></nav></header>
   <main class="library">
     <div class="lib-head">
       <div>
-        <h1>My Videos</h1>
-        <p class="hint" id="libSub" style="font-size:17px;max-width:52ch">Every preview and HD export is saved here, grouped by the video you uploaded.</p>
+        <h1 id="libTitle">My Videos</h1>
+        <p class="hint" id="libSub">Your created videos are saved here.</p>
       </div>
-      <div class="balance" id="balance" hidden>
-        <div><span class="bal-n" id="balCredits">0</span> credits</div>
-        <div class="hint" id="balFree"></div>
-        <div id="balAct"></div>
-      </div>
+      <a class="btn" href="/#studio"><span aria-hidden="true">＋</span> Make a video</a>
     </div>
     <div id="libNote"></div>
     <div id="libList" aria-live="polite"></div>

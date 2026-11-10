@@ -61,7 +61,8 @@
   const initial = u => ((u && (u.name || u.email)) || "?").trim().charAt(0).toUpperCase() || "?";
   async function header() {
     const nav = document.querySelector(".top nav"); if (!nav) return null;
-    if (!nav.querySelector(".mv")) nav.append(el("a", { href: "videos.html", class: "mv", text: "My Videos" }));
+    if (!nav.querySelector(".mv")) nav.append(el("a", Object.assign({ href: "videos.html", class: "mv", text: "My Videos" },
+      /\/videos\.html$/.test(location.pathname) ? { "aria-current": "page" } : {})));
     let acct = nav.querySelector(".acct"); if (!acct) { acct = el("div", { class: "acct" }); nav.append(acct); }
     const u = await auth.user(); SIGNED_IN = !!u;
     ME = null; let meErr = null;
@@ -488,18 +489,14 @@
       return list.replaceChildren(el("p", { class: "note bad", text: "You're signed in, but your videos could not be loaded. Please try again in a moment." }), r);
     }
     if (!me) { $("#libSub").textContent = "Sign in to see your saved videos."; return signInPanel(list, "Sign in with your email to see your videos. New accounts get 3 free previews."); }
-    const render = async () => {
-      let data; try { data = await api2("/library"); } catch (e) { list.replaceChildren(el("p", { class: "note bad", text: e.message })); return; }
-      const a = data.account; $("#balance").hidden = false; $("#balCredits").textContent = a.credits;
-      $("#balFree").textContent = a.free_left > 0 ? `${a.free_left} of 3 free previews left` : "Free previews used";
-      const top = el("button", { class: "btn", type: "button", text: "Top up $9.99 · 100 credits" });
-      top.onclick = async () => { top.disabled = true; try { location.href = (await api2("/topup", { return_to: "/videos.html" })).url; } catch (e) { top.disabled = false; noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); } };
-      $("#balAct").replaceChildren(top);
-      if (q.get("topup") === "done") noteBox.replaceChildren(el("p", { class: "note", text: `Payment received. Your balance is ${a.credits} credits.` }));
-      if (q.get("topup") === "canceled") noteBox.replaceChildren(el("p", { class: "note", text: "Checkout was canceled. You haven't been charged." }));
-      if (!data.projects.length) { list.replaceChildren(el("div", { class: "empty" }, [el("p", { text: "No videos yet. Upload a talking-head clip to make your first preview." }), el("a", { class: "btn", href: "/#studio", text: "Make a video" })])); return; }
-      const running = s => s === "queued" || s === "running";
-      list.replaceChildren(...data.projects.map(pr => {
+    const running = s => s === "queued" || s === "running";
+    const pid = q.get("p");
+    const dur = s => { s = Math.max(0, Math.round(+s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
+    const dayKey = d => { const x = new Date(d); return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`; };
+    const dayLabel = d => { const x = new Date(d), now = new Date();
+      return x.toLocaleDateString(undefined, x.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" }); };
+    // one project = every version made from one upload: previews, HD exports, downloads (the detailed view)
+    function project(pr, a) {
         const head = el("div", { class: "proj-head" }, [
           el("div", {}, [el("h2", { text: pr.title }), el("p", { class: "hint", text: `Uploaded ${fmtDate(pr.created_at)}${pr.source_expires_at ? ` · original kept until ${fmtDate(pr.source_expires_at)}` : ""}` })])]);
         const acts = el("div", { class: "row" });
@@ -508,7 +505,7 @@
           try { const r = await api2(`/projects/${pr.id}/previews`, {}); location.href = `video.html?v=${r.version}`; } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); nv.disabled = false; } };
         const dp = el("button", { class: "btn ghost", type: "button", text: "Delete" });
         dp.onclick = async () => { if (!confirm2(dp, `Delete “${pr.title}” and all its versions? This can't be undone.`)) return;
-          try { await api2(`/projects/${pr.id}/delete`, {}); render(); } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); dp.disabled = false; } };
+          try { await api2(`/projects/${pr.id}/delete`, {}); location.href = "videos.html"; } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); dp.disabled = false; } };
         acts.append(nv, dp); head.append(acts);
         const hdOf = id => pr.versions.find(x => x.kind === "hd" && x.source_version === id && !["failed", "qa_failed", "canceled"].includes(x.status));
         const cards = pr.versions.filter(v => v.kind === "preview").map(v => {
@@ -536,7 +533,48 @@
           card.append(thumb, meta, row); return card;
         });
         return el("section", { class: "proj" }, [head, el("div", { class: "vgrid" }, cards)]);
-      }));
+    }
+    // grid: one compact thumbnail per uploaded video, grouped by day (newest first), duration badge only
+    const cal = () => { const i = el("span", { class: "cal", "aria-hidden": "true" });
+      i.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>'; return i; };
+    function tile(pr) {
+      const vs = pr.versions, live = vs.find(v => running(v.status));
+      const shown = vs.find(v => v.thumb_url && v.status === "done") || vs.find(v => v.thumb_url) || vs[0] || {};
+      const wide = ((shown.options || {}).aspect || "9:16") === "16:9";
+      const t = el("div", { class: "mvthumb" + (wide ? " wide" : "") });
+      if (shown.thumb_url) t.append(el("img", { src: shown.thumb_url, alt: "", loading: "lazy" }));
+      else t.append(el("span", { class: "mvph", "aria-hidden": "true" }));
+      t.append(el("span", { class: "dur", text: dur(pr.duration_s) }));
+      if (live) { const pct = Math.max(4, Math.min(100, (live.progress || {}).progress || 0));
+        const bar = el("span", { class: "mvprog", role: "progressbar", "aria-label": "Processing", "aria-valuenow": String(pct), "aria-valuemin": "0", "aria-valuemax": "100" }, [el("i")]);
+        bar.firstChild.style.width = pct + "%"; t.append(bar); }
+      return el("a", { class: "mvcard", href: `videos.html?p=${encodeURIComponent(pr.id)}`,
+        "aria-label": `${pr.title || "Video"}, ${dur(pr.duration_s)}${live ? ", processing" : ""}` }, [t]);
+    }
+    const render = async () => {
+      let data; try { data = await api2("/library"); } catch (e) { list.replaceChildren(el("p", { class: "note bad", text: e.message })); return; }
+      const a = data.account;
+      if (q.get("topup") === "done") noteBox.replaceChildren(el("p", { class: "note", text: `Payment received. Your balance is ${a.credits} credits.` }));
+      if (q.get("topup") === "canceled") noteBox.replaceChildren(el("p", { class: "note", text: "Checkout was canceled. You haven't been charged." }));
+      if (pid) {
+        const pr = data.projects.find(x => x.id === pid);
+        $("#libTitle").textContent = pr ? (pr.title || "Video") : "Video not found";
+        $("#libSub").replaceChildren(el("a", { href: "videos.html", text: "← All videos" }));
+        if (!pr) { list.replaceChildren(el("p", { class: "note", text: "This video was deleted or isn't in your account." })); return; }
+        $("main.library").classList.add("pv"); list.replaceChildren(project(pr, a));
+        if (pr.versions.some(v => running(v.status))) setTimeout(render, 4000);
+        return;
+      }
+      if (!data.projects.length) { list.replaceChildren(el("div", { class: "empty" }, [el("p", { text: "No videos yet. Upload a talking-head clip to make your first preview." }), el("a", { class: "btn", href: "/#studio", text: "Make a video" })])); return; }
+      const groups = [];
+      [...data.projects].sort((x, y) => new Date(y.created_at) - new Date(x.created_at)).forEach(pr => {
+        const k = dayKey(pr.created_at), g = groups[groups.length - 1];
+        if (g && g.k === k) g.items.push(pr); else groups.push({ k, label: dayLabel(pr.created_at), items: [pr] });
+      });
+      list.replaceChildren(...groups.map(g => el("section", { class: "mvday" }, [
+        el("h2", {}, [cal(), document.createTextNode(g.label + " "),
+          el("span", { text: `(${g.items.length} video${g.items.length === 1 ? "" : "s"})` })]),
+        el("div", { class: "mvgrid" }, g.items.map(tile))])));
       if (data.projects.some(pr => pr.versions.some(v => running(v.status)))) setTimeout(render, 4000);
     };
     // two-step inline confirm on the same button (no browser dialogs)
