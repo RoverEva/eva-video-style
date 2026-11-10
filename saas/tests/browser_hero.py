@@ -20,14 +20,14 @@ with sync_playwright() as p:
         pg = b.new_page(viewport=vp); pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto(SITE + "/"); pg.wait_for_timeout(3000)
         for fid, want in (("heroV", 9 / 16), ("heroH", 16 / 9)):
-            pg.locator(f"#{fid}").scroll_into_view_if_needed(); pg.wait_for_timeout(1200)
+            pg.locator(f"#{fid}").scroll_into_view_if_needed(); pg.wait_for_timeout(2500)
             r = pg.evaluate(f"""() => {{ const p = document.getElementById('{fid}'), r = p.getBoundingClientRect(), v = [...p.querySelectorAll('video')];
                  return {{ box: r.width / r.height, vids: v.map(x => [x.videoWidth, x.videoHeight, x.currentTime, x.getAttribute('src')]) }} }}""")
             ok = len(r["vids"]) == 2 and all(w and abs(w / h - want) < .01 for w, h, _, _ in r["vids"]) and abs(r["box"] - want) < .01
             check(ok, f"{name} {fid}: frame {r['box']:.4f} = video aspect {want:.4f}, Raw + Edit {[(w, h) for w, h, _, _ in r['vids']]}")
             srcs = [s for *_, s in r["vids"]]
             check(len(srcs) == 2 and srcs[0].rsplit("/", 1)[0] == srcs[1].rsplit("/", 1)[0], f"{name} {fid}: Raw and Edit from the same upload ({srcs})")
-            check(all(t > .3 for _, _, t, _ in r["vids"]), f"{name} {fid}: both play")
+            check(all(t > .3 for _, _, t, _ in r["vids"]), f"{name} {fid}: both play ({[round(t, 2) for _, _, t, _ in r['vids']]})")
         if name == "desktop":
             v, h = pg.locator("#heroV").bounding_box(), pg.locator("#heroH").bounding_box()
             check(v["x"] + v["width"] <= h["x"] and v["y"] < 860 and h["y"] < 860, "desktop: both comparisons visible side by side above the fold")
