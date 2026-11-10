@@ -1,0 +1,48 @@
+# Hero 16:9 Before/After for the site refresh branch: renders the supplied 16:9 raw upload (site/demos/horizontal/before.mp4,
+# a web copy of jimeng-2026-10-25-7289 — same framing, 1280×720, 30 fps, original audio) with the production worker image
+# and real eva-asr, exactly like mvp-worker-render.yml made the existing demos. No secrets, no Modal, no production.
+# The bot commits site/demos/horizontal/after.mp4 back to feat/site-refresh.
+name: site · hero 16:9 render (real eva-asr)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/site-refresh]
+    paths: [.github/workflows/site-hero-render.yml]
+permissions: { contents: write }
+concurrency: { group: site-hero-render, cancel-in-progress: true }
+jobs:
+  render:
+    if: github.ref == 'refs/heads/feat/site-refresh'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Free disk for the image (torch + models)
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL && df -h /
+      - name: Build worker image
+        run: docker build -f saas/Dockerfile -t eva-worker .
+      - name: Render (preview, then full HD reusing it) — 16:9, launch templates T17 + T23, licensed AI music mix
+        run: |
+          set -e; mkdir -p /tmp/out /tmp/in; cp site/demos/horizontal/before.mp4 /tmp/in/horizontal.mp4
+          echo '{"aspect":"16:9","templates":["T17","T23"],"template_mode":"multi","music":"mix","music_tracks":[]}' > /tmp/out/horizontal.opts.json
+          for kind in preview final; do
+            flag=$([ $kind = preview ] && echo --preview || true)
+            docker run --rm --cpus 4 -v /tmp/in:/in:ro -v /tmp/out:/out eva-worker \
+              python saas/worker/pipeline.py run /in/horizontal.mp4 /out/horizontal --options /out/horizontal.opts.json --workers 4 $flag
+          done
+      - name: Report (transcript, plan, output checks)
+        if: always()
+        run: |
+          sudo cat /tmp/out/horizontal/srt/talk.bilingual.srt 2>/dev/null | head -30 || true
+          sudo python3 -c "import json;r=json.load(open('/tmp/out/horizontal/out/report_final.json'));print(json.dumps({k:r.get(k) for k in ('ok','width','height','duration','lufs','music','warnings')}))" || true
+          sudo python3 -c "import json;p=json.load(open('/tmp/out/horizontal/plan.json'));print('sections',[(s['t0'],s['t1'],s['template']) for s in p['sections']]);print('cards',[(c['t_in'],c['t_out'],c['spec'].get('content')) for c in p.get('cards',[])])" || true
+      - name: Publish After to the branch
+        run: |
+          set -e; sudo chown -R $USER /tmp/out
+          ff() { docker run --rm -v $PWD:/w -v /tmp/out:/tmp/out -w /w --entrypoint ffmpeg eva-worker "$@"; }
+          ff -loglevel error -y -i /tmp/out/horizontal/out/final.mp4 -vf scale=1280:-2 -c:v libx264 -crf 23 -preset slow -c:a aac -b:a 128k -movflags +faststart site/demos/horizontal/after.mp4
+          ff -loglevel error -y -ss 1.5 -i /tmp/out/horizontal/out/final.mp4 -frames:v 1 -vf scale=640:-2 site/demos/horizontal/after_frame.jpg
+          sudo chown -R $USER site/demos
+          git config user.name "eva-render-bot"; git config user.email "eva-render-bot@users.noreply.github.com"
+          git add -f site/demos/horizontal && git commit -m "Hero 16:9 After rendered by the worker image from the supplied raw clip (run ${{ github.run_id }})" || exit 0
+          git pull --rebase origin feat/site-refresh && git push origin HEAD:feat/site-refresh
