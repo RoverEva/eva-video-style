@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing · EVA Video Studio</title>
+<meta name="description" content="3 free previews, then $9.99 for 100 credits. One-time payment, no subscription.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a><nav><a href="/#examples">Examples</a><a href="templates.html">Templates</a><a href="/#studio">Make a video</a><a href="pricing.html">Pricing</a></nav></header>
+  <main class="pricing">
+    <h1>Simple pricing</h1>
+    <p class="hint pr-sub">Start free. Pay only when you want more.</p>
+    <section class="pr-offer" aria-labelledby="offerT">
+      <div class="pr-free"><b>3 free previews</b><span>for every new account</span></div>
+      <div class="pr-main">
+        <p class="pr-label" id="offerT">Credit pack</p>
+        <p class="pr-price"><b>$9.99</b><span>100 credits</span></p>
+        <p class="pr-once">One-time payment · not a subscription</p>
+        <ul>
+          <li>Preview: 12–15 credits</li>
+          <li>HD export (1080p, no watermark): 38–52 credits</li>
+          <li>You see the exact cost before you start</li>
+          <li>Failed renders are refunded automatically</li>
+        </ul>
+        <a class="btn" href="account.html#billing">Buy 100 credits</a>
+      </div>
+    </section>
+    <section class="pr-soon">
+      <b>Coming soon: Creator and Pro plans</b>
+      <span>Monthly credits for people who post often. Your current credits and free previews stay as they are.</span>
+    </section>
+    <section class="pr-faq">
+      <h2>Questions</h2>
+      <details><summary>Is this a subscription?</summary><p>No. $9.99 is a one-time purchase of 100 credits. Buy another pack whenever you need more; nothing renews.</p></details>
+      <details><summary>How are credits used?</summary><p>Your first 3 previews are free. After that a preview costs 12–15 credits and a full HD export 38–52, depending on the video's length (up to 30 seconds). The exact cost is shown before you start.</p></details>
+      <details><summary>What do I get with an HD export?</summary><p>The full-length video in 1080p (1080×1920 or 1920×1080), no watermark, rendered from your original upload with the look of the preview you chose. Download it again any time while it's kept.</p></details>
+      <details><summary>What if a render fails?</summary><p>It doesn't count: a free preview stays free and credits go straight back to your balance.</p></details>
+      <details><summary>How long are my videos kept?</summary><p>Previews and your original upload for 30 days, HD exports for 90 days. Each video shows its expiry date, and you can delete it any time.</p></details>
+      <details><summary>Can I use the music commercially?</summary><p>Yes. Every track is an original composition made for EVA Video Studio and is cleared for use in your video.</p></details>
+      <details><summary>Refunds</summary><p>For anything other than a failed render, contact us within 14 days of purchase. See <a href="legal.html">terms, privacy and refunds</a>.</p></details>
+    </section>
+  </main>
+</div>
+<footer><div class="wrap"><a href="legal.html">Terms, privacy and refunds</a><span>EVA Video Studio</span></div></footer>
+<script src="app.js"></script>
+<script>EVA.header && EVA.header();</script>
+</body>
+</html>
