@@ -103,6 +103,25 @@ class Accounts:
         a = self.account(u); a.pop("user_id", None)
         return dict(a, topup=TOPUP, retention={"preview_days": PREVIEW_DAYS, "hd_days": HD_DAYS})
 
+    def history(self, u):
+        """credit purchases and charges for the My Account page — read-only view of the existing ledger"""
+        self.account(u); rows = self.db.history(u["id"], 200); out, by = [], {}
+        for r in rows: by.setdefault((r["kind"], r["ref"]), r)
+        for r in rows:
+            m = r.get("meta") or {}
+            if r["kind"] == "topup":
+                cents = m.get("amount_cents") or 0
+                out.append({"ts": r["created_at"], "type": "purchase", "label": "Credit purchase" if cents else "Credit grant",
+                            "credits": r["credits"], "amount_cents": cents, "status": "paid" if cents else "granted"})
+            elif r["kind"] == "reserve":
+                free = m.get("type") == "free"; what = "HD export" if m.get("for") == "hd" else "Preview"
+                st = "refunded" if ("release", r["ref"]) in by else "charged" if ("capture", r["ref"]) in by else "in progress"
+                out.append({"ts": r["created_at"], "type": "hd" if m.get("for") == "hd" else "preview", "label": what + (" (free)" if free else ""),
+                            "credits": r["credits"], "free": free, "status": st, "version": r["ref"]})
+            elif r["kind"] == "adjust":
+                out.append({"ts": r["created_at"], "type": "adjust", "label": "Adjustment", "credits": r["credits"], "status": "applied"})
+        return {"items": out[:100]}
+
     def create_project(self, u, b):
         size, ctype, dur = b.get("size"), b.get("type"), b.get("duration")
         if not isinstance(size, int) or size <= 0: raise ValueError("missing file size")
@@ -224,6 +243,7 @@ def routes(acc: Accounts, site_of):
         return h
 
     async def me(req, u): return JSONResponse(acc.me(u))
+    async def history(req, u): return JSONResponse(acc.history(u))
     async def quote(req, u):
         d = req.query_params.get("duration"); return JSONResponse({"preview": preview_cost(d), "hd": hd_cost(d)})
     async def projects(req, u): return JSONResponse(acc.create_project(u, await body(req)))
@@ -255,7 +275,7 @@ def routes(acc: Accounts, site_of):
     async def gallery(req): return JSONResponse(gallery_payload(acc.s), headers={"Cache-Control": "private, max-age=600"})
 
     P = "/api/v2"
-    return [Route(P + "/me", guarded(me)), Route(P + "/quote", guarded(quote)), Route(P + "/library", guarded(library)),
+    return [Route(P + "/me", guarded(me)), Route(P + "/history", guarded(history)), Route(P + "/quote", guarded(quote)), Route(P + "/library", guarded(library)),
             Route(P + "/projects", guarded(projects), methods=["POST"]), Route(P + "/projects/{pid}/previews", guarded(previews), methods=["POST"]),
             Route(P + "/projects/{pid}/delete", guarded(del_project), methods=["POST"]),
             Route(P + "/versions/{vid}", guarded(version)), Route(P + "/versions/{vid}/hd", guarded(hd), methods=["POST"]),

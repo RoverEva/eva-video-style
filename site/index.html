@@ -4,6 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EVA Video Studio</title>
 <meta name="description" content="Upload a raw talking-head clip. Get it back edited, with captions, motion cards and music, ready for Reels, TikTok and Shorts. 3 free previews, then simple credits: $9.99 = 100 credits.">
+<link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="stylesheet" href="app.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -11,13 +12,13 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="logo" href="/"><i aria-hidden="true"></i>EVA Video Studio</a>
+    <a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a>
     <nav><a href="#examples">Examples</a><a href="#studio">Make a video</a><a href="#pricing">Pricing</a></nav>
   </header>
 
-  <section class="hero">
+  <section class="hero hero2">
     <div>
-      <h1>Your raw clip in. A finished short out.</h1>
+      <h1>Your raw clip in. A <span class="grad">finished short</span> out.</h1>
       <p class="lede">Upload a talking-head video from your phone. We add captions, motion cards and music, then cut it for Reels, TikTok or YouTube.</p>
       <a class="btn" href="#studio">Upload a video</a>
       <ul class="facts">
@@ -26,9 +27,10 @@
         <li>Ready in about <b>5 minutes</b></li>
       </ul>
     </div>
-    <div>
-      <div class="phone" id="heroPhone" data-demo="realestate"></div>
-      <p class="wipe-hint">Drag the handle to compare the raw upload with the edit.</p>
+    <div class="duo">
+      <figure class="duo-v"><figcaption class="pill"><i class="ic-v" aria-hidden="true"></i>Vertical · 9:16</figcaption><div class="phone" id="heroV"></div></figure>
+      <figure class="duo-h"><figcaption class="pill"><i class="ic-h" aria-hidden="true"></i>Horizontal · 16:9</figcaption><div class="phone landscape" id="heroH"></div></figure>
+      <p class="wipe-hint">Drag a handle to compare each raw upload with its edit.</p>
     </div>
   </section>
 </div>

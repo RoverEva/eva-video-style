@@ -21,6 +21,15 @@
       if (window.EVA_LOCAL_AUTH) { try { return (JSON.parse(store.get("eva:auth") || "null") || {}).email || null; } catch (e) { return null; } }
       if (!sb) return null; const { data } = await sb.auth.getSession(); return data.session ? data.session.user.email : null;
     },
+    async user() {   // {email, name} of the signed-in user, or null — the session persists across visits
+      if (window.EVA_LOCAL_AUTH) { try { const j = JSON.parse(store.get("eva:auth") || "null"); return j && j.access_token ? { email: j.email, name: j.name || "" } : null; } catch (e) { return null; } }
+      if (!sb) return null; const { data } = await sb.auth.getSession(); const x = data.session && data.session.user;
+      return x ? { email: x.email, name: ((x.user_metadata || {}).display_name || "").trim() } : null;
+    },
+    async setName(name) {   // optional display name, kept on the Supabase user (no extra table)
+      if (window.EVA_LOCAL_AUTH) { const j = JSON.parse(store.get("eva:auth") || "{}"); j.name = name; store.set("eva:auth", JSON.stringify(j)); return; }
+      const { error } = await sb.auth.updateUser({ data: { display_name: name } }); if (error) throw new Error(error.message);
+    },
     async signIn(email) {
       if (window.EVA_LOCAL_AUTH) { const j = await (await fetch(`${API}/_local_signin?email=${encodeURIComponent(email)}`)).json(); store.set("eva:auth", JSON.stringify(j)); return "signed-in"; }
       if (!sb) throw new Error("Sign-in is not available right now.");
@@ -47,17 +56,31 @@
     box.append(el("p", { text: why || "Sign in with your email to save your videos and get 3 free previews." }), el("div", { class: "row" }, [inp, b]), m);
     where.replaceChildren(box); inp.focus();
   }
-  // header: My Videos + balance (added to the existing nav)
-  let ME = null;
+  // header: My Videos + account menu (avatar with the user's initial → My Account, My Videos, Credits & Billing, Sign Out)
+  let ME = null, SIGNED_IN = false;
+  const initial = u => ((u && (u.name || u.email)) || "?").trim().charAt(0).toUpperCase() || "?";
   async function header() {
     const nav = document.querySelector(".top nav"); if (!nav) return null;
     if (!nav.querySelector(".mv")) nav.append(el("a", { href: "videos.html", class: "mv", text: "My Videos" }));
-    let acct = nav.querySelector(".acct"); if (!acct) { acct = el("span", { class: "acct" }); nav.append(acct); }
-    try { ME = await api2("/me"); acct.textContent = `${ME.credits} credits · ${ME.free_left} free`; acct.title = (await auth.email()) || ""; }
-    catch (e) { ME = null; const em = await auth.email(); if (em) acct.textContent = em; else acct.replaceChildren(el("a", { href: "videos.html", text: "Sign in" })); }
-    let so = nav.querySelector(".signout");
-    if (await auth.token()) { if (!so) { so = el("a", { href: "#", class: "signout", text: "Sign out" }); so.onclick = e => { e.preventDefault(); auth.signOut(); }; nav.append(so); } }
-    else if (so) so.remove();
+    let acct = nav.querySelector(".acct"); if (!acct) { acct = el("div", { class: "acct" }); nav.append(acct); }
+    const u = await auth.user(); SIGNED_IN = !!u;
+    ME = null; let meErr = null;
+    if (u) { try { ME = await api2("/me"); } catch (e) { meErr = e; if (e.status === 401) SIGNED_IN = false; } }
+    if (!SIGNED_IN) { acct.replaceChildren(el("a", { href: "videos.html", class: "signin", text: "Sign in" })); return null; }
+    const btn = el("button", { type: "button", class: "avatar", "aria-haspopup": "menu", "aria-expanded": "false", "aria-label": "Account menu", text: initial(u) });
+    const menu = el("div", { class: "acctmenu", role: "menu", hidden: "" }, [
+      el("div", { class: "who" }, [el("b", { text: u.name || "Your account" }), el("span", { text: u.email || "" }),
+        el("span", { class: "bal", text: ME ? `${ME.credits} credits · ${ME.free_left} of ${ME.free_limit || 3} free previews left` : (meErr ? "Balance unavailable right now" : "") })]),
+      el("a", { href: "account.html", role: "menuitem", text: "My Account" }),
+      el("a", { href: "videos.html", role: "menuitem", text: "My Videos" }),
+      el("a", { href: "account.html#billing", role: "menuitem", text: "Credits & Billing" }),
+      el("a", { href: "#", role: "menuitem", class: "signout", text: "Sign Out" })]);
+    const close = () => { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+    btn.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute("aria-expanded", String(!menu.hidden)); };
+    menu.querySelector(".signout").onclick = e => { e.preventDefault(); auth.signOut(); };
+    document.addEventListener("click", e => { if (!acct.contains(e.target)) close(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape" && !menu.hidden) { close(); btn.focus(); } });
+    acct.replaceChildren(btn, menu);
     return ME;
   }
 
@@ -69,6 +92,7 @@
   }
 
   /* before/after wipe: two synced videos, draggable divider (pointer + keyboard) */
+  const WIPES = new Set();
   function wipe(box, demo, opts = {}) {
     box.innerHTML = ""; box.classList.toggle("landscape", !!opts.landscape);
     if (!demo || !demo.ready) { box.append(el("div", { class: "soon", text: demo ? `${demo.title} example coming soon` : "" })); return; }
@@ -77,14 +101,19 @@
     a.muted = true; b.muted = true;
     const knob = el("button", { class: "knob", type: "button", "aria-label": "Move the comparison divider", text: "⇆" });
     const bar = el("div", { class: "bar" }, [knob]);
-    const sound = el("button", { class: "tag l", type: "button", text: "Sound off" });
-    box.append(a, b, bar, sound, el("span", { class: "tag r", text: "Edited" }));
+    const sound = el("button", { class: "tag l", type: "button", text: "Sound off", "aria-pressed": "false" });
+    box.append(a, b, bar, sound, el("span", { class: "tag raw", text: "Raw" }), el("span", { class: "tag r", text: "Edited" }));
+    const mute = () => { b.muted = true; sound.textContent = "Sound off"; sound.setAttribute("aria-pressed", "false"); };
+    box._mute = mute; WIPES.add(box);
     let split = 50; const set = v => { split = Math.max(0, Math.min(100, v)); box.style.setProperty("--split", split + "%"); }; set(50);
     const from = e => { const r = box.getBoundingClientRect(); set(((e.clientX - r.left) / r.width) * 100); };
     box.addEventListener("pointerdown", e => { if (e.target === sound) return; box.setPointerCapture(e.pointerId); from(e); box.onpointermove = from; });
     box.addEventListener("pointerup", () => { box.onpointermove = null; });
     knob.addEventListener("keydown", e => { if (e.key === "ArrowLeft") set(split - 5); if (e.key === "ArrowRight") set(split + 5); });
-    sound.addEventListener("click", () => { b.muted = !b.muted; sound.textContent = b.muted ? "Sound off" : "Sound on"; });
+    sound.addEventListener("click", () => {
+      if (!b.muted) return mute();
+      WIPES.forEach(x => x !== box && (x.isConnected ? x._mute() : WIPES.delete(x)));   // one comparison with sound at a time
+      b.muted = false; sound.textContent = "Sound on"; sound.setAttribute("aria-pressed", "true"); b.play().catch(() => {}); });
     const sync = () => { if (Math.abs(a.currentTime - b.currentTime) > .12) a.currentTime = b.currentTime; };
     b.addEventListener("timeupdate", sync);
     const start = () => { a.play().catch(() => {}); b.play().catch(() => {}); };
@@ -92,10 +121,14 @@
   }
 
   async function home() {
-    let demos = [];
-    try { demos = (await (await fetch("demos/demos.json", { cache: "no-cache" })).json()).demos; } catch (e) {}
-    const ready = demos.filter(d => d.ready);
-    wipe($("#heroPhone"), ready[0] || demos[0]);
+    let cfg = {};
+    try { cfg = await (await fetch("demos/demos.json", { cache: "no-cache" })).json(); } catch (e) {}
+    let demos = cfg.demos || [];
+    const byId = id => demos.find(d => d.id === id), hero = cfg.hero || {};
+    // hero: both formats at once, each Raw upload next to the edit rendered from that same upload
+    if ($("#heroV")) wipe($("#heroV"), byId(hero.vertical) || demos.find(d => d.ready && !d.hero_only));
+    if ($("#heroH")) wipe($("#heroH"), byId(hero.horizontal), { landscape: true });
+    demos = demos.filter(d => !d.hero_only);
     const sw = $("#catSwitch"), cp = $("#catPhone");
     demos.forEach((d, i) => {
       const b = el("button", { type: "button", "aria-pressed": String(i === 0) }, [el("b", { text: d.title }), document.createTextNode(d.blurb)]);
@@ -449,6 +482,11 @@
   async function videos() {
     const list = $("#libList"), noteBox = $("#libNote"), q = new URLSearchParams(location.search);
     const me = await header();
+    if (!me && SIGNED_IN) {   // signed in, but the account service did not answer: say so instead of asking to sign in again
+      $("#libSub").textContent = "We couldn't load your videos right now.";
+      const r = el("button", { class: "btn ghost", type: "button", text: "Try again" }); r.onclick = () => location.reload();
+      return list.replaceChildren(el("p", { class: "note bad", text: "You're signed in, but your videos could not be loaded. Please try again in a moment." }), r);
+    }
     if (!me) { $("#libSub").textContent = "Sign in to see your saved videos."; return signInPanel(list, "Sign in with your email to see your videos. New accounts get 3 free previews."); }
     const render = async () => {
       let data; try { data = await api2("/library"); } catch (e) { list.replaceChildren(el("p", { class: "note bad", text: e.message })); return; }
@@ -511,5 +549,53 @@
     render();
   }
 
-  window.EVA = { home, video, videos };
+
+  /* My Account: who you are, balance, free previews, credit purchases + charges (read-only view of the existing ledger) */
+  async function account() {
+    const body = $("#acctBody"), q = new URLSearchParams(location.search);
+    const me = await header(), u = await auth.user();
+    if (!u || (!me && !SIGNED_IN)) return signInPanel(body, "Sign in with your email to see your account. New accounts get 3 free previews.");
+    const card = (title, kids, id) => el("section", Object.assign({ class: "acard" }, id ? { id } : {}), [el("h2", { text: title }), ...kids]);
+    // profile
+    const name = el("input", { type: "text", class: "email-in", maxlength: "60", placeholder: "Optional", "aria-label": "Display name", value: u.name || "" });
+    const save = el("button", { class: "btn ghost", type: "button", text: "Save" }), saved = el("span", { class: "hint", text: "" });
+    save.onclick = async () => { save.disabled = true; try { await auth.setName(name.value.trim()); saved.textContent = "Saved."; header(); } catch (e) { saved.textContent = e.message; } save.disabled = false; };
+    const profile = card("Profile", [
+      el("dl", { class: "kv" }, [el("dt", { text: "Email" }), el("dd", { text: u.email || "" }), el("dt", { text: "Display name" }),
+        el("dd", {}, [el("div", { class: "row" }, [name, save]), saved])]),
+      el("p", { class: "hint", text: "You stay signed in on this device until you sign out." }),
+      Object.assign(el("button", { class: "btn ghost", type: "button", text: "Sign out" }), { onclick: () => auth.signOut() })]);
+    if (!me) { body.replaceChildren(profile, el("p", { class: "note bad", text: "Your balance and history could not be loaded right now. Please try again in a moment." })); return; }
+    // balance + free previews + buy
+    const buy = el("button", { class: "btn", type: "button", text: `Buy ${me.topup.credits} credits · $${(me.topup.cents / 100).toFixed(2)}` }), bnote = el("p", { class: "hint", text: "" });
+    buy.onclick = async () => { buy.disabled = true; try { location.href = (await api2("/topup", { return_to: "/account.html#billing" })).url; } catch (e) { buy.disabled = false; bnote.textContent = e.message; } };
+    const lim = me.free_limit || 3;
+    const stats = el("div", { class: "stats" }, [
+      el("div", {}, [el("b", { class: "bal-n", text: String(me.credits) }), el("span", { text: "credits" })]),
+      el("div", {}, [el("b", { class: "bal-n", text: `${me.free_left}/${lim}` }), el("span", { text: "free previews left" })])]);
+    const hist = el("div", { class: "hist" }, [el("p", { class: "hint", text: "Loading history…" })]);
+    const billing = card("Credits & Billing", [stats, el("div", { class: "row" }, [buy, el("a", { class: "btn ghost", href: "videos.html", text: "My Videos" })]), bnote,
+      el("h3", { text: "Purchases and charges" }), hist], "billing");
+    const notes = [];
+    if (q.get("topup") === "done") notes.push(el("p", { class: "note", text: `Payment received. Your balance is ${me.credits} credits.` }));
+    if (q.get("topup") === "canceled") notes.push(el("p", { class: "note", text: "Payment canceled. Nothing was charged." }));
+    body.replaceChildren(...notes, profile, billing);
+    if (location.hash === "#billing") billing.scrollIntoView();
+    try {
+      const { items } = await api2("/history");
+      if (!items.length) return hist.replaceChildren(el("p", { class: "hint", text: "No purchases or charges yet." }));
+      const fmt = s => new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+      const amt = x => x.type === "purchase" ? `+${x.credits} credits` + (x.amount_cents ? ` · $${(x.amount_cents / 100).toFixed(2)}` : "")
+        : x.free ? "Free preview" : `${x.credits} credits`;
+      const st = { charged: "Charged", refunded: "Refunded", "in progress": "In progress", paid: "Paid", granted: "Granted", applied: "Applied" };
+      hist.replaceChildren(el("table", { class: "htab" }, [
+        el("thead", {}, [el("tr", {}, ["Date", "Item", "Amount", "Status"].map(h => el("th", { text: h })))]),
+        el("tbody", {}, items.map(x => el("tr", { class: x.status === "refunded" ? "refunded" : "" }, [
+          el("td", { text: fmt(x.ts) }),
+          el("td", {}, [x.version ? el("a", { href: `video.html?v=${encodeURIComponent(x.version)}`, text: x.label }) : document.createTextNode(x.label)]),
+          el("td", { text: amt(x) }), el("td", { text: x.free && x.status === "refunded" ? "Returned" : (st[x.status] || x.status) })])))]));
+    } catch (e) { hist.replaceChildren(el("p", { class: "note bad", text: "History is unavailable right now." })); }
+  }
+
+  window.EVA = { home, video, videos, account };
 })();

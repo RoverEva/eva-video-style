@@ -21,6 +21,20 @@
    "ready": true,
    "before": "demos/education/before.mp4",
    "after": "demos/education/after.mp4"
+  },
+  {
+   "id": "horizontal",
+   "title": "Horizontal 16:9",
+   "blurb": "Landscape edit for YouTube",
+   "hero_only": true,
+   "aspect": "16:9",
+   "ready": true,
+   "before": "demos/horizontal/before.mp4",
+   "after": "demos/horizontal/after.mp4"
   }
- ]
+ ],
+ "hero": {
+  "vertical": "education",
+  "horizontal": "horizontal"
+ }
 }

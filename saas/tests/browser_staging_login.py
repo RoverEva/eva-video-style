@@ -31,18 +31,18 @@ try:
         pg.goto(link); pg.wait_for_load_state("networkidle")
         host = urllib.parse.urlparse(pg.url).netloc
         check(host == urllib.parse.urlparse(SITE).netloc, f"magic link redirects to the staging site ({host})")
-        pg.wait_for_selector(".top nav .signout", timeout=15000)
-        acct = pg.text_content(".top nav .acct") or ""
-        check(email in acct or "credits" in acct, "signed in: header shows the account")
+        pg.wait_for_selector(".top nav .avatar", timeout=15000)
+        check(pg.text_content(".top nav .avatar") == email[0].upper(), "signed in: header shows the account avatar")
         check("access_token" not in pg.url, "token removed from the address bar")
         pg.reload(); pg.wait_for_load_state("networkidle")
-        check(pg.is_visible(".top nav .signout"), "session persists after reload")
+        check(pg.is_visible(".top nav .avatar"), "session persists after reload")
         pg.goto(SITE + "/videos.html"); pg.wait_for_load_state("networkidle")
-        check(pg.is_visible(".top nav .signout"), "session persists on another page (My Videos)")
-        with pg.expect_navigation(timeout=15000): pg.click(".top nav .signout")   # sign out reloads the page
+        check(pg.is_visible(".top nav .avatar"), "session persists on another page (My Videos)")
+        pg.click(".top nav .avatar")
+        with pg.expect_navigation(timeout=15000): pg.click(".acctmenu .signout")   # sign out reloads the page
         pg.wait_for_load_state("networkidle"); pg.reload(); pg.wait_for_load_state("networkidle")
         left = pg.evaluate("() => Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('auth-token')).length")
-        check(not pg.is_visible(".top nav .signout") and left == 0, f"signed out: no session after reload (sign-out link {'still shown' if pg.is_visible('.top nav .signout') else 'gone'}, stored sessions {left})")
+        check(pg.is_visible(".top nav a.signin") and left == 0, f"signed out: no session after reload (Sign in shown {pg.is_visible('.top nav a.signin')}, stored sessions {left})")
         check(not errs, f"no page errors {errs[:2]}")
         b.close()
 finally:
