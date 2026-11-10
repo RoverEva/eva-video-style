@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T20",
+  "window": {
+    "x": 130,
+    "y": 110,
+    "w": 600,
+    "h": 820,
+    "r": 52,
+    "s": 1.6
+  },
+  "side": "right",
+  "theme": "t20",
+  "class": null,
+  "condensed": false,
+  "ring": {
+    "color": "#8d4dff",
+    "width": 10,
+    "shadow": 0.3
+  },
+  "label": "Fast-Paced Social Media",
+  "visual": {
+    "background": "#ece6fb",
+    "accent": "#8d4dff",
+    "ink": "#171229",
+    "pattern": "bubbles"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "16:9",
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "hidden",
+    "rc": "preview",
+    "staging": "hidden"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit"
+    ],
+    "fonts": [
+      "Inter"
+    ],
+    "media": [
+      "presenter-frames",
+      "user-footage"
+    ],
+    "tools": [
+      "scripts/matte.py",
+      "scripts/caption_zones.py"
+    ]
+  },
+  "id": "T19",
+  "identity_status": "confirmed",
+  "lifecycle": "beta",
+  "name": "Footage Intro",
+  "name_cn": "真实影像引入",
+  "notes": [
+    "Excluded from Studio selection until matte and user B-roll dependencies are integrated safely.",
+    "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "footage-intro",
+  "sources": {
+    "auto_adapter": "core/runtime/auto/skin-adapter.js",
+    "manual_scene": "template/demo/t19/scenes.js",
+    "skin_config": "template/demo/t19/skin.json"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

@@ -1,0 +1,21 @@
+{
+  "distribution": "public",
+  "engine_api": "legacy-1",
+  "eva_asr_commit": "91ff24122f1cfed6c166372a597bff83ea3ab405",
+  "includes": [
+    "Skill",
+    "ASR",
+    "Content Planner",
+    "Template Registry",
+    "Engine",
+    "Renderer",
+    "QA"
+  ],
+  "license": "MIT",
+  "name": "EVA Core",
+  "public_download": true,
+  "publication_status": "release-candidate-not-published",
+  "schema_version": 1,
+  "tier": "free",
+  "version": "1.0.0"
+}

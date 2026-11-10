@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://eva.video/schemas/template-registry/v1/template.schema.json",
+  "title": "EVA Template Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "id", "slug", "name", "name_cn", "version", "version_status",
+    "lifecycle", "render_status", "identity_status", "channels", "access",
+    "compatibility", "aspects", "capabilities", "dependencies", "sources", "assets", "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string", "pattern": "^T(0[1-9]|1[0-9]|2[0-8])$"},
+    "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "name": {"type": "string", "minLength": 1},
+    "name_cn": {"type": "string"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "version_status": {"enum": ["assigned", "unconfirmed"]},
+    "lifecycle": {"enum": ["stable", "beta", "planned", "retired"]},
+    "render_status": {"enum": ["renderable", "manual-only", "partial", "branch-only", "asset-only", "planned", "retired"]},
+    "identity_status": {"enum": ["confirmed", "conflict", "reserved", "retired"]},
+    "channels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["github_main", "rc", "staging", "production"],
+      "properties": {
+        "github_main": {"enum": ["available", "absent", "retired"]},
+        "rc": {"enum": ["available", "preview", "coming-soon", "legacy", "branch-only", "absent", "retired"]},
+        "staging": {"enum": ["available", "hidden", "retired"]},
+        "production": {"enum": ["available", "legacy", "hidden", "retired"]}
+      }
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tier", "distribution", "license", "public_download"],
+      "properties": {
+        "tier": {"enum": ["free", "pro", "unconfirmed"]},
+        "distribution": {"enum": ["public", "studio-private", "unconfirmed"]},
+        "license": {"type": "string", "minLength": 1},
+        "public_download": {"type": "boolean"}
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["core", "engine_api", "plan_schemas"],
+      "properties": {
+        "core": {"type": "string", "minLength": 1},
+        "engine_api": {"type": "string", "minLength": 1},
+        "plan_schemas": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "aspects": {
+      "type": "array",
+      "items": {"enum": ["16:9", "9:16"]},
+      "uniqueItems": true
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manual_scene", "studio_auto", "gallery", "asr_word_timing"],
+      "properties": {
+        "manual_scene": {"type": "boolean"},
+        "studio_auto": {"type": "boolean"},
+        "gallery": {"type": "boolean"},
+        "asr_word_timing": {"type": "boolean"}
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["core_modules", "fonts", "tools", "media"],
+      "properties": {
+        "core_modules": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "fonts": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "tools": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "media": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "license", "required"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "license": {"type": "string", "minLength": 1},
+          "required": {"type": "boolean"}
+        }
+      }
+    },
+    "notes": {"type": "array", "items": {"type": "string"}}
+  }
+}

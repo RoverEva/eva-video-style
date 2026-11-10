@@ -1,0 +1,11 @@
+f9ebe77aae3d0a6ec2932870717d951981ccc39d02c1f20dcb4c7e5dfd42219c  templates/T13/1.0.0/DEPENDENCIES.md
+150b4e4aad06a322bb163b7264387e626203f776be894102f5726dfd04925f0b  templates/T13/1.0.0/LICENSE
+a4bdb257dffddeea5398f0f79bc312fda068079df0f9c1d6767baf3101634633  templates/T13/1.0.0/README.md
+959fdcae519416cb6a26435ca86279ba72c2f84c64faddcbcf81853cbbe6674a  templates/T13/1.0.0/SKILL.md
+94480e3ed0b9b6dd7e5fc7931f075d664fb00a0f0f50cedddcf307077b2989b3  templates/T13/1.0.0/assets/manifest.json
+f30442f812609dcd017601da8d27d3fb834ac75bbe840f10345a5ee51a22c74a  templates/T13/1.0.0/config/defaults.json
+0798b7edc162e10e13c9959b9b55699161c8a7d278f17665eda80bfafabf4ecd  templates/T13/1.0.0/config/skin.json
+d06cc32136d7275e2cf117ca04bea8e099336a2db635672996bdd232b812de41  templates/T13/1.0.0/runtime/auto-skin.js
+5a938e5406589115af6c98de3cc7fca0fc85121617bdffb3b1c96ac3d021a68b  templates/T13/1.0.0/runtime/index.html
+5a8f74a58b131b2d8018ebf563f52b3ff5db97c0112c842e6b3a7b71ff2ce2a5  templates/T13/1.0.0/runtime/scenes.js
+41c8f1d06d6e27c65ae074f943a0d80a69fd2f8dae7f96d1b176f76b5f3bc6d0  templates/T13/1.0.0/template.json

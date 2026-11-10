@@ -1,0 +1,13 @@
+08a1f07f06b89475ad0f87123601b865b950e1f4c0bafc89c506c7e96dc8b5b9  templates/T27/1.0.0/DEPENDENCIES.md
+150b4e4aad06a322bb163b7264387e626203f776be894102f5726dfd04925f0b  templates/T27/1.0.0/LICENSE
+f15ace12e4a75a3aeb34760fa535a07d463a2b3330afa8442645e8d6a40fd7cf  templates/T27/1.0.0/README.md
+5fd371d0ebf1b2249e9ee9724c89364b004a7c5dfa327948d86aaaf5f41ac3fd  templates/T27/1.0.0/SKILL.md
+0e22f5957388c46455eac4534420f9ddae91384ae7839a4ab85b4808777490e7  templates/T27/1.0.0/assets/manifest.json
+f30442f812609dcd017601da8d27d3fb834ac75bbe840f10345a5ee51a22c74a  templates/T27/1.0.0/config/defaults.json
+cd55ec5837efa28cf8a93de84fbbc0de458ffa64061469ef92cdf8c2f3499190  templates/T27/1.0.0/config/skin.json
+8f9bc88130d82b7852b106ac41d69701c1fd8022f737187482c42b6b2c3877fc  templates/T27/1.0.0/runtime/auto-skin.js
+7a10e5ec4ffa459442d1b70808272be0f23aaafff6fbdfa7c1c100322bbbd00d  templates/T27/1.0.0/runtime/bootstrap.js
+f1ce9d1f82dc5fcbf4197ad13be93206444d2e223eff255d594dd840ece81507  templates/T27/1.0.0/runtime/helpers.js
+b5776c83bf9e10ebb0e518f3048e152781e25137acae43260d29ac2e04f7a9ce  templates/T27/1.0.0/runtime/index.html
+64e46e3d293d64d4791c1cd1f6a875ccf580a6051fc18567a350a51bd414eb23  templates/T27/1.0.0/runtime/scenes.js
+1cc4c470af77c7e64826ac5565c97b6850e3e1858070e12e16f7c22f51a56cf3  templates/T27/1.0.0/template.json

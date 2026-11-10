@@ -1,0 +1,11 @@
+2ce0ee13ca9e621f0f443ab837605c4a7e95c7090fe01d7e650498b0a962fbf6  templates/T17/1.0.0/DEPENDENCIES.md
+150b4e4aad06a322bb163b7264387e626203f776be894102f5726dfd04925f0b  templates/T17/1.0.0/LICENSE
+623c798469b740400aecf9e222103f1f435ee702636c72a679219984aa7539e8  templates/T17/1.0.0/README.md
+0b0b3eaa0fe0b9b519b9e5450d0fb5f5ad12309508024e2776cbc2fd0b769037  templates/T17/1.0.0/SKILL.md
+94480e3ed0b9b6dd7e5fc7931f075d664fb00a0f0f50cedddcf307077b2989b3  templates/T17/1.0.0/assets/manifest.json
+f30442f812609dcd017601da8d27d3fb834ac75bbe840f10345a5ee51a22c74a  templates/T17/1.0.0/config/defaults.json
+fdaef632cc8c1a48c0ff1dbfc4624b93e03f025b304d01a8295b6f102875a853  templates/T17/1.0.0/config/skin.json
+a727b0564d1f2c1cfe2413860ac40a44d4a244204bde31e0eff1c5f3f26f0981  templates/T17/1.0.0/runtime/auto-skin.js
+5a938e5406589115af6c98de3cc7fca0fc85121617bdffb3b1c96ac3d021a68b  templates/T17/1.0.0/runtime/index.html
+05ccf99edcf49a7c797e5906e9dcadf841dc50a0d18c5a3e8b393cd61cce8f13  templates/T17/1.0.0/runtime/scenes.js
+09f3079a2ccea083d18e076346fe85e3c151f78f314f203c8e9aa199b1c201d2  templates/T17/1.0.0/template.json

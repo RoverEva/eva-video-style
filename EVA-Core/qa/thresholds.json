@@ -1,0 +1,94 @@
+{
+  "_doc": "Eva Video Style QA thresholds. Resolution order: defaults < categories[category] < templates[template] < --config file. Every value can be overridden per template (T17, T26 ...) or per category (talk, ads, science, explain). See qa/README.md.",
+  "defaults": {
+    "sample_every_s": 0.5,
+    "transition_guard_s": 0.35,
+    "render": {
+      "sizes": {"16:9": [1920, 1080], "9:16": [1080, 1920]},
+      "preview_sizes": {"16:9": [1280, 720], "9:16": [720, 1280]},
+      "fps": 30,
+      "codecs": ["h264"],
+      "containers": ["mp4", "mov"],
+      "require_audio": true,
+      "frame_tolerance": 1,
+      "av_mismatch_warn_s": 0.1,
+      "av_mismatch_fail_s": 0.5,
+      "black_pix_th": 0.10,
+      "black_fail_s": 1.0,
+      "black_warn_s": 0.2,
+      "blank_std": 2.0,
+      "blank_fail_samples": 3,
+      "freeze_noise": 0.003,
+      "freeze_warn_s": 1.5,
+      "lufs_target": -16.0,
+      "lufs_tolerance": 1.5,
+      "true_peak_max": -1.0
+    },
+    "face": {
+      "detect_min_conf": 0.55,
+      "high_conf": 0.75,
+      "max_subject_scale": 1.35,
+      "fail_subject_scale": 1.8,
+      "expected_scale_tolerance": 0.15,
+      "warn_head_out": 0.12,
+      "fail_head_out": 0.2,
+      "fail_face_out": 0.08,
+      "warn_visible": 0.6,
+      "min_fail_samples": 2,
+      "max_stretch": 0.06,
+      "fail_stretch": 0.12,
+      "allow_crop": false,
+      "face_safe_text": false,
+      "require_presenter": false
+    },
+    "captions": {
+      "safe": {"16:9": [96, 40, 96, 20], "9:16": [64, 210, 150, 420]},
+      "edge_px": 2,
+      "max_lines": 3,
+      "fail_face_cover": 0.04,
+      "warn_head_cover": 0.10,
+      "min_contrast": 1.6,
+      "min_outline_contrast": 3.0,
+      "srt_ass_tolerance_s": 0.02
+    },
+    "srt": {
+      "min_cue_s": 0.3,
+      "max_cue_s": 10.0,
+      "max_cps_latin": 25,
+      "max_cps_cjk": 11,
+      "overlap_tolerance_s": 0.05,
+      "end_tolerance_s": 0.05
+    },
+    "quality": {
+      "min_sharpness_ratio": 0.55,
+      "warn_upscale": 1.6,
+      "min_bits_per_pixel": 0.01
+    },
+    "motion": {
+      "expects_animation": true,
+      "min_graphics_change": 0.6,
+      "static_scenes": []
+    },
+    "sync": {
+      "min_speech_overlap": 0.1,
+      "warn_cues_without_speech": 0.3,
+      "warn_lag_s": 0.35
+    }
+  },
+  "categories": {
+    "talk": {},
+    "ads": {"captions": {"max_lines": 2}},
+    "science": {"face": {"face_safe_text": true}},
+    "explain": {}
+  },
+  "templates": {
+    "T17": {"_why": "Science Network: big type stays behind/away from the presenter (T.sciAvoid / T.sciCutTop)", "face": {"face_safe_text": true}},
+    "T24": {"_why": "Luxury Nude: clarity reference", "quality": {"min_sharpness_ratio": 0.8}},
+    "T25": {"_why": "Editorial Depth: clarity reference (template not on this branch)", "quality": {"min_sharpness_ratio": 0.8}},
+    "T26": {"_why": "Vintage Story: presenter keeps the footage's own scale in every pose; poses only move her", "face": {"max_subject_scale": 1.08, "fail_subject_scale": 1.2, "face_safe_text": true}},
+    "T27": {"_why": "Video Wall: words behind the presenter, never over her face", "face": {"face_safe_text": true}},
+    "T28": {"_why": "Real Estate Social: cut-out at full size, never shrunk or enlarged", "face": {"max_subject_scale": 1.12, "fail_subject_scale": 1.3}},
+    "T19": {"face": {"face_safe_text": true}},
+    "T07": {"_why": "Cartoon Eva: long cartoon stretches without the presenter", "face": {"require_presenter": false}}
+  }
+}

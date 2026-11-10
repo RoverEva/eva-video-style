@@ -1,0 +1,14 @@
+{
+  "_comment": "EVA Core standard local English ASR. The small model keeps first-run local installation practical while word alignment remains enabled. Advanced users may select large-v3-turbo. Install eva-asr at the exact commit recorded in core.lock.json.",
+  "model": "small",
+  "device": "cpu",
+  "compute_type": "int8",
+  "batch_size": 8,
+  "language": "en",
+  "translate_to_en": false,
+  "align": true,
+  "vad_method": "pyannote",
+  "max_line_width": 42,
+  "max_line_count": 2,
+  "model_cache_only": false
+}

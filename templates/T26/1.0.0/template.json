@@ -1,0 +1,72 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "hidden",
+    "rc": "available",
+    "staging": "hidden"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit"
+    ],
+    "fonts": [
+      "Anton",
+      "Playfair Display",
+      "Noto Sans CJK SC"
+    ],
+    "media": [
+      "presenter-frames",
+      "presenter-cutout"
+    ],
+    "tools": [
+      "scripts/matte.py"
+    ]
+  },
+  "id": "T26",
+  "identity_status": "confirmed",
+  "lifecycle": "stable",
+  "name": "Vintage Story",
+  "name_cn": "复古拼贴故事",
+  "notes": [
+    "Identity resolved: T26 is Vintage Story / 复古拼贴故事; Real Estate remains T28 and is excluded from v1.0.",
+    "Audited t26-rebuild source preserves all nine approved layouts and animations; automatic mode adds only Core integration hooks.",
+    "T26 v1.0 supports 9:16 only; 16:9 is rejected by Registry compatibility checks."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "vintage-story",
+  "sources": {
+    "auto_skin": "template/demo/t26/auto-skin.js",
+    "demo_scene": "template/demo/t26/demo-5s.js",
+    "docs": "template/demo/t26/README.md",
+    "manual_scene": "template/demo/t26/scenes.js",
+    "runtime_lib": "template/demo/t26/t26.js",
+    "skin_config": "template/demo/t26/skin.json"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

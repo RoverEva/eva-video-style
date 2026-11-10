@@ -1,0 +1,8 @@
+{
+  "bundled_assets": [],
+  "policy": "No demo, presenter, user footage, private Studio media or unauthorized binary asset is bundled.",
+  "required_user_media": [
+    "presenter-frames",
+    "user-screen-recording"
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "16:9",
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "available",
+    "rc": "legacy",
+    "staging": "hidden"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit"
+    ],
+    "fonts": [
+      "SpaceMono",
+      "Anton",
+      "Inter"
+    ],
+    "media": [
+      "presenter-frames"
+    ],
+    "tools": []
+  },
+  "id": "T20",
+  "identity_status": "confirmed",
+  "lifecycle": "stable",
+  "name": "Fast-Paced Social Media",
+  "name_cn": "快节奏社媒",
+  "notes": [
+    "Production renderable and retained in RC for legacy saved plans; not a current staging launch choice.",
+    "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "fast-paced-social-media",
+  "sources": {
+    "auto_skin": "template/demo/t20/auto-skin.js",
+    "manual_scene": "template/demo/t20/scenes.js",
+    "skin_config": "template/demo/t20/skin.json",
+    "studio_skin": "saas/worker/auto/auto.js"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

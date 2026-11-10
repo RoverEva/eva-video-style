@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T06",
+  "window": {
+    "x": 1260,
+    "y": 200,
+    "w": 560,
+    "h": 680,
+    "r": 36,
+    "s": 1.5
+  },
+  "side": "left",
+  "theme": "t02",
+  "class": null,
+  "condensed": true,
+  "ring": {
+    "color": "#d4ff2e",
+    "width": 8,
+    "shadow": 0.3
+  },
+  "label": "Brand Purple",
+  "visual": {
+    "background": "radial-gradient(1300px 800px at 35% 30%, #6d4fe8, #5b3fd6 45%, #1b0f4a)",
+    "accent": "#d4ff2e",
+    "ink": "#ffffff",
+    "pattern": "bubbles"
+  }
+}

@@ -1,0 +1,41 @@
+# Release assets stay outside the source-only branch.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Generated/private media and model weights are never tracked here.
+*.mp4
+*.mov
+*.m4v
+*.webm
+*.mkv
+*.mp3
+*.m4a
+*.wav
+*.aac
+*.flac
+*.ogg
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.onnx
+*.pt
+*.pth
+
+# Local configuration, credentials, caches and logs.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+__pycache__/
+node_modules/
+.venv/
+artifacts/
+out/
+jobs/

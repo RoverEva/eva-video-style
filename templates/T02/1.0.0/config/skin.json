@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T02",
+  "window": {
+    "x": 1260,
+    "y": 200,
+    "w": 560,
+    "h": 680,
+    "r": 30,
+    "s": 1.5
+  },
+  "side": "left",
+  "theme": "t02",
+  "class": "linegrid",
+  "condensed": true,
+  "ring": {
+    "color": "#d4ff2e",
+    "width": 6,
+    "shadow": 0.3
+  },
+  "label": "Electric Blue Console",
+  "visual": {
+    "background": "radial-gradient(1400px 900px at 40% 30%, #12206b, #070b2e)",
+    "accent": "#d4ff2e",
+    "ink": "#ffffff",
+    "pattern": "tech"
+  }
+}

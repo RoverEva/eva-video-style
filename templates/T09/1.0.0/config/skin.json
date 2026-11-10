@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T09",
+  "window": {
+    "x": 1290,
+    "y": 180,
+    "w": 520,
+    "h": 700,
+    "r": 0,
+    "s": 1.5
+  },
+  "side": "left",
+  "theme": "t09",
+  "class": "linegrid",
+  "condensed": true,
+  "ring": {
+    "color": "#63e7ff",
+    "width": 0,
+    "shadow": 0.3
+  },
+  "label": "Showcase Wall Opener",
+  "visual": {
+    "background": "#070d18",
+    "accent": "#63e7ff",
+    "ink": "#ffffff",
+    "pattern": "hud"
+  }
+}

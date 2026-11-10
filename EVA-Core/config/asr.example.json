@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy to your project (e.g. project/v1/srt/asr.json) and pass with --config. Keys mirror eva-asr's load_model/transcribe/align options; see scripts/asr.py for all of them.",
+  "eva_asr_path": null,
+  "model": "large-v3",
+  "device": "auto",
+  "compute_type": "default",
+  "batch_size": 8,
+  "language": "zh",
+  "translate_to_en": true,
+  "align": true,
+  "vad_method": "pyannote",
+  "initial_prompt": "以下是普通话的句子。",
+  "hotwords": null,
+  "model_dir": null,
+  "model_cache_only": false,
+  "hf_token_env": "HF_TOKEN"
+}

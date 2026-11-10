@@ -1,0 +1,382 @@
+{
+  "core": {
+    "archive": "EVA-Core.zip",
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "sha256": "294e2326ea694d1a3bf471538d98c6d077882f99a2553d019a09c38220b70040",
+    "tier": "free",
+    "version": "1.0.0"
+  },
+  "distribution": "public",
+  "excluded": [
+    {
+      "id": "T08",
+      "reason": "excluded from the v1.0 release scope"
+    },
+    {
+      "id": "T18",
+      "reason": "retired; stable ID must not be reused"
+    },
+    {
+      "id": "T22",
+      "reason": "retired; stable ID must not be reused"
+    },
+    {
+      "id": "T25",
+      "reason": "excluded; no executable source"
+    },
+    {
+      "id": "T28",
+      "reason": "excluded; Real Estate source is not normalized as an independent automatic package"
+    }
+  ],
+  "publication_status": "release-candidate-not-published",
+  "schema_version": 1,
+  "templates": [
+    {
+      "archive": "T01-1.0.0.zip",
+      "bytes": 7609,
+      "distribution": "public",
+      "id": "T01",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "64a61186fe14bee0bae22fd3914e1ac3c8341d5491c2e4ee13670f1c6b1568f8",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T02-1.0.0.zip",
+      "bytes": 7754,
+      "distribution": "public",
+      "id": "T02",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "f7eca52698d398198e7cf144b809f5b1ac663a5733c014e5e3d0b6860908e909",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T03-1.0.0.zip",
+      "bytes": 7574,
+      "distribution": "public",
+      "id": "T03",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "8dbd28df1a0d06b1a1e94e3c9afecd329e7731ce1b649b7f8f5dae5a95930feb",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T04-1.0.0.zip",
+      "bytes": 7313,
+      "distribution": "public",
+      "id": "T04",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "df9b0da81fce69ac0076b493e23fd1ca3197769f976c413d8ac8bfc043b916a3",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T05-1.0.0.zip",
+      "bytes": 7477,
+      "distribution": "public",
+      "id": "T05",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "eb4c8ce641588499b1f10dd5e89ad4308991e97be1bf0970cd7fd48d8ad8bdb1",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T06-1.0.0.zip",
+      "bytes": 7744,
+      "distribution": "public",
+      "id": "T06",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "3ff57ed142a0f382cdeab8e3325bff949eb41e9c5af6630ce7007bf865dcd976",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T07-1.0.0.zip",
+      "bytes": 7434,
+      "distribution": "public",
+      "id": "T07",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "128d0a712f177a2e1a4ab3240c13d41ce2f48afa257f9aab1119ceb04566224e",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T09-1.0.0.zip",
+      "bytes": 8930,
+      "distribution": "public",
+      "id": "T09",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "49a5fb106d8d1197c46c25e969572ec0c714f8347fff3024c72504058c8d65af",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T10-1.0.0.zip",
+      "bytes": 7820,
+      "distribution": "public",
+      "id": "T10",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "837a52a828dd6e49b1bfbb0104cb94e6946825563b90b5be18533c916132d93f",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T11-1.0.0.zip",
+      "bytes": 7468,
+      "distribution": "public",
+      "id": "T11",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "5bfb7104d819d0321db46ab64da79f397215527c69796f7e1ced0f315d298929",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T12-1.0.0.zip",
+      "bytes": 7857,
+      "distribution": "public",
+      "id": "T12",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "25637fbcb28550ffff243c992b0c042faa4a0247207330f0d5ee5122b5093388",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T13-1.0.0.zip",
+      "bytes": 7595,
+      "distribution": "public",
+      "id": "T13",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "a269c97bf8ed958cc01b36ece5f10b6cf7b819fe9f937505df97799cc823e535",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T14-1.0.0.zip",
+      "bytes": 7317,
+      "distribution": "public",
+      "id": "T14",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "0a047d6c7481e794477835779d6e80182a13558b3ea739398ca7f2c79f9653ad",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T15-1.0.0.zip",
+      "bytes": 7772,
+      "distribution": "public",
+      "id": "T15",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "efe137246d40cee589b9164e06a4f5bbc5968d01b05e23e3e20299a477957f5e",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T16-1.0.0.zip",
+      "bytes": 7719,
+      "distribution": "public",
+      "id": "T16",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "0658b818a684f7f2fa665054f97b441ae2e8f7b8d9d8a6cd40f2ca03a584f1b5",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T17-1.0.0.zip",
+      "bytes": 7569,
+      "distribution": "public",
+      "id": "T17",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "ec0e6a40c6ef1f29d6292f259a05dbbe2b852a1c9a177166a64c2dae70449752",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T19-1.0.0.zip",
+      "bytes": 10944,
+      "distribution": "public",
+      "id": "T19",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "434c41e0d7b5c0d6fcc38afba7f05e9a6e7ed2def0916125ab1d18f2488e515c",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T20-1.0.0.zip",
+      "bytes": 10374,
+      "distribution": "public",
+      "id": "T20",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "fac2e0080907b966fe104e124672017422fb477ea1c105938629dfad522dcac5",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T21-1.0.0.zip",
+      "bytes": 8492,
+      "distribution": "public",
+      "id": "T21",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "058ae623f4eaee1cd49efb391ee3407ce038ebce6c6162f38c49e5cd35d98a68",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T23-1.0.0.zip",
+      "bytes": 8026,
+      "distribution": "public",
+      "id": "T23",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "64e698a810032be275be1c4ac7f2e4df9b1bebd1f60b1d35a073344e00f1668b",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T24-1.0.0.zip",
+      "bytes": 7507,
+      "distribution": "public",
+      "id": "T24",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "3fa5217c76e6bd5ecd093d2d948d0e8a23c6cc4acee91cd5ba978b86992027e1",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T26-1.0.0.zip",
+      "bytes": 17164,
+      "distribution": "public",
+      "id": "T26",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "02e343055738800699b296e14bda910c57d2ce6a5b48306f505b39f05fd0076b",
+      "supported_aspects": [
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    },
+    {
+      "archive": "T27-1.0.0.zip",
+      "bytes": 13774,
+      "distribution": "public",
+      "id": "T27",
+      "license": "MIT",
+      "public_download": true,
+      "sha256": "ced7a03639a647929ecb808fd5ef5beff2f38d54f271d730b3e9e1317ea5cb4e",
+      "supported_aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "technical_status": "candidate",
+      "version": "1.0.0"
+    }
+  ]
+}

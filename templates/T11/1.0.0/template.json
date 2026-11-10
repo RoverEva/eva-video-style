@@ -1,0 +1,66 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "16:9",
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "hidden",
+    "rc": "preview",
+    "staging": "hidden"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit",
+      "template-helpers"
+    ],
+    "fonts": [
+      "Inter"
+    ],
+    "media": [
+      "presenter-frames"
+    ],
+    "tools": []
+  },
+  "id": "T11",
+  "identity_status": "confirmed",
+  "lifecycle": "stable",
+  "name": "HUD Dashboard",
+  "name_cn": "HUD 仪表盘",
+  "notes": [
+    "Preview catalog entry; no Studio auto skin.",
+    "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "hud-dashboard",
+  "sources": {
+    "auto_adapter": "core/runtime/auto/skin-adapter.js",
+    "manual_scene": "template/demo/t11/scenes.js",
+    "shared_helpers": "engine/templates.js",
+    "skin_config": "template/demo/t11/skin.json"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

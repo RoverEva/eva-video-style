@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "T17",
+  "window": {"x": 150, "y": 300, "w": 560, "h": 560, "r": 280, "s": 1.5},
+  "side": "right",
+  "theme": "t17",
+  "condensed": false
+}

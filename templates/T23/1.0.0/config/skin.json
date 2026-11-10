@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T23",
+  "window": {
+    "x": 1180,
+    "y": 160,
+    "w": 620,
+    "h": 760,
+    "r": 40,
+    "s": 1.5
+  },
+  "side": "left",
+  "theme": "t23",
+  "class": null,
+  "condensed": false,
+  "ring": {
+    "color": "#ff4f9a",
+    "width": 10,
+    "shadow": 0.3
+  },
+  "label": "Creative Pop",
+  "visual": {
+    "background": "#fff8ef",
+    "accent": "#ff4f9a",
+    "ink": "#1d1b3a",
+    "pattern": "comic"
+  }
+}

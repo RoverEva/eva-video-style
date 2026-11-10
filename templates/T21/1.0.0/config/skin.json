@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "T21",
+  "window": {
+    "x": 1240,
+    "y": 220,
+    "w": 520,
+    "h": 640,
+    "r": 0,
+    "s": 1.4
+  },
+  "side": "left",
+  "theme": "t21",
+  "class": null,
+  "condensed": false,
+  "ring": {
+    "color": "#cbbfa9",
+    "width": 2,
+    "shadow": 0.3
+  },
+  "label": "Clean & Minimal",
+  "visual": {
+    "background": "#ece8e0",
+    "accent": "#cbbfa9",
+    "ink": "#1c1b18",
+    "pattern": "editorial"
+  }
+}

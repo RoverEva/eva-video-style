@@ -1,0 +1,1811 @@
+{
+  "registry_version": "1.0.0",
+  "schema_version": 1,
+  "source": "registry/templates/T01.json ... T28.json",
+  "templates": [
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "available",
+        "rc": "available",
+        "staging": "available"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Anton",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T01",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Acid Lime Kinetic",
+      "name_cn": "酸性青柠",
+      "notes": [
+        "ZIP pilot; source animation is copied byte-for-byte and is not rewritten.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "acid-lime-kinetic",
+      "sources": {
+        "auto_skin": "template/demo/t01/auto-skin.js",
+        "manual_scene": "template/demo/t01/scenes.js",
+        "skin_config": "template/demo/t01/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "available",
+        "staging": "available"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Anton",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T02",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Electric Blue Console",
+      "name_cn": "电光蓝控制台",
+      "notes": [
+        "Studio RC/staging launch template; not enabled by current production configuration.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "electric-blue-console",
+      "sources": {
+        "auto_skin": "template/demo/t02/auto-skin.js",
+        "manual_scene": "template/demo/t02/scenes.js",
+        "skin_config": "template/demo/t02/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-screen-recording"
+        ],
+        "tools": []
+      },
+      "id": "T03",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Dark 3D Stage",
+      "name_cn": "暗黑 3D 舞台",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "dark-3d-stage",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t03/scenes.js",
+        "skin_config": "template/demo/t03/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T04",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Paper",
+      "name_cn": "纸张",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "paper",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t04/scenes.js",
+        "skin_config": "template/demo/t04/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Anton",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T05",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Red Sunburst",
+      "name_cn": "红色放射",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "red-sunburst",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t05/scenes.js",
+        "skin_config": "template/demo/t05/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Anton",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-screen-recording"
+        ],
+        "tools": []
+      },
+      "id": "T06",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Brand Purple",
+      "name_cn": "品牌紫",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "brand-purple",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t06/scenes.js",
+        "skin_config": "template/demo/t06/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-cartoon-clips"
+        ],
+        "tools": []
+      },
+      "id": "T07",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Cartoon Eva",
+      "name_cn": "卡通 Eva",
+      "notes": [
+        "Requires user-supplied cartoon clips; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "cartoon-eva",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t07/scenes.js",
+        "skin_config": "template/demo/t07/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "unconfirmed",
+        "license": "unconfirmed",
+        "public_download": false,
+        "tier": "unconfirmed"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": false,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": false
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": "unconfirmed",
+        "engine_api": "legacy-1",
+        "plan_schemas": []
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T08",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Neon Explainer",
+      "name_cn": "霓虹讲解",
+      "notes": [
+        "Template helpers remain in EVA Core during the pilot."
+      ],
+      "render_status": "manual-only",
+      "schema_version": 1,
+      "slug": "neon-explainer",
+      "sources": {
+        "manual_scene": "template/demo/t08/scenes.js",
+        "shared_helpers": "engine/templates.js"
+      },
+      "version": "0.0.0",
+      "version_status": "unconfirmed"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "available",
+        "rc": "legacy",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-footage"
+        ],
+        "tools": []
+      },
+      "id": "T09",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Showcase Wall Opener",
+      "name_cn": "作品墙开场",
+      "notes": [
+        "Production renderable and retained in RC for legacy saved plans; not a current staging launch choice.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "showcase-wall-opener",
+      "sources": {
+        "auto_skin": "template/demo/t09/auto-skin.js",
+        "manual_scene": "template/demo/t09/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t09/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers",
+          "land"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T10",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "HUD Keynote",
+      "name_cn": "HUD 发布会",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "hud-keynote",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t10/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t10/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T11",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "HUD Dashboard",
+      "name_cn": "HUD 仪表盘",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "hud-dashboard",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t11/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t11/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-footage"
+        ],
+        "tools": []
+      },
+      "id": "T12",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Old Newspaper",
+      "name_cn": "旧报纸",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "old-newspaper",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t12/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t12/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T13",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Tech Blue",
+      "name_cn": "科技蓝",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "tech-blue",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t13/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t13/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers",
+          "land"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T14",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Future Style",
+      "name_cn": "未来科技",
+      "notes": [
+        "Preview catalog entry; globe rendering depends on the Core land mask.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "future-style",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "land_mask": "engine/land.js",
+        "manual_scene": "template/demo/t14/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t14/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T15",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Learning Style",
+      "name_cn": "学习风",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "learning-style",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t15/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t15/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "ArchivoBlack",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T16",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Comic Pop",
+      "name_cn": "漫画风",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "comic-pop",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t16/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t16/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "available",
+        "rc": "available",
+        "staging": "available"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "land",
+          "template-helpers"
+        ],
+        "fonts": [
+          "ArchivoBlack",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T17",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Science Network",
+      "name_cn": "科学风",
+      "notes": [
+        "ZIP pilot; T17 helper functions remain in EVA Core to avoid unsafe engine surgery.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "science-network",
+      "sources": {
+        "auto_skin": "template/demo/t17/auto-skin.js",
+        "manual_scene": "template/demo/t17/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t17/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "unconfirmed",
+        "license": "unconfirmed",
+        "public_download": false,
+        "tier": "unconfirmed"
+      },
+      "aspects": [],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": false,
+        "gallery": false,
+        "manual_scene": false,
+        "studio_auto": false
+      },
+      "channels": {
+        "github_main": "retired",
+        "production": "retired",
+        "rc": "retired",
+        "staging": "retired"
+      },
+      "compatibility": {
+        "core": "none",
+        "engine_api": "none",
+        "plan_schemas": []
+      },
+      "dependencies": {
+        "core_modules": [],
+        "fonts": [],
+        "media": [],
+        "tools": []
+      },
+      "id": "T18",
+      "identity_status": "retired",
+      "lifecycle": "retired",
+      "name": "Retired T18",
+      "name_cn": "已停用 T18",
+      "notes": [
+        "Permanently retired ID. Must never be reassigned or aliased."
+      ],
+      "render_status": "retired",
+      "schema_version": 1,
+      "slug": "retired-t18",
+      "sources": {},
+      "version": "0.0.0",
+      "version_status": "unconfirmed"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "user-footage"
+        ],
+        "tools": [
+          "scripts/matte.py",
+          "scripts/caption_zones.py"
+        ]
+      },
+      "id": "T19",
+      "identity_status": "confirmed",
+      "lifecycle": "beta",
+      "name": "Footage Intro",
+      "name_cn": "真实影像引入",
+      "notes": [
+        "Excluded from Studio selection until matte and user B-roll dependencies are integrated safely.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "footage-intro",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "manual_scene": "template/demo/t19/scenes.js",
+        "skin_config": "template/demo/t19/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "available",
+        "rc": "legacy",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "SpaceMono",
+          "Anton",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T20",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Fast-Paced Social Media",
+      "name_cn": "快节奏社媒",
+      "notes": [
+        "Production renderable and retained in RC for legacy saved plans; not a current staging launch choice.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "fast-paced-social-media",
+      "sources": {
+        "auto_skin": "template/demo/t20/auto-skin.js",
+        "manual_scene": "template/demo/t20/scenes.js",
+        "skin_config": "template/demo/t20/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "available",
+        "staging": "available"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "PlayfairDisplay",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T21",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Clean & Minimal",
+      "name_cn": "简洁极简",
+      "notes": [
+        "Studio RC/staging launch template; not enabled by current production configuration.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "clean-and-minimal",
+      "sources": {
+        "auto_skin": "template/demo/t21/auto-skin.js",
+        "manual_scene": "template/demo/t21/scenes.js",
+        "skin_config": "template/demo/t21/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "unconfirmed",
+        "license": "unconfirmed",
+        "public_download": false,
+        "tier": "unconfirmed"
+      },
+      "aspects": [],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": false,
+        "gallery": false,
+        "manual_scene": false,
+        "studio_auto": false
+      },
+      "channels": {
+        "github_main": "retired",
+        "production": "retired",
+        "rc": "retired",
+        "staging": "retired"
+      },
+      "compatibility": {
+        "core": "none",
+        "engine_api": "none",
+        "plan_schemas": []
+      },
+      "dependencies": {
+        "core_modules": [],
+        "fonts": [],
+        "media": [],
+        "tools": []
+      },
+      "id": "T22",
+      "identity_status": "retired",
+      "lifecycle": "retired",
+      "name": "Retired T22",
+      "name_cn": "已停用 T22",
+      "notes": [
+        "Permanently retired ID. Must never be reassigned or aliased."
+      ],
+      "render_status": "retired",
+      "schema_version": 1,
+      "slug": "retired-t22",
+      "sources": {},
+      "version": "0.0.0",
+      "version_status": "unconfirmed"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "available",
+        "staging": "available"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "ArchivoBlack",
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": []
+      },
+      "id": "T23",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Creative Pop",
+      "name_cn": "创意波普",
+      "notes": [
+        "Studio RC/staging launch template; not enabled by current production configuration.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "creative-pop",
+      "sources": {
+        "auto_skin": "template/demo/t23/auto-skin.js",
+        "manual_scene": "template/demo/t23/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/demo/t23/skin.json",
+        "studio_skin": "saas/worker/auto/auto.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit",
+          "template-helpers"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": [
+          "scripts/matte.py"
+        ]
+      },
+      "id": "T24",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Luxury Nude Motion",
+      "name_cn": "奢华裸色",
+      "notes": [
+        "Preview catalog entry; no Studio auto skin. Presenter matte is an external Core tool dependency.",
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "luxury-nude-motion",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "bootstrap": "template/sample5/sample.js",
+        "manual_scene": "template/sample5/t24/scenes.js",
+        "shared_helpers": "engine/templates.js",
+        "skin_config": "template/sample5/t24/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "unconfirmed",
+        "license": "unconfirmed",
+        "public_download": false,
+        "tier": "unconfirmed"
+      },
+      "aspects": [
+        "16:9"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": false,
+        "gallery": true,
+        "manual_scene": false,
+        "studio_auto": false
+      },
+      "channels": {
+        "github_main": "absent",
+        "production": "hidden",
+        "rc": "coming-soon",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": "unconfirmed",
+        "engine_api": "unconfirmed",
+        "plan_schemas": []
+      },
+      "dependencies": {
+        "core_modules": [],
+        "fonts": [],
+        "media": [],
+        "tools": []
+      },
+      "id": "T25",
+      "identity_status": "reserved",
+      "lifecycle": "planned",
+      "name": "Editorial Depth",
+      "name_cn": "",
+      "notes": [
+        "Catalog concept and QA placeholder only; no executable template source found."
+      ],
+      "render_status": "planned",
+      "schema_version": 1,
+      "slug": "editorial-depth",
+      "sources": {},
+      "version": "0.0.0",
+      "version_status": "unconfirmed"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "available",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Anton",
+          "Playfair Display",
+          "Noto Sans CJK SC"
+        ],
+        "media": [
+          "presenter-frames",
+          "presenter-cutout"
+        ],
+        "tools": [
+          "scripts/matte.py"
+        ]
+      },
+      "id": "T26",
+      "identity_status": "confirmed",
+      "lifecycle": "stable",
+      "name": "Vintage Story",
+      "name_cn": "复古拼贴故事",
+      "notes": [
+        "Identity resolved: T26 is Vintage Story / 复古拼贴故事; Real Estate remains T28 and is excluded from v1.0.",
+        "Audited t26-rebuild source preserves all nine approved layouts and animations; automatic mode adds only Core integration hooks.",
+        "T26 v1.0 supports 9:16 only; 16:9 is rejected by Registry compatibility checks."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "vintage-story",
+      "sources": {
+        "auto_skin": "template/demo/t26/auto-skin.js",
+        "demo_scene": "template/demo/t26/demo-5s.js",
+        "docs": "template/demo/t26/README.md",
+        "manual_scene": "template/demo/t26/scenes.js",
+        "runtime_lib": "template/demo/t26/t26.js",
+        "skin_config": "template/demo/t26/skin.json"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "public",
+        "license": "MIT",
+        "public_download": true,
+        "tier": "free"
+      },
+      "aspects": [
+        "16:9",
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": true,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": true
+      },
+      "channels": {
+        "github_main": "available",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": ">=1.0.0 <2.0.0",
+        "engine_api": "legacy-1",
+        "plan_schemas": [
+          "legacy-v1"
+        ]
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Inter"
+        ],
+        "media": [
+          "presenter-frames",
+          "video-wall-footage"
+        ],
+        "tools": []
+      },
+      "id": "T27",
+      "identity_status": "confirmed",
+      "lifecycle": "beta",
+      "name": "Video Wall Kinetic Typography",
+      "name_cn": "视频墙动感大字",
+      "notes": [
+        "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo.",
+        "Original T27 source imported byte-for-byte from feat/t27-video-wall commit b71514f496fede78aad4020c1a2a3465de4fa00a."
+      ],
+      "render_status": "renderable",
+      "schema_version": 1,
+      "slug": "video-wall-kinetic-typography",
+      "sources": {
+        "auto_adapter": "core/runtime/auto/skin-adapter.js",
+        "bootstrap": "template/sample5/sample.js",
+        "feature_branch": "branch:feat/t27-video-wall:engine/t27.js",
+        "manual_scene": "template/sample5/t27/scenes.js",
+        "skin_config": "template/sample5/t27/skin.json",
+        "template_helpers": "template/sample5/t27/helpers.js"
+      },
+      "version": "1.0.0",
+      "version_status": "assigned"
+    },
+    {
+      "access": {
+        "distribution": "unconfirmed",
+        "license": "unconfirmed",
+        "public_download": false,
+        "tier": "unconfirmed"
+      },
+      "aspects": [
+        "9:16"
+      ],
+      "assets": [],
+      "capabilities": {
+        "asr_word_timing": false,
+        "gallery": true,
+        "manual_scene": true,
+        "studio_auto": false
+      },
+      "channels": {
+        "github_main": "absent",
+        "production": "hidden",
+        "rc": "preview",
+        "staging": "hidden"
+      },
+      "compatibility": {
+        "core": "unconfirmed",
+        "engine_api": "unconfirmed",
+        "plan_schemas": []
+      },
+      "dependencies": {
+        "core_modules": [
+          "engine",
+          "kit"
+        ],
+        "fonts": [
+          "Noto Sans CJK SC"
+        ],
+        "media": [
+          "presenter-frames"
+        ],
+        "tools": [
+          "scripts/srt_to_beats.py"
+        ]
+      },
+      "id": "T28",
+      "identity_status": "confirmed",
+      "lifecycle": "planned",
+      "name": "Real Estate Social",
+      "name_cn": "房产种草",
+      "notes": [
+        "Identity resolved: Real Estate Social is T28; T26 is Vintage Story.",
+        "The historical source remains under template/industry/t26 for provenance only and must not be packaged or selected as T26.",
+        "T28 is excluded from v1.0 because its source has not been normalized into an independently installable automatic-edit package."
+      ],
+      "render_status": "partial",
+      "schema_version": 1,
+      "slug": "real-estate-social",
+      "sources": {
+        "historical_bootstrap": "template/industry/t26/data.js",
+        "historical_manual_scene": "template/industry/t26/scenes.js"
+      },
+      "version": "0.0.0",
+      "version_status": "unconfirmed"
+    }
+  ]
+}

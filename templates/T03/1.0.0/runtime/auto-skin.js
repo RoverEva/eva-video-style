@@ -1,0 +1,5 @@
+/* Generated deterministic wrapper for the shared EVA Core skin adapter. */
+(function(root){
+  if (!root.EVA_SKIN_ADAPTER) throw new Error('EVA Core skin adapter missing');
+  root.EVA_SKIN_ADAPTER.register({"schema_version":1,"id":"T03","window":{"x":1300,"y":230,"w":520,"h":640,"r":24,"s":1.5},"side":"left","theme":"t09","class":null,"condensed":true,"ring":{"color":"#ff7a1a","width":5,"shadow":0.3},"label":"Dark 3D Stage","visual":{"background":"radial-gradient(1200px 760px at 45% 35%, #292333, #09090d)","accent":"#ff7a1a","ink":"#ffffff","pattern":"video-wall"}});
+})(window);

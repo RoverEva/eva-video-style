@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "core_version": "1.0.0",
+  "eva_asr": {
+    "repository": "https://github.com/RoverEva/eva-asr.git",
+    "commit": "91ff24122f1cfed6c166372a597bff83ea3ab405",
+    "python": ">=3.10,<3.14",
+    "uv_lock_sha256": "625a250006c58903a09bbbe4b635d770a2dce71d7fd5880a55dd82c0a9f82982",
+    "critical_runtime": {
+      "torch": "2.8.0",
+      "torchaudio": "2.8.0",
+      "torchvision": "0.23.0",
+      "torchcodec": "0.7.0"
+    },
+    "install_policy": "Clone the exact commit, verify uv.lock SHA-256, then run uv sync --locked. A plain pip install is not reproducible."
+  },
+  "rvm_mobilenetv3": {
+    "url": "https://github.com/PeterL1n/RobustVideoMatting/releases/download/v1.0.0/rvm_mobilenetv3_fp32.onnx",
+    "sha256": "88d4531297118f595bf2fd60f6f566aec2e559393802d1f436c380f0cbbd2828",
+    "license": "GPL-3.0",
+    "bundled": false,
+    "install_policy": "Downloaded on first presenter-cutout use, verified by SHA-256 and stored in the user's cache; never include it in Core or template ZIPs."
+  },
+  "notes": [
+    "Pilot lock only; the current Studio Dockerfile is intentionally unchanged.",
+    "Production adoption requires ASR fixture and container rebuild approval.",
+    "A clean pip install resolved torch 2.8.0 with torchaudio 2.11.0 and failed at runtime; the matching 2.8.0 pair passed a real 10-second transcription."
+  ]
+}

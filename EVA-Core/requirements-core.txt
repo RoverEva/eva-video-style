@@ -1,0 +1,6 @@
+# EVA Core local runtime (ASR stays in its separately locked eva-asr environment).
+numpy==2.0.2
+opencv-python-headless==4.12.0.88
+# Required only by templates that declare presenter-cutout (T26). The GPL-3.0
+# RVM model is downloaded separately at runtime and is never bundled.
+onnxruntime==1.29.0

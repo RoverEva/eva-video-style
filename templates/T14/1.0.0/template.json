@@ -1,0 +1,68 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "16:9",
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "hidden",
+    "rc": "preview",
+    "staging": "hidden"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit",
+      "template-helpers",
+      "land"
+    ],
+    "fonts": [
+      "Inter"
+    ],
+    "media": [
+      "presenter-frames"
+    ],
+    "tools": []
+  },
+  "id": "T14",
+  "identity_status": "confirmed",
+  "lifecycle": "stable",
+  "name": "Future Style",
+  "name_cn": "未来科技",
+  "notes": [
+    "Preview catalog entry; globe rendering depends on the Core land mask.",
+    "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "future-style",
+  "sources": {
+    "auto_adapter": "core/runtime/auto/skin-adapter.js",
+    "land_mask": "engine/land.js",
+    "manual_scene": "template/demo/t14/scenes.js",
+    "shared_helpers": "engine/templates.js",
+    "skin_config": "template/demo/t14/skin.json"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

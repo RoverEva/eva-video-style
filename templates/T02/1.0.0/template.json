@@ -1,0 +1,66 @@
+{
+  "access": {
+    "distribution": "public",
+    "license": "MIT",
+    "public_download": true,
+    "tier": "free"
+  },
+  "aspects": [
+    "16:9",
+    "9:16"
+  ],
+  "assets": [],
+  "capabilities": {
+    "asr_word_timing": true,
+    "gallery": true,
+    "manual_scene": true,
+    "studio_auto": true
+  },
+  "channels": {
+    "github_main": "available",
+    "production": "hidden",
+    "rc": "available",
+    "staging": "available"
+  },
+  "compatibility": {
+    "core": ">=1.0.0 <2.0.0",
+    "engine_api": "legacy-1",
+    "plan_schemas": [
+      "legacy-v1"
+    ]
+  },
+  "dependencies": {
+    "core_modules": [
+      "engine",
+      "kit"
+    ],
+    "fonts": [
+      "Anton",
+      "Inter"
+    ],
+    "media": [
+      "presenter-frames"
+    ],
+    "tools": []
+  },
+  "id": "T02",
+  "identity_status": "confirmed",
+  "lifecycle": "stable",
+  "name": "Electric Blue Console",
+  "name_cn": "电光蓝控制台",
+  "notes": [
+    "Studio RC/staging launch template; not enabled by current production configuration.",
+    "Independent automatic-edit adapter added without changing the original manual scene; adapter visuals require regression review against the approved demo."
+  ],
+  "render_status": "renderable",
+  "schema_version": 1,
+  "slug": "electric-blue-console",
+  "sources": {
+    "auto_skin": "template/demo/t02/auto-skin.js",
+    "manual_scene": "template/demo/t02/scenes.js",
+    "skin_config": "template/demo/t02/skin.json",
+    "studio_skin": "saas/worker/auto/auto.js"
+  },
+  "version": "1.0.0",
+  "version_status": "assigned"
+}

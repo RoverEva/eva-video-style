@@ -1,0 +1,123 @@
+---
+name: eva-video-style
+description: Edit talking-head videos in Eva Video Style — kinetic motion graphics, a morphing presenter window, solid high-saturation color cards, bilingual Chinese + English captions, and no background music unless the user turns it on. Use when asked to edit, design, or animate a talking-head / vlog / product-promo video "in Eva Video Style", or when given a raw video plus a bilingual SRT to turn into a motion-designed video.
+---
+
+# Eva Video Style
+
+A motion-design house style for Eva's talking-head videos (bilingual creator, Chinese + English). The speaker stays on screen the whole time inside a window that keeps changing shape, while bold solid-color cards, giant condensed words and real screen recordings pop in exactly on the words she says.
+
+Read these before building:
+- `references/templates.md` — **the 23 v1.0 templates** (T01–T07, T09–T17, T19–T21, T23–T24, T26–T27) with their supported aspects. T18/T22 are retired; T08/T25/T28 are excluded.
+- `references/style-guide.md` — the look: palette, type, Eva window, motion vocabulary, themes, signature beats, captions.
+- `references/pipeline.md` — step-by-step production, from raw video to delivered masters.
+- `references/engine-api.md` — how to write a section with the bundled engine (`engine/`, `template/section/`).
+
+No SRT supplied? Generate one from the video with eva-asr: `python3 scripts/asr.py raw/talk.mp4 srt/talk --config srt/asr.json`, then use `srt/talk.bilingual.srt` as the SRT (pipeline step 2b). Say that the captions are machine-recognised.
+
+## Independent Core automatic-edit mode
+
+When this Skill is installed through `EVA-Core.zip`, prefer the Registry-driven command in `docs/independent-core.md`. It accepts a raw MP4, runs locked eva-asr when no SRT is supplied, plans from the real transcript, renders a preview first, then produces the final MP4 and blocking QA reports. Never substitute the template demo scene for the user's footage.
+
+Use only template IDs installed under the selected install root. For one template, pass `--mode single`; for compatible installed templates pass a comma-separated list with `--mode multi`. T26 is Vintage Story and supports 9:16 only. Do not copy a missing template from Studio, do not call Studio account/payment/cloud services, and do not treat a render as delivered when `JOB/out/failure.json` exists or QA reports a blocking failure.
+
+## Templates
+
+| ID | Chinese name | Name | Best for |
+|---|---|---|---|
+| T01 | 酸性青柠 | Acid Lime Kinetic | openings, hooks, bold claims, wins |
+| T02 | 电光蓝控制台 | Electric Blue Console | numbers, results, comparisons |
+| T03 | 暗黑 3D 舞台 | Dark 3D Stage | real screen recordings, demos |
+| T04 | 纸张 | Paper | pain points, calm explanations |
+| T05 | 红色放射 | Red Sunburst | key point, call to action, finale |
+| T06 | 品牌紫 | Brand Purple | product reveal |
+| T07 | 卡通 Eva | Cartoon Eva | storytelling (needs her cartoon clips) |
+| T09 | 作品墙开场 | Showcase Wall Opener | channel/series openings, launches |
+| T10 | HUD 发布会 | HUD Keynote | announcements, milestones |
+| T11 | HUD 仪表盘 | HUD Dashboard | how-to, workflows, features, iteration |
+| T12 | 旧报纸 | Old Newspaper | stories, look-backs, opinion, calling out a problem |
+| T13 | 科技蓝 | Tech Blue | tech, AI and product talks, agendas, chapter titles, comparing options |
+| T14 | 未来科技 | Future Style | big news, rules / key points, AI and future topics, endings |
+| T15 | 学习风 | Learning Style | education, study tips, vocabulary and reading, videos for kids and parents |
+| T16 | 漫画风 | Comic Pop | playful talks, before-vs-after comparisons, key points, tip lists |
+| T17 | 科学风 | Science Network | tech and AI trends, science topics, how learning works, future outlooks |
+| T20 | 快节奏社媒 | Fast-Paced Social Media | TikTok / Shorts / Reels energy: kinetic word-by-word captions, stickers, beat cuts (laid out 16:9) |
+| T21 | 简洁极简 | Clean & Minimal | tutorials, business analysis, education: serif headlines, hairlines, slow motion |
+| T23 | 创意波普 | Creative Pop | playful tutorials, step lists, workflows, creator tips: seven-colour rounded cards, big keyword stickers, simple icons, arrows, sparkles; seven layouts (splash, 7-step row, hub, vertical cards, path, split showcase, icon burst) |
+| T24 | 奢华裸色 | Luxury Nude Motion | premium personal-brand talks, frameworks, step-by-step methods, product intros: solid nude stage #D8C5B5, presenter cut-out with a soft shadow, large 3D white type, floating ivory cards, numbered steps, fine icons, light-sweep transitions; eight layouts (hero, steps, icon tiles, orbit, statement, feature card, timeline, icon grid) |
+| T26 | 复古拼贴故事 | Vintage Story (9:16 only) | vertical stories and editorial explainers: torn paper, newspaper cards, taped photos, red-pen marks, presenter cut-out and nine preserved layouts; source `template/demo/t26/` |
+| T27 | 视频墙动感大字 | Video Wall Kinetic Typography | bold hooks and launches: scrolling video wall, kinetic words behind the presenter, white outline and hand-drawn rays |
+| T19 | 真实影像引入 | Footage Intro | bringing in real footage / news clips: cut-out + fast swaps through the background images or footage the user imports (no bundled images), footage push-in, presenter circle that keeps the footage clear, captions that move off the footage |
+
+When the user names templates, use exactly those for those parts. When they don't, choose per section from "Best for" and follow the mixing rules in `references/templates.md`. The installed Registry is the source of truth for ID, version and supported aspect. T19, T24 and T26 can require presenter cut-out frames from `scripts/matte.py`; the GPL-3.0 RVM model downloads separately and is never bundled. T19 never ships or invents background images: it only uses user-provided footage, screen recordings or photos. All v1.0 templates support 16:9 and 9:16 except T26, which is native 9:16 only.
+
+## Non-negotiables
+
+1. **Render the Registry-declared aspect at 30 fps.** Use 1920×1080 for 16:9 or 1080×1920 for 9:16. T26 is 9:16 only. No chapter bars, shot numbers, timecodes or watermarks.
+2. **No background music unless the user turns it on.** By default (`background_music: none`) there is no music, and music inside any clip or template must be muted. Only when the user sets `background_music` to `auto` or `manual` add one continuous, ducked bed plus at most a few Kenney accents with `scripts/music.py` (pipeline step 9b), preview the audio first and wait for approval. Keep the speaker's original voice untouched (trim only). Add short SFX only (whoosh, pop, click, impact, ding, applause). Final loudness is about **-16 LUFS**.
+3. **The speaker's whole head is always visible**, from hair to chin, in every window shape. Never crop the face; calibrate the face position on every new shoot.
+4. **Never overwrite** source videos, old projects or approved samples. Every output goes to a new versioned folder (`v1_samples/`, `v1_full/`, `v2_full/` ...).
+5. **Never invent facts, numbers or software screens.** Show real UI only from real screen recordings. Label anything conceptual `ILLUSTRATIVE` and draw it without fake numbers. Show stated results (scores, prices, dates) exactly as spoken.
+6. **Bilingual captions:** Chinese line on top, English line underneath, built from the speaker's bilingual SRT. Obvious typos or machine-translation errors may be fixed **in the burned captions only**. Never edit the original SRT, and tell the user which lines were corrected.
+7. **When only captions change, don't touch the video design.**
+8. **Workflow:** for a new series or a first video, make about three short sample sections in different themes, get approval, then do the full video. For a follow-up video in an approved style, go straight to the full video.
+
+## Deliverables
+
+- `NAME_CN-EN.mp4`: burned bilingual captions.
+- `NAME_Clean.mp4`: no captions. Skip it if the user says they only want the captioned version.
+- `NAME_CN-EN.srt`: editable paired captions.
+- The SFX stem (`.wav`) and an editable project zip.
+
+## Quick start
+
+```bash
+# 1. media
+scripts/extract_frames.sh raw/talk.mp4 media/eva          # speaker as 30 fps JPGs
+scripts/extract_frames.sh raw/screen.mp4 media/screen     # real screen recording(s)
+# 2. sections: copy template/section/ per 15–40 s chunk, write scenes.js (see references/engine-api.md)
+node scripts/render.mjs s1/index.html --stills check/s1 --times 1,4,8,12   # layout check
+node scripts/render.mjs s1/index.html --out sec/s1.mp4                     # silent render
+node scripts/render.mjs s1/index.html --cues sec/s1_cues.json              # sound cues
+# 3. audio + captions + assembly
+python3 scripts/merge_cues.py sec/all_cues.json sec/s1_cues.json:0 sec/s2_cues.json:37.4
+python3 scripts/sfx.py sec/all_cues.json 73.667 sec/sfx.wav
+python3 scripts/captions.py raw/talk.srt 0 99999 out/NAME_CN-EN display_fix.json
+scripts/assemble.sh raw/talk.mp4 sec/sfx.wav out/NAME_CN-EN.ass out/NAME sec/s1.mp4 sec/s2.mp4
+```
+
+Optional background music (only when the user asks; see pipeline step 9b):
+```bash
+scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --mode auto --cues sec/all_cues.json   # plan + audio preview
+scripts/auto_music.sh out/NAME_CN-EN.mp4 srt/talk.en.srt out/music --apply                               # after approval
+```
+
+Requirements: Node 18+ with `playwright` (Chromium), Python 3 with `numpy`, FFmpeg with libass and libx264, and the fonts listed in `engine/fonts/README.md`.
+
+## Quality checks (QA)
+
+Every video goes through `qa/` (details: `qa/README.md`). QA only reports. It never moves captions, rescales the
+presenter or changes a template to make a check pass.
+
+```bash
+python3 -m qa pre --page s1/index.html --aspect 16:9 --template T17 --srt raw/talk.srt --input raw/talk.mp4   # before the full render
+node scripts/render.mjs s1/index.html --out sec/s1.mp4     # stops (exit 4) on a missing file/frame or a JS error; --no-qa to skip
+scripts/assemble.sh ...                                    # runs `python3 -m qa post` itself -> out/NAME_qa/qa-summary.md
+python3 -m qa post out/NAME_CN-EN.mp4 --clean out/NAME_Clean.mp4 --source raw/talk.mp4 --ass out/NAME_CN-EN.ass \
+    --srt out/NAME_CN-EN.srt --template T17 --out out/NAME_qa                           # standalone, on any existing render
+```
+
+- **FAIL blocks delivery** (assemble.sh exits 3; `EVA_QA=report` to deliver anyway and say why, `EVA_QA=off` to skip). Fix
+  the cause it names (face cropped or enlarged, caption over the face or past the frame edge, missing asset, wrong
+  size/fps, truncated, bad SRT timing), re-render, and re-run QA.
+- **WARN**: look at the evidence image and decide. Tell the user about any warning you leave in.
+- Pass `--template`/`--plan` so template rules apply (T17/T19/T26/T27 text stays off the face and T24/T26 retain their
+  intended presenter treatment). Mark intended still parts with `--static`. Checks listed as "Not run" are unverified.
+
+## Before delivering, verify
+
+- The QA report (`out/NAME_qa/qa-summary.md`) has no FAIL; warnings were reviewed.
+- The frame count of the final equals the source video's frame count. Section boundaries must be frame-exact.
+- The whole video decodes without errors, and loudness is about -16 LUFS.
+- On a contact sheet (`scripts/contact_sheet.sh`), no text sits under the Eva window, nothing is cut off at the frame edge, captions don't collide with graphics, and the face is never cropped.
+- The Eva window pose at the end of each section equals the pose at the start of the next, so joins are invisible.

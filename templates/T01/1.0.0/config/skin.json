@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "T01",
+  "window": {"x": 1240, "y": 150, "w": 600, "h": 740, "r": 36, "s": 1.5},
+  "side": "left",
+  "theme": "t01",
+  "class": "dotgrid",
+  "condensed": true
+}
