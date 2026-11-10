@@ -88,7 +88,7 @@
     $("#gDlg").addEventListener("click", e => { if (e.target.id === "gDlg") closeDlg(); });   // click on the backdrop
     let j; try { j = await (await fetch("templates/catalog.json", { cache: "no-cache" })).json(); }
     catch (e) { $("#gGrid").replaceChildren(el("p", { class: "note bad", text: "The gallery could not be loaded. Please refresh." })); return; }
-    all = j.templates; cats = j.categories;
+    all = j.templates.filter(t => t.status !== "excluded"); cats = j.categories;   // excluded templates (T08) are never shown
     const opts = [{ id: "all", label: "All templates" }, { id: "available", label: "Available now" }, ...cats.filter(c => all.some(t => t.categories.includes(c.id)))];
     $("#gCat").replaceChildren(...opts.map(c => el("option", { value: c.id, text: `${c.label} (${all.filter(t => inCat(t, c.id)).length})` })));
     if (!opts.some(o => o.id === state.cat)) state.cat = "all";

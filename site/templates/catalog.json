@@ -1,7 +1,7 @@
 {
  "schema": 1,
- "updated": "2026-11-09",
- "about": "Every existing template (original IDs; T18 and T22 were never used). Images are frames of each template's approved demo. Only status=available can be chosen for rendering (must match the API's TEMPLATES).",
+ "updated": "2026-11-10",
+ "about": "Every existing template (original IDs; T18 and T22 were never used). Images are frames of each template's approved demo (Eva's visual approval 2026-11-10). status: available = selectable for rendering (must match the API's TEMPLATES); preview = shown, not selectable; excluded = kept in data, never shown (T08).",
  "categories": [
   {
    "id": "hooks",
@@ -190,8 +190,8 @@
     "16:9",
     "9:16"
    ],
-   "status": "preview",
-   "note": "",
+   "status": "excluded",
+   "note": "Excluded by Eva (2026-11-10): not shown in the Gallery and not selectable. Code, files and history kept.",
    "thumb": "templates/thumbs/T08.webp",
    "thumb_aspect": "16:9",
    "launch_order": null
@@ -470,10 +470,10 @@
    "aspects": [
     "16:9"
    ],
-   "status": "soon",
+   "status": "preview",
    "note": "",
-   "thumb": null,
-   "thumb_aspect": null,
+   "thumb": "templates/thumbs/T25.webp",
+   "thumb_aspect": "16:9",
    "launch_order": null
   },
   {
@@ -487,10 +487,10 @@
    "aspects": [
     "16:9"
    ],
-   "status": "soon",
-   "note": "",
-   "thumb": null,
-   "thumb_aspect": null,
+   "status": "preview",
+   "note": "Vertical 9:16 version coming soon",
+   "thumb": "templates/thumbs/T26.webp",
+   "thumb_aspect": "16:9",
    "launch_order": null
   },
   {

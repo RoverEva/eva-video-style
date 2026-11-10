@@ -13,6 +13,7 @@ from playwright.sync_api import sync_playwright
 
 SITE = sys.argv[1].rstrip("/"); fails, errs = [], []
 CAT = json.loads((Path(__file__).resolve().parents[2] / "site/templates/catalog.json").read_text())
+CAT["templates"] = [x for x in CAT["templates"] if x["status"] != "excluded"]   # T08 excluded by Eva
 LAUNCH = ["T23", "T21", "T17", "T02", "T01"]
 def check(c, m):
     print(("PASS " if c else "FAIL ") + m, flush=True)
@@ -29,7 +30,7 @@ with sync_playwright() as p:
         if not pg.is_hidden("#gMore"): pg.click("#gMore"); pg.wait_for_timeout(200)
         while not pg.is_hidden("#gMore"): pg.click("#gMore"); pg.wait_for_timeout(200)
         ids = ids_of(pg)
-        check(sorted(ids) == sorted(t["id"] for t in CAT["templates"]) and len(set(ids)) == len(ids), f"{name}: Load more reaches all {len(ids)} templates, each once")
+        check(sorted(ids) == sorted(t["id"] for t in CAT["templates"]) and len(set(ids)) == len(ids) and len(ids) == 25 and "T08" not in ids, f"{name}: Load more reaches all {len(ids)} templates, each once, T08 not shown")
         st = pg.eval_on_selector_all(".g-card", "x => x.map(c => c.dataset.id + '=' + c.querySelector('.g-st').textContent)")
         check(all((s.split('=')[1] == "Available") == (s.split('=')[0] in LAUNCH) for s in st), f"{name}: only the launch templates say Available")
         kids = pg.eval_on_selector_all(".g-card", "x => [...new Set(x.map(c => [...c.children].map(k => k.className.split(' ')[0]).join(',')))]")
@@ -61,7 +62,7 @@ with sync_playwright() as p:
             pg.goto(SITE + "/?tpl=T05#studio"); pg.wait_for_timeout(2000)
             sel = pg.eval_on_selector_all("[name=tpl]:checked", "x => x.map(i => i.value)"); check("T05" not in sel, f"non-selectable template cannot be preselected ({sel})")
             # scale: 120 templates
-            big = dict(CAT, templates=CAT["templates"] + [dict(CAT["templates"][5], id=f"X{i:03}", status="soon", thumb=None, launch_order=None) for i in range(94)])
+            big = dict(CAT, templates=CAT["templates"] + [dict(CAT["templates"][5], id=f"X{i:03}", status="soon", thumb=None, launch_order=None) for i in range(120 - len(CAT["templates"]))])
             pg.route("**/templates/catalog.json", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(big)))
             pg.goto(SITE + "/templates.html"); pg.wait_for_selector(".g-card"); n1 = len(ids_of(pg)); pg.click("#gMore"); pg.wait_for_timeout(200); n2 = len(ids_of(pg))
             check(n1 == 24 and n2 == 48 and "120 templates" in pg.text_content("#gCount"), f"120 templates: {n1} → {n2} after Load more ({pg.text_content('#gCount')})")
