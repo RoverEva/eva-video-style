@@ -195,6 +195,10 @@
     tc.append(el("label", { class: "chip" }, [el("input", { type: "checkbox", name: "tplauto", value: "auto" }), el("span", { text: "Let us choose" })]));
     tc.addEventListener("change", e => { if (e.target.name === "tplauto" && e.target.checked) tc.querySelectorAll("[name=tpl]").forEach(x => x.checked = false);
       if (e.target.name === "tpl" && e.target.checked) $("[name=tplauto]").checked = false; });
+    // from the Template Gallery ("Use template"): preselect it — only one of the selectable launch templates
+    const want = new URLSearchParams(location.search).get("tpl");
+    if (want && TEMPLATES[want]) tc.querySelectorAll("[name=tpl]").forEach(x => { x.checked = x.value === want; });
+    tc.after(el("p", { class: "hint g-link" }, [el("a", { href: "templates.html", text: "Browse all templates →" })]));
 
     const kc = $("#trackChips");
     Object.entries(TRACKS).forEach(([id, name]) => {
@@ -635,5 +639,5 @@
     } catch (e) { hist.replaceChildren(el("p", { class: "note bad", text: "History is unavailable right now." })); }
   }
 
-  window.EVA = { home, video, videos, account };
+  window.EVA = { home, video, videos, account, header };
 })();

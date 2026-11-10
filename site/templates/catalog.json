@@ -1,0 +1,535 @@
+{
+ "schema": 1,
+ "updated": "2026-11-09",
+ "about": "Every existing template (original IDs; T18 and T22 were never used). Images are frames of each template's approved demo. Only status=available can be chosen for rendering (must match the API's TEMPLATES).",
+ "categories": [
+  {
+   "id": "hooks",
+   "label": "Hooks & Openers"
+  },
+  {
+   "id": "explain",
+   "label": "Explainers & Tutorials"
+  },
+  {
+   "id": "edu",
+   "label": "Education"
+  },
+  {
+   "id": "tech",
+   "label": "Tech & AI"
+  },
+  {
+   "id": "business",
+   "label": "Business & Data"
+  },
+  {
+   "id": "product",
+   "label": "Product & Launch"
+  },
+  {
+   "id": "story",
+   "label": "Storytelling"
+  },
+  {
+   "id": "social",
+   "label": "Social & Creator"
+  },
+  {
+   "id": "premium",
+   "label": "Premium & Brand"
+  },
+  {
+   "id": "realestate",
+   "label": "Real Estate"
+  }
+ ],
+ "templates": [
+  {
+   "id": "T01",
+   "name": "Acid Lime Kinetic",
+   "name_cn": "酸性青柠",
+   "best_for": "Openings, hooks, bold claims, wins",
+   "categories": [
+    "hooks",
+    "social"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "available",
+   "note": "",
+   "thumb": "templates/thumbs/T01.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": 4
+  },
+  {
+   "id": "T02",
+   "name": "Electric Blue Console",
+   "name_cn": "电光蓝控制台",
+   "best_for": "Numbers, results, efficiency, comparisons",
+   "categories": [
+    "business",
+    "tech"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "available",
+   "note": "",
+   "thumb": "templates/thumbs/T02.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": 3
+  },
+  {
+   "id": "T03",
+   "name": "Dark 3D Stage",
+   "name_cn": "暗黑 3D 舞台",
+   "best_for": "Showing real screen recordings and product demos",
+   "categories": [
+    "product",
+    "tech"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T03.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T04",
+   "name": "Paper",
+   "name_cn": "纸张",
+   "best_for": "Pain points, problems, calm explanations, lists",
+   "categories": [
+    "explain",
+    "business"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T04.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T05",
+   "name": "Red Sunburst",
+   "name_cn": "红色放射",
+   "best_for": "Key point, call to action, finale",
+   "categories": [
+    "hooks",
+    "social"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T05.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T06",
+   "name": "Brand Purple",
+   "name_cn": "品牌紫",
+   "best_for": "Product reveal",
+   "categories": [
+    "product",
+    "premium"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T06.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T07",
+   "name": "Cartoon Eva",
+   "name_cn": "卡通 Eva",
+   "best_for": "Storytelling, milestones, playful transitions (needs your own cartoon clips)",
+   "categories": [
+    "story"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "Needs your own cartoon clips",
+   "thumb": "templates/thumbs/T07.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T08",
+   "name": "Neon Explainer",
+   "name_cn": "霓虹讲解",
+   "best_for": "Explaining a concept or term, tutorials, analogies",
+   "categories": [
+    "explain",
+    "edu"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T08.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T09",
+   "name": "Showcase Wall Opener",
+   "name_cn": "作品墙开场",
+   "best_for": "Channel or series openings, launches, portfolio",
+   "categories": [
+    "hooks",
+    "product"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T09.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T10",
+   "name": "HUD Keynote",
+   "name_cn": "HUD 发布会",
+   "best_for": "Announcements, milestones, big news, launches",
+   "categories": [
+    "product",
+    "tech"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T10.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T11",
+   "name": "HUD Dashboard",
+   "name_cn": "HUD 仪表盘",
+   "best_for": "How-to, workflows, tips, features, compatibility, iteration",
+   "categories": [
+    "explain",
+    "tech"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T11.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T12",
+   "name": "Old Newspaper",
+   "name_cn": "旧报纸",
+   "best_for": "Stories, look-backs, calling out a problem, opinion pieces",
+   "categories": [
+    "story"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T12.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T13",
+   "name": "Tech Blue",
+   "name_cn": "科技蓝",
+   "best_for": "Tech, AI and product talks, agendas, chapter titles, comparing options",
+   "categories": [
+    "tech",
+    "business"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T13.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T14",
+   "name": "Future Style",
+   "name_cn": "未来科技",
+   "best_for": "Big news, rules or key points, AI and future topics, endings",
+   "categories": [
+    "tech",
+    "hooks"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T14.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T15",
+   "name": "Learning Style",
+   "name_cn": "学习风",
+   "best_for": "Education, study tips, vocabulary and reading, videos for kids and parents",
+   "categories": [
+    "edu"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T15.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T16",
+   "name": "Comic Pop",
+   "name_cn": "漫画风",
+   "best_for": "Fun and playful talks, before-vs-after comparisons, key points, tip lists",
+   "categories": [
+    "social",
+    "explain"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T16.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T17",
+   "name": "Science Network",
+   "name_cn": "科学风",
+   "best_for": "Tech and AI trends, science topics, how learning works, future outlooks",
+   "categories": [
+    "tech",
+    "edu"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "available",
+   "note": "",
+   "thumb": "templates/thumbs/T17.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": 2
+  },
+  {
+   "id": "T19",
+   "name": "Footage Intro",
+   "name_cn": "真实影像引入",
+   "best_for": "Bringing in real footage: news clips, product shots, tech and AI news openers",
+   "categories": [
+    "tech",
+    "product"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "Needs your own footage — coming after launch",
+   "thumb": "templates/thumbs/T19.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T20",
+   "name": "Fast-Paced Social Media",
+   "name_cn": "快节奏社媒",
+   "best_for": "High-energy TikTok / Shorts / Reels pieces, launches, quick tips",
+   "categories": [
+    "social",
+    "hooks"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T20.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T21",
+   "name": "Clean & Minimal",
+   "name_cn": "简洁极简",
+   "best_for": "Tutorials, business analysis, education, calm summaries",
+   "categories": [
+    "explain",
+    "business",
+    "edu"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "available",
+   "note": "",
+   "thumb": "templates/thumbs/T21.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": 1
+  },
+  {
+   "id": "T23",
+   "name": "Creative Pop",
+   "name_cn": "创意波普",
+   "best_for": "Playful tutorials, step lists and checklists, workflows, creator tips, social content",
+   "categories": [
+    "social",
+    "explain"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "available",
+   "note": "",
+   "thumb": "templates/thumbs/T23.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": 0
+  },
+  {
+   "id": "T24",
+   "name": "Luxury Nude Motion",
+   "name_cn": "奢华裸色",
+   "best_for": "Premium personal-brand talks, frameworks and step-by-step methods, product and service intros",
+   "categories": [
+    "premium",
+    "business"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T24.webp",
+   "thumb_aspect": "16:9",
+   "launch_order": null
+  },
+  {
+   "id": "T25",
+   "name": "Editorial Depth",
+   "name_cn": "",
+   "best_for": "",
+   "categories": [],
+   "aspects": [
+    "16:9"
+   ],
+   "status": "soon",
+   "note": "",
+   "thumb": null,
+   "thumb_aspect": null,
+   "launch_order": null
+  },
+  {
+   "id": "T26",
+   "name": "Vintage Story",
+   "name_cn": "复古拼贴故事",
+   "best_for": "",
+   "categories": [
+    "story"
+   ],
+   "aspects": [
+    "16:9"
+   ],
+   "status": "soon",
+   "note": "",
+   "thumb": null,
+   "thumb_aspect": null,
+   "launch_order": null
+  },
+  {
+   "id": "T27",
+   "name": "Video Wall Kinetic Typography",
+   "name_cn": "视频墙动感大字",
+   "best_for": "Hooks and high-energy talking-head stretches: launches, pain points, strong claims, one idea per beat",
+   "categories": [
+    "hooks",
+    "social"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T27.webp",
+   "thumb_aspect": "9:16",
+   "launch_order": null
+  },
+  {
+   "id": "T28",
+   "name": "Real Estate Social",
+   "name_cn": "房产种草",
+   "best_for": "Property tours and listing intros for Reels / TikTok / 小红书 / 抖音",
+   "categories": [
+    "realestate",
+    "social"
+   ],
+   "aspects": [
+    "16:9",
+    "9:16"
+   ],
+   "status": "preview",
+   "note": "",
+   "thumb": "templates/thumbs/T28.webp",
+   "thumb_aspect": "9:16",
+   "launch_order": null
+  }
+ ]
+}

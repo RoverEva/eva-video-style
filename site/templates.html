@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template Gallery · EVA Video Studio</title>
+<meta name="description" content="Every EVA Video Studio editing style. Five are ready to use today; more are on the way.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="app.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a><nav><a href="/#examples">Examples</a><a href="templates.html" aria-current="page">Templates</a><a href="/#studio">Make a video</a><a href="/#pricing">Pricing</a></nav></header>
+  <main class="gallery">
+    <div class="g-head">
+      <div>
+        <h1>Template Gallery</h1>
+        <p class="hint" id="gSub">Every EVA editing style. <b>5 are ready to use</b>; the rest are previews of what's coming.</p>
+      </div>
+      <label class="g-search"><span class="sr">Search templates</span>
+        <input type="search" id="gQ" placeholder="Search: name, ID or topic" autocomplete="off"></label>
+    </div>
+    <div class="g-cats" id="gCats" role="group" aria-label="Filter by category"></div>
+    <p class="hint g-count" id="gCount" aria-live="polite"></p>
+    <div class="g-grid" id="gGrid"></div>
+    <div class="g-more"><button class="btn ghost" type="button" id="gMore" hidden>Show more</button></div>
+  </main>
+</div>
+<dialog class="tpldlg" id="gDlg"><div class="tpldlg-in"><video controls playsinline></video><p class="hint"></p><button class="btn" type="button">Close</button></div></dialog>
+<footer><div class="wrap"><a href="legal.html">Terms, privacy and refunds</a><span>EVA Video Studio</span></div></footer>
+<script src="app.js"></script>
+<script src="templates.js"></script>
+</body>
+</html>

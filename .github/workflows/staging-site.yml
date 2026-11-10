@@ -7,12 +7,12 @@ name: staging · site (Vercel staging project)
 on:
   workflow_dispatch: {}
   push:
-    branches: [feat/site-refresh]
+    branches: [feat/gallery-pricing]
     paths: [saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
 permissions: { contents: read }
 jobs:
   site:
-    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/site-refresh'
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/gallery-pricing'
     runs-on: ubuntu-latest
     environment: staging
     timeout-minutes: 10
