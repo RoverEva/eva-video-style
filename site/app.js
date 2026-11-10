@@ -205,7 +205,8 @@
       if (!/^video\/(mp4|quicktime)$/.test(type)) return msg("Please upload an MP4 or MOV video.", true);
       if (file.size > 200 * 1048576) return msg("This video is larger than 200 MB. Trim or compress it, then try again.", true);
       const d = await duration(file);
-      if (d && d > 30.5) return msg(`This video is ${Math.round(d)} seconds long. The limit is 30 seconds.`, true);
+      const lim = (ME && ME.max_seconds) || 30;   // 60 only for test accounts (31–60 s trial)
+      if (d && d > lim + .5) return msg(`This video is ${Math.round(d)} seconds long. The limit is ${lim} seconds.`, true);
       const auto = $("[name=tplauto]").checked, tpls = [...document.querySelectorAll("[name=tpl]:checked")].map(x => x.value);
       if (!auto && !tpls.length) return msg("Choose a visual style, or Let us choose.", true);
       const music = $("[name=music]:checked").value, tracks = [...document.querySelectorAll("[name=track]:checked")].map(x => x.value);

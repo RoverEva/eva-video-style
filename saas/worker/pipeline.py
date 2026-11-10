@@ -104,7 +104,9 @@ def prepare(inp, jd, opts):
         dur = float(pr["format"]["duration"])
         if "video" not in st: raise Reject("no video stream")
         if "audio" not in st: raise Reject("no audio track: talking-head videos need the spoken audio")
-        if dur > LIMITS["max_seconds"]: raise Reject(f"video is {dur:.1f} s; the limit is 30 s")
+        lim = min(float(o.get("max_seconds") or LIMITS["max_seconds"]), 60.5)   # 31–60 s only when the API set it (test accounts)
+        lim = max(lim, LIMITS["max_seconds"])
+        if dur > lim: raise Reject(f"video is {dur:.1f} s; the limit is {int(lim)} s")
         if dur < LIMITS["min_seconds"]: raise Reject("video is too short")
         w, h = int(st["video"]["width"]), int(st["video"]["height"])
         for sd in st["video"].get("side_data_list") or []:   # phone videos stored landscape with a rotation flag

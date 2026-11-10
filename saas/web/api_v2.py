@@ -50,9 +50,17 @@ def gallery_payload(store_):
     return {"templates": out, "expires_in": GALLERY_TTL}
 
 
+# 31–60 s videos: TEST ACCOUNTS ONLY (approved 2026-11-09) — emails in EVA_LONG_VIDEO_EMAILS (not set = nobody).
+# Flat prices for 31–60 s: preview 18, HD 66 credits. Up to 30 s nothing changes.
+LONG_SECONDS, LONG_PREVIEW, LONG_HD = 60, 18, 66
+def long_ok(u):
+    allow = {e.strip().lower() for e in os.environ.get("EVA_LONG_VIDEO_EMAILS", "").split(",") if e.strip()}
+    return bool(u and (u.get("email") or "").lower() in allow)
+def max_seconds(u): return LONG_SECONDS if long_ok(u) else MAX_SECONDS
+def _long(sec): return sec is not None and float(sec) > MAX_SECONDS + .5
 def _d(sec): return max(1.0, min(float(sec or MAX_SECONDS), MAX_SECONDS))
-def preview_cost(sec): return 12 + round(3 * _d(sec) / MAX_SECONDS)     # 12..15
-def hd_cost(sec): return 38 + round(14 * _d(sec) / MAX_SECONDS)         # 38..52
+def preview_cost(sec): return LONG_PREVIEW if _long(sec) else 12 + round(3 * _d(sec) / MAX_SECONDS)     # 12..15 (31–60 s: 18)
+def hd_cost(sec): return LONG_HD if _long(sec) else 38 + round(14 * _d(sec) / MAX_SECONDS)              # 38..52 (31–60 s: 66)
 def new_id(prefix): return prefix + secrets.token_hex(6)[:11]   # 12 characters, [a-z0-9]
 
 
@@ -101,14 +109,15 @@ class Accounts:
     # ── flow ──
     def me(self, u):
         a = self.account(u); a.pop("user_id", None)
-        return dict(a, topup=TOPUP, retention={"preview_days": PREVIEW_DAYS, "hd_days": HD_DAYS})
+        return dict(a, topup=TOPUP, retention={"preview_days": PREVIEW_DAYS, "hd_days": HD_DAYS}, max_seconds=max_seconds(u))
 
     def create_project(self, u, b):
         size, ctype, dur = b.get("size"), b.get("type"), b.get("duration")
         if not isinstance(size, int) or size <= 0: raise ValueError("missing file size")
         if size > MAX_BYTES: raise ValueError("The video is larger than 200 MB.")
         if ctype not in ("video/mp4", "video/quicktime"): raise ValueError("Please upload an MP4 (or MOV) video.")
-        if dur is not None and float(dur) > MAX_SECONDS + .5: raise ValueError(f"This video is {round(float(dur))} seconds long. The limit is 30 seconds.")
+        lim = max_seconds(u)
+        if dur is not None and float(dur) > lim + .5: raise ValueError(f"This video is {round(float(dur))} seconds long. The limit is {lim} seconds.")
         k = f"up:{time.strftime('%Y-%m-%d', time.gmtime())}:{u['id']}"
         n = (self.kv.get(k) or 0) + 1
         if n > 30: raise PermissionError("Upload limit reached for today.")
@@ -131,6 +140,7 @@ class Accounts:
         if not pr.get("upload_key") or not self.s.size(pr["upload_key"]): raise ValueError("The upload has not finished yet (or has expired).")
         opts = self.options(b) if b.get("aspect") else (pr["versions"][0]["options"] if pr["versions"] else None)
         if not opts: raise ValueError("Choose your settings first.")
+        if long_ok(u): opts = dict(opts, max_seconds=LONG_SECONDS + .5)   # lets the worker accept 31–60 s for test accounts
         vid = new_id("v"); cost = preview_cost(self.duration(pr))
         r = self.db.rpc("eva_start_preview", user_id=u["id"], project_id=pid, version_id=vid, cost=cost, options=opts)
         if not r.get("ok"): return r
