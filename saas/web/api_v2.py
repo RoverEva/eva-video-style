@@ -125,6 +125,8 @@ class Accounts:
         self.account(u); pid = new_id("p"); key = f"projects/{pid}/source.mp4"
         self.db.rpc("eva_create_project", id=pid, user_id=u["id"], title=(b.get("name") or "Untitled video")[:120], upload_key=key,
                     upload_bytes=size, duration_s=float(dur) if dur else None, source_days=PREVIEW_DAYS)
+        if dur and float(dur) > MAX_SECONDS + .5 and long_ok(u):   # eva_create_project caps the stored length at 30.5 s;
+            self.db.rpc("eva_set_duration", project_id=pid, duration_s=float(dur))   # without this a 31–60 s preview is priced as 30 s
         return {"project": pid, "put_url": self.s.presign_put(key, size, ctype, URL_TTL), "put_type": ctype,
                 "costs": {"preview": preview_cost(dur), "hd": hd_cost(dur)}}
 
