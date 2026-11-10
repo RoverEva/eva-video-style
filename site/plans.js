@@ -36,7 +36,7 @@
     document.querySelectorAll(".p-toggle button").forEach(b => b.setAttribute("aria-checked", String(b.dataset.period === period)));
   }
   document.querySelectorAll(".p-toggle button").forEach(b => b.onclick = () => { period = b.dataset.period; render(); });
-  $("#pPacks").replaceChildren(...PACKS.map(k => el("div", { class: "p-pack" + (k.live ? " live" : "") }, [
+  if ($("#pPacks")) $("#pPacks").replaceChildren(...PACKS.map(k => el("div", { class: "p-pack" + (k.live ? " live" : "") }, [
     el("b", { text: `${k.credits} credits` }), el("span", { class: "p-pp", text: money(k.price) }), el("span", { class: "hint", text: `${cents(k.price / k.credits)} per credit` }),
     k.live ? el("a", { class: "btn small", href: "account.html#billing", text: "Buy now" })
            : el("button", { class: "btn small ghost", type: "button", disabled: "", text: "Coming soon" })])));
