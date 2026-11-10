@@ -25,7 +25,8 @@ HERE = Path(__file__).resolve().parent
 ENGINE_REPO = Path(os.environ.get("EVA_ENGINE", HERE.parents[1])).resolve()   # eva-video-style checkout
 CFG = HERE.parent / "config"
 FPS, CHUNK_S = 30, 10.0
-LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
+# max_seconds: public limit 30 s; EVA_MAX_SECONDS raises it ONLY for the 31–60 s benchmark (not set in any deployed app)
+LIMITS = {"max_seconds": float(os.environ.get("EVA_MAX_SECONDS") or 30.5), "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
 TRACKS = Path(os.environ.get("EVA_TRACKS", HERE.parent / "music/tracks"))   # composed by saas/music/compose.py (rights-cleared)
 DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 10}
 SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}

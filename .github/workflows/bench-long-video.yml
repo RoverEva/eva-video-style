@@ -1,0 +1,83 @@
+# 31–60 s feasibility benchmark — NOT enabled for customers (public limit stays 30 s; EVA_MAX_SECONDS is set only here).
+# Real worker image, real eva-asr, real renders + QA (saas/tests/image_qa_check.py), cost from measured CPU/wall at Modal
+# prices (saas/tests/cost_report.py). Inputs: 30 / 45 / 60 s real-speech 9:16 clips joined in CI from the committed test
+# uploads (no new video files in git). Templates: T17 and T23 (the two most-tested launch templates).
+#   runner job: GitHub runner + docker (no secrets).   modal job: ephemeral Modal app in the isolated `staging` Modal
+#   environment (needs GitHub env "staging" to allow this branch); production never touched.
+name: bench · 31–60 s videos (not public)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/long-video]
+    paths: [.github/workflows/bench-long-video.yml]
+permissions: { contents: read }
+jobs:
+  runner:
+    if: github.ref == 'refs/heads/feat/long-video'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - name: Free disk
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android /opt/hostedtoolcache/CodeQL && df -h / && nproc
+      - name: Build worker image
+        run: docker build -f saas/Dockerfile -t eva-worker .
+      - name: Test inputs (real speech, 9:16, 30/45/60 s)
+        run: |
+          set -e; mkdir -p /tmp/in; M=saas/tests/media
+          ff() { docker run --rm -v $PWD:/w -v /tmp/in:/tmp/in -w /w --entrypoint ffmpeg eva-worker "$@"; }
+          ff -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 \
+             -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[v0];[1:v]fps=30,scale=720:1280,setsar=1[v1];[2:v]fps=30,scale=720:1280,setsar=1[v2];[3:v]fps=30,scale=720:1280,setsar=1[v3];[4:v]fps=30,scale=720:1280,setsar=1[v4];[5:v]fps=30,scale=720:1280,setsar=1[v5];[v0][0:a][v1][1:a][v2][2:a][v3][3:a][v4][4:a][v5][5:a]concat=n=6:v=1:a=1[v][a]" \
+             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart /tmp/in/s60.mp4
+          for d in 30 45; do ff -loglevel error -y -i /tmp/in/s60.mp4 -t $d -c copy -movflags +faststart /tmp/in/s$d.mp4; done
+          ls -la /tmp/in
+      - name: Benchmark (preview + HD + QA per run)
+        run: |
+          fail=0; mkdir -p /tmp/res
+          run() { docker run --rm --cpus 4 -e EVA_MAX_SECONDS=60.5 -v /tmp/in:/in:ro -v /tmp/res:/res eva-worker \
+                    python3 saas/tests/image_qa_check.py /in/$1.mp4 /res/$3 --aspect 9:16 --templates $2 > /tmp/res/$3.log 2>&1 || fail=1
+                  sudo cp /tmp/res/$3/summary.json /tmp/res/$3.json 2>/dev/null || echo "{}" > /tmp/res/$3.json; echo "$3 done (exit $fail)"; }
+          run s30 T17,T23 s30_T17-T23
+          run s45 T17,T23 s45_T17-T23
+          run s60 T17     s60_T17
+          run s60 T17,T23 s60_T17-T23
+          exit $fail
+      - name: Results
+        if: always()
+        run: |
+          for f in /tmp/res/*_T*.json; do echo "=== $f"; python3 -c "import json,sys;r=json.load(open('$f'));print(json.dumps({k:{x:v.get(x) for x in ('status','size','duration','seconds','cpu_s','chunks','output_bytes','asr_s','qa')} for k,v in r.get('runs',{}).items()}))"; done
+          python3 saas/tests/cost_report.py /tmp/res/*_T*.json | tee -a "$GITHUB_STEP_SUMMARY"
+          for f in /tmp/res/*.log; do echo "=== $f (tail)"; tail -5 $f; done
+
+  modal:
+    if: github.ref == 'refs/heads/feat/long-video'
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 150
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      MODAL_ENVIRONMENT: staging
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Inputs + Modal staging runs
+        run: |
+          set -e; pip install -q "modal~=1.0"; sudo apt-get install -y -qq ffmpeg >/dev/null; M=saas/tests/media
+          [ "$MODAL_ENVIRONMENT" = staging ] || exit 1
+          modal app list --env main --json > prod_before.json 2>/dev/null || echo "[]" > prod_before.json
+          ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 -i $M/education.mp4 -i $M/realestate.mp4 \
+             -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[v0];[1:v]fps=30,scale=720:1280,setsar=1[v1];[2:v]fps=30,scale=720:1280,setsar=1[v2];[3:v]fps=30,scale=720:1280,setsar=1[v3];[4:v]fps=30,scale=720:1280,setsar=1[v4];[5:v]fps=30,scale=720:1280,setsar=1[v5];[v0][0:a][v1][1:a][v2][2:a][v3][3:a][v4][4:a][v5][5:a]concat=n=6:v=1:a=1[v][a]" \
+             -map "[v]" -map "[a]" -c:v libx264 -crf 20 -preset veryfast -c:a aac -b:a 128k -movflags +faststart s60.mp4
+          ffmpeg -loglevel error -y -i s60.mp4 -t 45 -c copy s45.mp4
+          fail=0
+          run() { modal run saas/modal_qa_check.py --video $1.mp4 --aspect 9:16 --templates $2 --max-seconds 60.5 || fail=1; mv modal_qa_check.json $3.json 2>/dev/null || true; }
+          run s45 T17,T23 m45_T17-T23
+          run s60 T17,T23 m60_T17-T23
+          python3 saas/tests/cost_report.py m*_T*.json | tee -a "$GITHUB_STEP_SUMMARY" || true
+          modal app list --env main --json > prod_after.json 2>/dev/null || echo "[]" > prod_after.json
+          python3 -c "import json;k=lambda f:sorted((x.get('App ID') or x.get('app_id'),x.get('State') or x.get('state')) for x in json.load(open(f)));assert k('prod_before.json')==k('prod_after.json'),'production changed';print('production untouched')"
+          exit $fail
