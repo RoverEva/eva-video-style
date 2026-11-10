@@ -7,12 +7,12 @@ name: staging · site (Vercel staging project)
 on:
   workflow_dispatch: {}
   push:
-    branches: [feat/saas-accounts]
-    paths: [site/**, saas/deploy/vercel_deploy.py, saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
+    branches: [feat/site-refresh]
+    paths: [saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
 permissions: { contents: read }
 jobs:
   site:
-    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/saas-accounts'
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/site-refresh'
     runs-on: ubuntu-latest
     environment: staging
     timeout-minutes: 10
