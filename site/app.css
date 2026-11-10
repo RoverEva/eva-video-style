@@ -386,3 +386,5 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 .p-pack b { font: 700 19px/1.2 var(--display); } .p-pp { font: 800 26px/1.1 var(--display); } .p-pack .btn { margin-top: 10px; }
 .p-how { margin-top: 34px; } .p-how ul { padding-left: 20px; color: var(--ink-2); }
 @media (max-width: 880px) { .p-grid, .p-packs { grid-template-columns: 1fr; } .p-card.pop { order: -1; } }
+.p-card.soon { background: #fbfbfe; } .p-price b.tbd { font-size: 30px; color: var(--ink-2); }
+.p-rules { margin-top: 34px; } .p-rules h2 { font: 700 22px/1.2 var(--display); margin: 0 0 8px; } .p-rules ul { padding-left: 20px; color: var(--ink-2); display: grid; gap: 6px; }

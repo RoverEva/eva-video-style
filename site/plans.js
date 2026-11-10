@@ -6,16 +6,22 @@
     for (const [k, v] of Object.entries(attrs)) k === "text" ? (e.textContent = v) : e.setAttribute(k, v);
     kids.forEach(k => e.append(k)); return e; };
   const PLANS = [
-    { id: "creator", name: "Creator", month: 19.99, credits: 200, blurb: "For a few polished shorts every month." },
-    { id: "pro", name: "Pro", month: 39.99, credits: 450, blurb: "For weekly creators and small brands.", popular: true },
-    { id: "studio", name: "Studio", month: 79.99, credits: 1000, blurb: "For teams and agencies publishing daily." }];
-  const PACKS = [{ price: 9.99, credits: 100, live: true }, { price: 24.99, credits: 270 }, { price: 49.99, credits: 560 }];
+    { id: "creator", name: "Creator", month: 19.99, credits: 250, blurb: "For a few polished shorts every month." },
+    { id: "pro", name: "Pro", month: 39.99, credits: 550, blurb: "For weekly creators and small brands.", popular: true },
+    { id: "studio", name: "Studio", blurb: "For teams and agencies publishing daily.", soon: true }];   // no final price yet
+  const PACKS = [{ price: 9.99, credits: 100, live: true }];   // extra credits: the existing top-up only, for now
   const YEAR_OFF = 0.20, HD = [43, 52];                       // HD export cost today: 10 s → 43, 30 s → 52 credits
   const money = n => "$" + n.toFixed(2), cents = n => (n * 100).toFixed(1).replace(/\.0$/, "") + "¢";
   const yearMonthly = m => Math.floor(m * (1 - YEAR_OFF) * 100) / 100;      // 19.99 → 15.99
   let period = "month";
   function render() {
     $("#pGrid").replaceChildren(...PLANS.map(p => {
+      if (p.soon) return el("article", { class: "p-card soon", "data-plan": p.id }, [
+        el("h3", { text: p.name }), el("p", { class: "hint", text: p.blurb }),
+        el("div", { class: "p-price" }, [el("b", { class: "tbd", text: "Coming soon" })]),
+        el("p", { class: "p-bill", text: "Pricing to be announced" }),
+        el("ul", {}, [el("li", { text: "Higher monthly credit volume" }), el("li", { text: "All available templates" })]),
+        el("button", { class: "btn", type: "button", disabled: "", "aria-disabled": "true", text: "Coming soon" })]);
       const y = period === "year", per = y ? yearMonthly(p.month) : p.month;
       const hd = `about ${Math.floor(p.credits / HD[1])}–${Math.floor(p.credits / HD[0])} HD exports a month`;
       return el("article", { class: "p-card" + (p.popular ? " pop" : ""), "data-plan": p.id }, [
