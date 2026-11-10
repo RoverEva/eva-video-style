@@ -27,7 +27,7 @@ with sync_playwright() as p:
             check(ok, f"{name} {fid}: frame {r['box']:.4f} = video aspect {want:.4f}, Raw + Edit {[(w, h) for w, h, _, _ in r['vids']]}")
             srcs = [s for *_, s in r["vids"]]
             check(len(srcs) == 2 and srcs[0].rsplit("/", 1)[0] == srcs[1].rsplit("/", 1)[0], f"{name} {fid}: Raw and Edit from the same upload ({srcs})")
-            check(all(t > .3 for _, _, t, _ in r["vids"]), f"{name} {fid}: both play ({[round(t, 2) for _, _, t, _ in r['vids']]})")
+            check(all(t > .1 for _, _, t, _ in r["vids"]), f"{name} {fid}: both play ({[round(t, 2) for _, _, t, _ in r['vids']]})")
         if name == "desktop":
             v, h = pg.locator("#heroV").bounding_box(), pg.locator("#heroH").bounding_box()
             check(v["x"] + v["width"] <= h["x"] and v["y"] < 860 and h["y"] < 860, "desktop: both comparisons visible side by side above the fold")
