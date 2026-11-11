@@ -1,0 +1,96 @@
+# FRONTEND-ONLY production release: publishes the approved website (site/) to Vercel and nothing else.
+#   NOT touched: Modal API + workers, Supabase (no migrations), Stripe (TEST mode, no webhook change), R2, rendering.
+#   No apt-get: Python + Playwright Chromium only (the Ubuntu package mirrors were failing on 2026-11-11).
+# Gate: the GitHub "production" environment (required reviewer, branch rule feat/mvp-launch) — nothing runs before approval.
+# Content gate: site/ must be byte-identical to the approved commit APPROVED_SITE_SHA; only reviewed CI files may differ.
+# Live config kept: config.js (Modal API URL + public Supabase URL/anon key) and the music previews are copied from the
+#   CURRENT production site, so the new deployment talks to exactly the same backend as before.
+# Rollback: the current production deployment is recorded first (id + URL in the log); Vercel "Instant Rollback" to it.
+# After deploy, read-only checks on production: config + videos identical, homepage/Style Showcase, Gallery + Pricing,
+#   English / 简体中文 UI, Chinese glyphs (no □), English pages never download the Chinese font.
+name: production · frontend-only deploy (Vercel)
+on:
+  workflow_dispatch:
+  push:   # dispatch needs the file on the default branch, so a run starts when this file changes on feat/mvp-launch
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/frontend-deploy.yml]
+concurrency: { group: production-frontend, cancel-in-progress: false }   # own group: never cancels or queues behind a pending full deploy
+permissions: { contents: read }
+env:
+  APPROVED_SITE_SHA: 69db66eb947f1a1f1faa97bfcd81dd05e1ccd6b9   # Eva-approved frontend (Chinese font fix + Style Showcase), 2026-11-11
+  PROD: https://eva-video-studio.vercel.app
+  API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run
+jobs:
+  frontend:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false, fetch-depth: 0 }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Content gate — site/ identical to the approved commit; only reviewed CI files differ
+        run: |
+          set -e
+          git cat-file -e "$APPROVED_SITE_SHA^{commit}"
+          git merge-base --is-ancestor "$APPROVED_SITE_SHA" HEAD || { echo "::error::HEAD does not contain the approved commit"; exit 1; }
+          git diff --quiet "$APPROVED_SITE_SHA" HEAD -- site/ || { echo "::error::site/ differs from the approved commit"; git diff --stat "$APPROVED_SITE_SHA" HEAD -- site/; exit 1; }
+          echo "changed since the approved commit (must be CI only):"; git diff --name-only "$APPROVED_SITE_SHA" HEAD | sed 's/^/  /'
+          bad=$(git diff --name-only "$APPROVED_SITE_SHA" HEAD | grep -vE '^\.github/(workflows|scripts|actions)/' || true)
+          [ -z "$bad" ] || { echo "::error::non-CI changes since the approved commit: $bad"; exit 1; }
+          echo "site/ tree $(git rev-parse HEAD:site) = approved $(git rev-parse $APPROVED_SITE_SHA:site)"
+      - name: Build from the approved site + the LIVE production config and music (backend unchanged)
+        run: |
+          set -e
+          rm -rf build && cp -r site build && rm -f build/config.js
+          curl -fsS "$PROD/config.js" -o build/config.js
+          grep -q "window.EVA_API = \"$API_URL\"" build/config.js || { echo "::error::live config.js does not point at $API_URL"; exit 1; }
+          grep -q 'EVA_SUPABASE_URL = "https://' build/config.js || { echo "::error::live config.js has no Supabase URL"; exit 1; }
+          ! grep -qiE 'service_role|sk_live|sk_test|rk_test|rk_live|whsec_' build/config.js || { echo "::error::unexpected secret-like value in config.js"; exit 1; }
+          sha256sum build/config.js | tee config.sha256
+          mkdir -p build/demos/music
+          for id in $(python3 -c "import ast,sys; t=ast.parse(open('saas/music/compose.py').read()); print(' '.join(e.values[0].value for n in t.body if isinstance(n, ast.Assign) and getattr(n.targets[0], 'id', '') == 'TRACKS' for e in n.value.elts))"); do
+            curl -fsS "$PROD/demos/music/$id.mp3" -o "build/demos/music/$id.mp3"; echo "music $id: $(stat -c %s build/demos/music/$id.mp3) bytes (from production)"
+            [ "$(stat -c %s build/demos/music/$id.mp3)" -gt 10000 ] || { echo "::error::music $id too small"; exit 1; }
+          done
+          (cd build && find . -type f | sort | xargs sha256sum) > build.sha256; echo "files to publish: $(wc -l < build.sha256)"
+      - name: Record the current production deployment (rollback target)
+        id: prev
+        run: pip install -q "requests~=2.32" && python .github/scripts/vercel_prod.py eva-video-studio
+      - name: Deploy to Vercel production (site only)
+        id: site
+        run: python saas/deploy/vercel_deploy.py build eva-video-studio
+      - name: Production checks — config + videos identical, API untouched
+        env: { SITE: "${{ steps.site.outputs.site }}" }
+        run: |
+          set -e
+          [ "$SITE" = "$PROD" ] || echo "::warning::deployed domain $SITE (expected $PROD)"
+          curl -fsS "$SITE/config.js" | sha256sum | cut -d' ' -f1 | grep -q "$(cut -d' ' -f1 config.sha256)" && echo "PASS config.js unchanged (same API + Supabase)"
+          for f in demos/showcase/styles-9x16.mp4 demos/showcase/styles-16x9.mp4 demos/education/before.mp4 demos/horizontal/before.mp4 fonts/eva-sc-400.woff fonts/eva-sc-700.woff; do
+            want=$(sha256sum site/$f | cut -d' ' -f1); got=$(curl -fsS "$SITE/$f" | sha256sum | cut -d' ' -f1)
+            [ "$want" = "$got" ] && echo "PASS $f served byte-identical" || { echo "FAIL $f differs"; exit 1; }
+          done
+          curl -fsS "$API_URL/api/health" && echo && echo "PASS API health (not redeployed)"
+      - name: Browser checks on production — homepage + Style Showcase, Gallery + Pricing, EN / 简体中文, Chinese glyphs
+        if: success()
+        env: { SITE: "${{ steps.site.outputs.site }}" }
+        run: |
+          pip install -q "playwright~=1.48" "fonttools~=4.55"
+          python -m playwright install chromium >/dev/null   # browser download only; no apt (system libs come with the runner image)
+          rc=0
+          python saas/tools/build_cjk_font.py --check || rc=1
+          python saas/tests/browser_hero.py "$SITE" shots/hero || rc=1
+          python saas/tests/browser_templates.py "$SITE" || rc=1
+          python saas/tests/browser_i18n.py "$SITE" || rc=1
+          python saas/tests/browser_cjk_glyphs.py "$SITE" --shots shots/cjk || rc=1
+          exit $rc
+      - name: Rollback target
+        if: always()
+        run: |
+          echo "Previous production deployment: ${{ steps.prev.outputs.prev_id }} ${{ steps.prev.outputs.prev_url }}"
+          echo "To roll back: Vercel → project eva-video-studio → Deployments → that deployment → Instant Rollback (or 'Promote')."
