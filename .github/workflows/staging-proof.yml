@@ -1,0 +1,31 @@
+# STAGING proof render on Modal (separate app `eva-video-studio-staging`, own volume): Eva's original 15.07 s video,
+# planned by Claude Opus 5.5 (real API), rendered 16:9 + 9:16 with the dev branch feat/render-coverage.
+# Video, transcript and storyboard stay inside Modal and R2 (private prefix staging/proofs/<run>/); this log shows only
+# aggregate numbers (model id, tokens, cost, coverage, verdicts, file names). The production app is not touched.
+# Containers: fetch + publish get only R2 access; render (Opus planning + rendering) gets only the staging Anthropic key.
+# Needs: Modal secret `eva-anthropic-staging` (ANTHROPIC_API_KEY of the dedicated staging key), created by Eva in Modal.
+name: staging · Opus 5.5 proof render (Modal, private outputs)
+on:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/staging-proof.yml]
+permissions: { contents: read }
+jobs:
+  proof:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-24.04
+    environment: production   # holds the Modal token; the render itself only gets eva-r2 + eva-anthropic-staging
+    timeout-minutes: 75
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false, ref: feat/render-coverage }   # development code, not the production branch
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Proof render (aggregate results only)
+        run: |
+          pip install -q "modal~=1.0"
+          modal run -q saas/staging/proof_app.py 2>&1 | grep -E '^(PING|FETCH|PUBLISH|PROOF) ' | tee result.txt
+          grep -q '^PROOF ' result.txt || { echo "::error::proof run failed before producing a summary (details in Modal, app eva-video-studio-staging)"; exit 1; }
