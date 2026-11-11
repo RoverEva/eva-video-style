@@ -21,6 +21,10 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 app = modal.App("eva-video-studio-staging")
 image = modal.Image.from_dockerfile(str(ROOT / "saas/Dockerfile"), context_dir=str(ROOT))
 vol = modal.Volume.from_name("eva-staging-jobs", create_if_missing=True)
+# Secrets are looked up per Modal environment. The app runs in the environment Eva chose for staging (modal run --env);
+# R2 access may live in another environment (EVA_R2_SECRET_ENV). required_keys makes Modal refuse to start without them.
+ANTHROPIC_SECRET = modal.Secret.from_name("eva-anthropic-staging", environment_name=os.environ.get("EVA_ANTHROPIC_SECRET_ENV") or None, required_keys=["ANTHROPIC_API_KEY"])
+R2_SECRET = modal.Secret.from_name("eva-r2", environment_name=os.environ.get("EVA_R2_SECRET_ENV") or None)
 CACHE = ["srt/talk.asr.json", "srt/talk.bilingual.srt", "srt/talk.transcript.js", "srt/talk.en.srt", "face.json"]
 
 
@@ -35,7 +39,7 @@ LIMITS = dict(cpu=4.0, memory=8192, timeout=3600)   # resource limits of the ren
 _paths = lambda: [sys.path.insert(0, p) for p in ("/app/saas/worker", "/app/saas/web")]
 
 
-@app.function(image=image, volumes={"/jobs": vol}, secrets=[modal.Secret.from_name("eva-r2")], timeout=600)
+@app.function(image=image, volumes={"/jobs": vol}, secrets=[R2_SECRET], timeout=600)
 def fetch(run: str, pid: str, old_vid: str):
     """R2 → private staging volume: ONLY this project's upload, its transcript/face cache and the old preview."""
     _paths(); import store; S = store.from_env(); base = Path(f"/jobs/{run}/in"); (base / "cache/srt").mkdir(parents=True)
@@ -47,7 +51,7 @@ def fetch(run: str, pid: str, old_vid: str):
     vol.commit(); return {"cache": got, "old_preview": (base / "old_preview.mp4").exists()}
 
 
-@app.function(image=image, volumes={"/jobs": vol}, secrets=[modal.Secret.from_name("eva-anthropic-staging")], **LIMITS)
+@app.function(image=image, volumes={"/jobs": vol}, secrets=[ANTHROPIC_SECRET], **LIMITS)
 def render(run: str, templates: str, aspects: str = "16:9,9:16", instructions: str = ""):
     """Plan with Claude Opus 5.5 + render, isolated: no R2, Stripe, Supabase or mail credentials in this container
     (only the staging Anthropic key the planner needs) and only this run's folder on the volume."""
@@ -98,7 +102,7 @@ def render(run: str, templates: str, aspects: str = "16:9,9:16", instructions: s
     return summary
 
 
-@app.function(image=image, volumes={"/jobs": vol}, secrets=[modal.Secret.from_name("eva-r2")], timeout=900)
+@app.function(image=image, volumes={"/jobs": vol}, secrets=[R2_SECRET], timeout=900)
 def publish(run: str):
     """staging volume → the PRIVATE R2 prefix staging/proofs/<run>/; then the run folder is removed from the volume."""
     _paths(); import store; S = store.from_env(); vol.reload(); out = Path(f"/jobs/{run}/out"); n = 0
@@ -107,14 +111,14 @@ def publish(run: str):
     shutil.rmtree(f"/jobs/{run}"); vol.commit(); return {"uploaded": n}
 
 
-@app.function(image=image, secrets=[modal.Secret.from_name("eva-r2")], timeout=300)
+@app.function(image=image, secrets=[R2_SECRET], timeout=300)
 def cleanup(run: str):
     for p in ("/app/saas/worker", "/app/saas/web"): sys.path.insert(0, p)
     import store; S = store.from_env(); n = len(S.list(f"staging/proofs/{run}/")); S.delete_prefix(f"staging/proofs/{run}/")
     return {"deleted": n}
 
 
-@app.function(image=image, secrets=[modal.Secret.from_name("eva-anthropic-staging")], timeout=120)
+@app.function(image=image, secrets=[ANTHROPIC_SECRET], timeout=120)
 def ping():   # smallest real Claude Opus 5.5 call: proves the key, the model id and the cost bookkeeping
     import urllib.request
     body = {"model": "claude-opus-5-5", "max_tokens": 20, "messages": [{"role": "user", "content": "Reply with the single word: ready"}]}
@@ -125,8 +129,22 @@ def ping():   # smallest real Claude Opus 5.5 call: proves the key, the model id
                                     "reply_ok": "ready" in json.dumps(j.get("content")).lower()}
 
 
+@app.function(image=modal.Image.debian_slim(), secrets=[ANTHROPIC_SECRET], timeout=60)
+def check_anthropic():   # configuration check only: no API call, the key is never returned or printed
+    k = os.environ.get("ANTHROPIC_API_KEY", ""); other = sorted(n for n in os.environ if any(w in n.upper() for w in ("STRIPE", "SUPABASE", "R2_", "RESEND", "SMTP", "DATABASE")))
+    return {"key_present": bool(k.strip()), "key_format_ok": k.strip().startswith("sk-ant-"), "whitespace_around_key": k != k.strip(), "other_service_vars_in_render": other}
+
+
+@app.function(image=modal.Image.debian_slim(), secrets=[R2_SECRET], timeout=60)
+def check_r2():
+    return {"r2_vars_present": all(os.environ.get(n, "").strip() for n in ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY")),
+            "anthropic_key_in_storage_containers": "ANTHROPIC_API_KEY" in os.environ}
+
+
 @app.local_entrypoint()
-def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False):
+def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False):
+    if check_only:
+        print("CHECK", json.dumps({"render_secrets": ["eva-anthropic-staging"], "fetch_publish_secrets": ["eva-r2"], "anthropic": check_anthropic.remote(), "r2": check_r2.remote()})); return
     if not skip_ping: print("PING", json.dumps(ping.remote()))
     run = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     print("FETCH", json.dumps(fetch.remote(run, pid, old_vid)))
