@@ -26,7 +26,6 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 | T05 | Red Sunburst | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T05_RedSunburst_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T05_RedSunburst_CN-EN.mp4) |
 | T06 | Brand Purple | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T06_BrandPurple_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T06_BrandPurple_CN-EN.mp4) |
 | T07 | Cartoon Eva | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T07_CartoonEva_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T07_CartoonEva_CN-EN.mp4) |
-| T08 | Neon Explainer | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T08_NeonExplainer_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T08_NeonExplainer_CN-EN.mp4) |
 | T09 | Showcase Wall Opener | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T09_ShowcaseWall_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T09_ShowcaseWall_CN-EN.mp4) |
 | T10 | HUD Keynote | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T10_HUDKeynote_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T10_HUDKeynote_CN-EN.mp4) |
 | T11 | HUD Dashboard | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T11_HUDDashboard_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T11_HUDDashboard_CN-EN.mp4) |
@@ -42,7 +41,7 @@ Every demo is the same 15-second self-introduction by an AI-generated presenter,
 | T23 | Creative Pop | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_CN-EN.mp4) |
 | T24 | Luxury Nude Motion | 5-second sample: [video](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T24_LuxuryNude.mp4) | [frames](references/templates.md#t24--luxury-nude-motion) |
 
-> The Demo section above is the original showcase and is preserved unchanged, including its historical template counts and presentation. The official v1.0.0 installable package inventory contains the 23 templates listed below.
+> The Demo section keeps the original GIF, Demo Reel, Music Montage, collage placement and all other demo links. T08 Neon Explainer has been removed from this showcase. Historical counts still visible in the original GIF and collage title card refer to the original presentation; the official v1.0.0 installable package inventory contains the 23 templates listed below.
 
 ```text
 Install EVA Core once
@@ -69,7 +68,7 @@ The release scope is T01–T07, T09–T17, T19–T21, T23–T24 and T26–T27. T
 
 ## v1.0.0 installable templates
 
-This table is the current modular package inventory. The original showcase above remains unchanged, and no demo video or image was regenerated, deleted or overwritten.
+This table is the current modular package inventory. Apart from the owner-directed T08 removal, the original showcase above remains unchanged; no other demo video or image was regenerated, deleted, renamed or overwritten.
 
 | ID | Template | Formats | Existing preview | Package |
 |---|---|---|---|---|
