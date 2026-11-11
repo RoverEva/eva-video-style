@@ -34,7 +34,19 @@ def signin(tag):
     return {"Authorization": f"Bearer {t}", **O}, r.json()["id"]
 
 
-def call(h, m, path, **kw): return requests.request(m, API + "/api/v2" + path, headers=h, timeout=60, **kw)
+REQS = []   # per-request timing: every API call is recorded (method, path, status, seconds); slow ones are printed
+
+
+def call(h, m, path, **kw):
+    t = time.time(); rec = {"t": time.strftime("%H:%M:%S", time.gmtime(t)), "m": m, "path": path}; REQS.append(rec)
+    try:
+        r = requests.request(m, API + "/api/v2" + path, headers=h, timeout=60, **kw)
+        rec.update(status=r.status_code, s=round(time.time() - t, 2), modal_call=r.headers.get("modal-function-call-id"))
+        if rec["s"] > 5: print(f"SLOW {m} {path} → {r.status_code} in {rec['s']} s", flush=True)
+        return r
+    except requests.RequestException as e:
+        rec.update(status=type(e).__name__, s=round(time.time() - t, 2))
+        print(f"REQUEST FAILED {m} {path} after {rec['s']} s: {type(e).__name__} (started {rec['t']} UTC)", flush=True); raise
 
 
 def probe_duration(f):   # the real length of the test clip, as the website measures it before uploading
@@ -124,5 +136,8 @@ if __name__ == "__main__":
                 for pr in DB.rpc("eva_library", user_id=uid): DB.rpc("eva_delete", user_id=uid, project_id=pr["id"])
                 requests.delete(f"{SB}/auth/v1/admin/users/{uid}", headers={"apikey": SVC, "Authorization": f"Bearer {SVC}"}, timeout=30)
             except Exception: pass
+        ok = [x["s"] for x in REQS if isinstance(x.get("status"), int)]
+        E["requests"] = {"n": len(REQS), "p50_s": sorted(ok)[len(ok) // 2] if ok else None, "max_s": max(ok) if ok else None,
+                         "slow": [x for x in REQS if not isinstance(x.get("status"), int) or x["s"] > 5], "last": REQS[-3:]}
         OUT.write_text(json.dumps(E, indent=1, default=str)); print(json.dumps({k: E[k] for k in E if k != "checks"}, indent=1, default=str))
         sys.exit(0 if E.get("ok") else 1)
