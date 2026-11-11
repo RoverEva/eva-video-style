@@ -20,7 +20,9 @@ with sync_playwright() as p:
         pg = b.new_page(viewport=vp); pg.on("pageerror", lambda e: errs.append(str(e)))
         pg.goto(SITE + "/"); pg.wait_for_timeout(3000)
         for fid, want in (("heroV", 9 / 16), ("heroH", 16 / 9)):
-            pg.locator(f"#{fid}").scroll_into_view_if_needed(); pg.wait_for_timeout(2500)
+            pg.locator(f"#{fid}").scroll_into_view_if_needed(); pg.wait_for_timeout(1000)
+            try: pg.wait_for_function(f"[...document.querySelectorAll('#{fid} video')].every(v => v.currentTime > .1)", timeout=10000)   # first load over the network
+            except Exception: pass
             r = pg.evaluate(f"""() => {{ const p = document.getElementById('{fid}'), r = p.getBoundingClientRect(), v = [...p.querySelectorAll('video')];
                  return {{ box: r.width / r.height, vids: v.map(x => [x.videoWidth, x.videoHeight, x.currentTime, x.getAttribute('src')]) }} }}""")
             ok = len(r["vids"]) == 2 and all(w and abs(w / h - want) < .01 for w, h, _, _ in r["vids"]) and abs(r["box"] - want) < .01
