@@ -9,12 +9,15 @@
     for (const [k, v] of Object.entries(attrs)) k === "text" ? (e.textContent = v) : e.setAttribute(k, v);
     kids.forEach(k => k && e.append(k)); return e; };
   const API = (window.EVA_API || "").replace(/\/$/, "");
-  const STATUS = { available: "Available", preview: "Preview only", soon: "Coming soon" };
+  const T = (s, v) => window.I18N ? I18N.t(s, v) : (v ? s.replace(/\{(\w+)\}/g, (m, k) => v[k] ?? "") : s);
+  const ZH = window.I18N && I18N.lang === "zh";
+  const nm = t => (ZH && t.name_cn) || t.name;   // Chinese name in 简体中文 mode; the ID never changes
+  const STATUS = { available: T("Available"), preview: T("Preview only"), soon: T("Coming soon") };
   const pageSize = () => (matchMedia("(max-width: 640px)").matches ? 12 : 24);
   let all = [], cats = [], clips = {}, shown = pageSize();
   const url = new URL(location.href), state = { q: url.searchParams.get("q") || "", cat: url.searchParams.get("cat") || "all" };
 
-  const label = c => (cats.find(x => x.id === c) || {}).label || c;
+  const label = c => T((cats.find(x => x.id === c) || {}).label || c);
   const norm = s => (s || "").toLowerCase().normalize("NFKD");
   const match = (t, q) => !q || norm([t.id, t.name, t.name_cn, t.best_for, ...t.categories.map(label)].join(" ")).includes(norm(q));
   const inCat = (t, c) => c === "all" || (c === "available" ? t.status === "available" : t.categories.includes(c));
@@ -26,14 +29,14 @@
     const box = el("div", { class: cls + (t.thumb_aspect === "9:16" ? " tall" : "") });
     if (t.thumb) box.append(el("img", { src: t.thumb, alt: "", loading: "lazy", decoding: "async",
       width: t.thumb_aspect === "9:16" ? "360" : "640", height: t.thumb_aspect === "9:16" ? "640" : "360" }));
-    else box.append(el("span", { class: "g-ph", text: "Preview coming soon" }));
+    else box.append(el("span", { class: "g-ph", text: T("Preview coming soon") }));
     return box;
   }
 
   function card(t) {
-    const b = el("button", { type: "button", class: "g-card " + t.status, "data-id": t.id, "aria-label": `${t.name}, ${STATUS[t.status]}. Open details` }, [
+    const b = el("button", { type: "button", class: "g-card " + t.status, "data-id": t.id, "aria-label": T("{name}, {status}. Open details", { name: `${t.id} ${nm(t)}`, status: STATUS[t.status] }) }, [
       thumb(t, "g-media"), el("span", { class: "g-id", text: t.id }),
-      el("span", { class: "g-name", text: t.name }),
+      el("span", { class: "g-name", text: nm(t) }),
       el("span", { class: "g-st " + t.status, text: STATUS[t.status] })]);
     b.onclick = () => open(t);
     return b;
@@ -48,21 +51,21 @@
     if (aspects.length) {
       aspects.forEach(a => {
         const v = el("div", { class: "gd-view" + (a === "9:16" ? " tall" : "") });
-        const play = el("button", { type: "button", class: "gd-play", "aria-label": `Play the ${a} preview` });
+        const play = el("button", { type: "button", class: "gd-play", "aria-label": T("Play the {ar} preview", { ar: a }) });
         play.append(el("img", { src: c[a].thumb, alt: "", loading: "lazy" }), el("span", { text: "▶" }));
         play.onclick = () => { const vid = el("video", { src: c[a].video, controls: "", playsinline: "", autoplay: "", preload: "auto" }); v.replaceChildren(vid); vid.play().catch(() => {}); };
-        v.append(play); views.append(el("figure", {}, [v, el("figcaption", { text: a === "9:16" ? "Vertical 9:16" : "Horizontal 16:9" })]));
+        v.append(play); views.append(el("figure", {}, [v, el("figcaption", { text: a === "9:16" ? T("Vertical 9:16") : T("Horizontal 16:9") })]));
       });
-    } else views.append(el("figure", {}, [thumb(t, "gd-view"), el("figcaption", { text: t.thumb ? "Sample frame" : "" })]));
+    } else views.append(el("figure", {}, [thumb(t, "gd-view"), el("figcaption", { text: t.thumb ? T("Sample frame") : "" })]));
     const acts = el("div", { class: "gd-acts" });
-    if (t.status === "available") acts.append(el("a", { class: "btn", href: `/?tpl=${t.id}#studio`, text: "Use template" }));
-    else acts.append(el("p", { class: "hint", text: t.status === "soon" ? "Coming soon." : "Preview only — not available for rendering yet." }));
+    if (t.status === "available") acts.append(el("a", { class: "btn", href: `/?tpl=${t.id}#studio`, text: T("Use template") }));
+    else acts.append(el("p", { class: "hint", text: t.status === "soon" ? T("Coming soon.") : T("Preview only — not available for rendering yet.") }));
     body.replaceChildren(...[
-      el("div", { class: "gd-head" }, [el("h2", { text: t.name }), el("span", { class: "g-st " + t.status, text: STATUS[t.status] })]),
-      el("p", { class: "gd-meta", text: [t.id, t.name_cn, t.aspects.join(" · ")].filter(Boolean).join(" · ") }),
+      el("div", { class: "gd-head" }, [el("h2", { text: nm(t) }), el("span", { class: "g-st " + t.status, text: STATUS[t.status] })]),
+      el("p", { class: "gd-meta", text: [t.id, ZH ? t.name : t.name_cn, t.aspects.join(" · ")].filter(Boolean).join(" · ") }),
       views,
-      el("p", { class: "gd-desc", text: t.best_for || "Details coming soon." }),
-      t.note ? el("p", { class: "gd-note", text: t.note }) : null,
+      el("p", { class: "gd-desc", text: T(t.best_for || "Details coming soon.") }),
+      t.note ? el("p", { class: "gd-note", text: T(t.note) }) : null,
       t.categories.length ? el("p", { class: "gd-cats", text: t.categories.map(label).join(" · ") }) : null,
       acts].filter(Boolean));
     d.showModal();
@@ -73,8 +76,8 @@
   function render() {
     const l = list(), grid = $("#gGrid");
     grid.replaceChildren(...l.slice(0, shown).map(card));
-    if (!l.length) grid.append(el("p", { class: "g-empty", text: "No templates match. Try another word or filter." }));
-    $("#gCount").textContent = `${l.length} template${l.length === 1 ? "" : "s"}` + (l.length > shown ? ` · showing ${shown}` : "");
+    if (!l.length) grid.append(el("p", { class: "g-empty", text: T("No templates match. Try another word or filter.") }));
+    $("#gCount").textContent = T(l.length === 1 ? "{n} template" : "{n} templates", { n: l.length }) + (l.length > shown ? T(" · showing {n}", { n: shown }) : "");
     const more = $("#gMore"); more.hidden = l.length <= shown;
     $("#gCat").value = state.cat;
     const u = new URL(location.href); state.q ? u.searchParams.set("q", state.q) : u.searchParams.delete("q");
@@ -87,10 +90,10 @@
     $("#gDlg").addEventListener("cancel", e => { e.preventDefault(); closeDlg(); });
     $("#gDlg").addEventListener("click", e => { if (e.target.id === "gDlg") closeDlg(); });   // click on the backdrop
     let j; try { j = await (await fetch("templates/catalog.json", { cache: "no-cache" })).json(); }
-    catch (e) { $("#gGrid").replaceChildren(el("p", { class: "note bad", text: "The gallery could not be loaded. Please refresh." })); return; }
+    catch (e) { $("#gGrid").replaceChildren(el("p", { class: "note bad", text: T("The gallery could not be loaded. Please refresh.") })); return; }
     all = j.templates.filter(t => t.status !== "excluded"); cats = j.categories;   // excluded templates (T08) are never shown
-    const opts = [{ id: "all", label: "All templates" }, { id: "available", label: "Available now" }, ...cats.filter(c => all.some(t => t.categories.includes(c.id)))];
-    $("#gCat").replaceChildren(...opts.map(c => el("option", { value: c.id, text: `${c.label} (${all.filter(t => inCat(t, c.id)).length})` })));
+    const opts = [{ id: "all", label: T("All templates") }, { id: "available", label: T("Available now") }, ...cats.filter(c => all.some(t => t.categories.includes(c.id)))];
+    $("#gCat").replaceChildren(...opts.map(c => el("option", { value: c.id, text: `${T(c.label)} (${all.filter(t => inCat(t, c.id)).length})` })));
     if (!opts.some(o => o.id === state.cat)) state.cat = "all";
     $("#gCat").onchange = e => { state.cat = e.target.value; shown = pageSize(); render(); };
     const q = $("#gQ"); q.value = state.q; let tm;

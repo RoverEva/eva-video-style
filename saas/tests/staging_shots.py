@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Review screenshots of the staging site, desktop + phone.   staging_shots.py SITE OUT_DIR
-Home (logo, 9:16 + 16:9 demos), Templates + detail modal, Pricing, and — signed in through a real Supabase magic link for a
+Each in English and 简体中文: Home (logo, 9:16 + 16:9 demos, How EVA works, language menu), Templates + detail modal, Pricing, and — signed in through a real Supabase magic link for a
 throwaway user (deleted afterwards; needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY) — the account menu, My Account and
 My Videos. Staging has no API backend, so My Account / My Videos show the signed-in shell, not credits or videos."""
 import json, os, sys, urllib.request, uuid
@@ -17,15 +17,19 @@ uid = None
 try:
     with sync_playwright() as p:
         b = p.chromium.launch(args=["--autoplay-policy=no-user-gesture-required"])
-        for name, vp in (("desktop", {"width": 1366, "height": 900}), ("phone", {"width": 390, "height": 844})):
-            ctx = b.new_context(viewport=vp); pg = ctx.new_page()
-            pg.goto(site + "/"); pg.wait_for_timeout(3500); pg.screenshot(path=str(out / f"1_home_{name}.png"))
+        for lang in ("en", "zh"):   # English (default) and 简体中文, chosen with ?lang= and kept by the site
+          for name, vp in (("desktop", {"width": 1366, "height": 900}), ("phone", {"width": 390, "height": 844})):
+            ctx = b.new_context(viewport=vp); pg = ctx.new_page(); P = f"{lang}_"
+            pg.goto(site + f"/?lang={lang}"); pg.wait_for_timeout(3500); pg.screenshot(path=str(out / f"{P}1_home_{name}.png"))
+            pg.locator("#how").scroll_into_view_if_needed(); pg.wait_for_timeout(1200)
+            pg.locator("#how").screenshot(path=str(out / f"{P}1b_how_{name}.png"))
+            if name == "desktop": pg.evaluate("scrollTo(0, 0)"); pg.click(".langbtn"); pg.wait_for_timeout(250); pg.screenshot(path=str(out / f"{P}1c_language_menu.png"), clip={"x": 766, "y": 0, "width": 600, "height": 260})
             pg.goto(site + "/templates.html"); pg.wait_for_selector(".g-card"); pg.wait_for_timeout(2000)
-            pg.screenshot(path=str(out / f"2_templates_{name}.png"), full_page=(name == "phone"))
+            pg.screenshot(path=str(out / f"{P}2_templates_{name}.png"), full_page=(name == "phone"))
             pg.click(".g-card[data-id=T17]"); pg.wait_for_selector("#gDlg[open]"); pg.wait_for_timeout(600)
-            pg.screenshot(path=str(out / f"3_template_modal_{name}.png")); pg.keyboard.press("Escape")
+            pg.screenshot(path=str(out / f"{P}3_template_modal_{name}.png")); pg.keyboard.press("Escape")
             pg.goto(site + "/pricing.html"); pg.wait_for_selector(".pr-offer"); pg.wait_for_timeout(500)
-            pg.screenshot(path=str(out / f"4_pricing_{name}.png"), full_page=True)
+            pg.screenshot(path=str(out / f"{P}4_pricing_{name}.png"), full_page=True)
             if S and K:
                 email = f"staging-shots-{uuid.uuid4().hex[:8]}@example.com"
                 uid = uid or admin("POST", "/users", {"email": email, "email_confirm": True}).get("id")
@@ -33,9 +37,9 @@ try:
                     u = admin("GET", f"/users/{uid}")
                     link = admin("POST", "/generate_link", {"type": "magiclink", "email": u["email"], "redirect_to": site + "/account.html"})
                     pg.goto(link.get("action_link") or link["properties"]["action_link"]); pg.wait_for_selector(".avatar", timeout=20000); pg.wait_for_timeout(1500)
-                    pg.screenshot(path=str(out / f"5_account_{name}.png"), full_page=True)
+                    pg.screenshot(path=str(out / f"{P}5_account_{name}.png"), full_page=True)
                     pg.goto(site + "/videos.html"); pg.wait_for_selector(".avatar"); pg.wait_for_timeout(1500); pg.click(".avatar"); pg.wait_for_timeout(300)
-                    pg.screenshot(path=str(out / f"6_videos_menu_{name}.png"))
+                    pg.screenshot(path=str(out / f"{P}6_videos_menu_{name}.png"))
             ctx.close()
         b.close()
 finally:

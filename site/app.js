@@ -7,6 +7,9 @@
     kids.forEach(k => e.append(k)); return e; };
   const TEMPLATES = { T23: "Creative Pop", T21: "Clean & Minimal", T17: "Sci-Fi Network", T02: "Electric Blue", T01: "Bold Lime" };
   const TRACKS = { "bright-pop": "Bright Pop", "calm-lofi": "Calm Lo-fi", "inspire": "Inspire", "luxury-ambient": "Luxury Ambient" };
+  const T = (s, v) => window.I18N ? I18N.t(s, v) : (v ? s.replace(/\{(\w+)\}/g, (m, k) => v[k] ?? "") : s);   // shared EN → 简体中文 dictionary (i18n.js)
+  const tname = t => (window.I18N && I18N.lang === "zh" && t.name_cn) || t.name;
+  const E2 = m => window.I18N ? I18N.msg(m) : m;
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
   /* ── sign-in (Supabase email link in production; a local stand-in for tests) + account API ── */
@@ -42,10 +45,10 @@
     const t = await auth.token(); if (!t) { const e = new Error("Please sign in."); e.status = 401; throw e; }
     const r = await fetch(`${API}/api/v2${path}`, { method: method || (body ? "POST" : "GET"), headers: Object.assign({ authorization: `Bearer ${t}` }, body ? { "content-type": "application/json" } : {}), body: body ? JSON.stringify(body) : undefined });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { const e = new Error(j.error || `Request failed (${r.status})`); e.status = r.status; e.data = j; throw e; }
+    if (!r.ok) { const e = new Error(E2(j.error || `Request failed (${r.status})`)); e.status = r.status; e.data = j; throw e; }
     return j;
   }
-  const fmtDate = s => s ? new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "";
+  const fmtDate = s => s ? new Date(s).toLocaleDateString(window.I18N && I18N.locale, { month: "short", day: "numeric", year: "numeric" }) : "";
   // sign-in panel: shown in place (no redesign: the existing .confirm box style)
   function signInPanel(where, why) {
     const box = el("div", { class: "confirm" }), inp = el("input", { type: "email", placeholder: "you@example.com", "aria-label": "Email", class: "email-in", autocomplete: "email" });
@@ -61,8 +64,8 @@
   const initial = u => ((u && (u.name || u.email)) || "?").trim().charAt(0).toUpperCase() || "?";
   async function header() {
     const nav = document.querySelector(".top nav"); if (!nav) return null;
-    if (!nav.querySelector(".mv")) nav.append(el("a", Object.assign({ href: "videos.html", class: "mv", text: "My Videos" },
-      /\/videos\.html$/.test(location.pathname) ? { "aria-current": "page" } : {})));
+    if (!nav.querySelector(".mv")) nav.insertBefore(el("a", Object.assign({ href: "videos.html", class: "mv", text: T("My Videos") },
+      /\/videos\.html$/.test(location.pathname) ? { "aria-current": "page" } : {})), nav.querySelector(".langsw"));
     let acct = nav.querySelector(".acct"); if (!acct) { acct = el("div", { class: "acct" }); nav.append(acct); }
     const u = await auth.user(); SIGNED_IN = !!u;
     ME = null; let meErr = null;
@@ -71,7 +74,7 @@
     const btn = el("button", { type: "button", class: "avatar", "aria-haspopup": "menu", "aria-expanded": "false", "aria-label": "Account menu", text: initial(u) });
     const menu = el("div", { class: "acctmenu", role: "menu", hidden: "" }, [
       el("div", { class: "who" }, [el("b", { text: u.name || "Your account" }), el("span", { text: u.email || "" }),
-        el("span", { class: "bal", text: ME ? `${ME.credits} credits · ${ME.free_left} of ${ME.free_limit || 3} free previews left` : (meErr ? "Balance unavailable right now" : "") })]),
+        el("span", { class: "bal", text: ME ? T("{credits} credits · {free} of {limit} free previews left", { credits: ME.credits, free: ME.free_left, limit: ME.free_limit || 3 }) : (meErr ? "Balance unavailable right now" : "") })]),
       el("a", { href: "account.html", role: "menuitem", text: "My Account" }),
       el("a", { href: "videos.html", role: "menuitem", text: "My Videos" }),
       el("a", { href: "account.html#billing", role: "menuitem", text: "Credits & Billing" }),
@@ -88,7 +91,7 @@
   async function call(path, body) {
     const r = await fetch(API + path, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.error || `Request failed (${r.status})`);
+    if (!r.ok) throw new Error(E2(j.error || `Request failed (${r.status})`));
     return j;
   }
 
@@ -96,7 +99,7 @@
   const WIPES = new Set();
   function wipe(box, demo, opts = {}) {
     box.innerHTML = ""; box.classList.toggle("landscape", !!opts.landscape);
-    if (!demo || !demo.ready) { box.append(el("div", { class: "soon", text: demo ? `${demo.title} example coming soon` : "" })); return; }
+    if (!demo || !demo.ready) { box.append(el("div", { class: "soon", text: demo ? T("{title} example coming soon", { title: demo.title }) : "" })); return; }
     const a = el("video", { src: demo.before, muted: "", playsinline: "", loop: "", preload: "auto", "aria-label": "Raw upload" });
     const b = el("video", { src: demo.after, playsinline: "", loop: "", preload: "auto", class: "after", "aria-label": "Edited video" });
     a.muted = true; b.muted = true;
@@ -121,6 +124,27 @@
     new IntersectionObserver(es => es.forEach(x => x.isIntersecting ? start() : (a.pause(), b.pause()))).observe(box);
   }
 
+  /* "How EVA works": a compact gallery of real templates (approved demo frames). Only status "available" is renderable;
+     the rest are labelled Preview only. Data = templates/catalog.json (the same file as the Template Gallery). */
+  async function howGallery() {
+    const tiles = $("#howTiles"), chips = $("#howChips"); if (!tiles) return;
+    let cat; try { cat = await (await fetch("templates/catalog.json", { cache: "no-cache" })).json(); } catch (e) { return; }
+    const all = cat.templates.filter(t => t.status !== "excluded" && t.thumb);
+    const groups = [["all", "All"], ["available", "Ready now"], ["explain", "Explainers"], ["edu", "Education"], ["tech", "Tech & AI"], ["social", "Social"]];
+    const order = (a, b) => (a.status === "available") !== (b.status === "available") ? (a.status === "available" ? -1 : 1)
+      : a.status === "available" ? a.launch_order - b.launch_order : a.id.localeCompare(b.id, undefined, { numeric: true });
+    const show = g => {
+      chips.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.g === g)));
+      const list = all.filter(t => g === "all" || (g === "available" ? t.status === "available" : t.categories.includes(g))).sort(order).slice(0, 6);
+      tiles.replaceChildren(...list.map(t => el("a", { class: "how-tile " + t.status, href: "templates.html?q=" + t.id, "aria-label": `${t.id} ${tname(t)}, ${t.status === "available" ? T("Ready to use") : T("Preview only")}` }, [
+        el("img", { src: t.thumb, alt: "", loading: "lazy", decoding: "async", class: t.thumb_aspect === "9:16" ? "tall" : "" }),
+        el("span", { class: "how-st", text: t.status === "available" ? T("Ready") : T("Preview") }),
+        el("span", { class: "how-nm" }, [el("b", { text: t.id }), document.createTextNode(" " + tname(t))])])));
+    };
+    chips.replaceChildren(...groups.map(([g, label]) => { const b = el("button", { type: "button", "data-g": g, text: T(label) }); b.onclick = () => show(g); return b; }));
+    show("all");
+  }
+
   async function home() {
     let cfg = {};
     try { cfg = await (await fetch("demos/demos.json", { cache: "no-cache" })).json(); } catch (e) {}
@@ -129,14 +153,7 @@
     // hero: both formats at once, each Raw upload next to the edit rendered from that same upload
     if ($("#heroV")) wipe($("#heroV"), byId(hero.vertical) || demos.find(d => d.ready && !d.hero_only));
     if ($("#heroH")) wipe($("#heroH"), byId(hero.horizontal), { landscape: true });
-    demos = demos.filter(d => !d.hero_only);
-    const sw = $("#catSwitch"), cp = $("#catPhone");
-    demos.forEach((d, i) => {
-      const b = el("button", { type: "button", "aria-pressed": String(i === 0) }, [el("b", { text: d.title }), document.createTextNode(d.blurb)]);
-      b.onclick = () => { sw.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); wipe(cp, d); };
-      sw.append(b);
-    });
-    wipe(cp, demos[0]);
+    howGallery();
 
     // template chips (multi-select) + "let us choose"
     const tc = $("#tplChips");
@@ -170,7 +187,7 @@
         const a = assetsFor(id, ar);
         const other = gallery[id] && Object.keys(gallery[id].assets).length > 0;   // template in the gallery, not in this aspect yet
         c.media.hidden = !a; c.full.hidden = !(a && a.full15); c.card.classList.toggle("has-media", !!a || other);
-        c.soon.hidden = !!a || !other; c.soon.textContent = other && !a ? `${ar} preview coming soon` : "";
+        c.soon.hidden = !!a || !other; c.soon.textContent = other && !a ? T("{ar} preview coming soon", { ar }) : "";
         c.media.classList.toggle("wide", ar === "16:9"); c.soon.classList.toggle("wide", ar === "16:9");
         c.play.innerHTML = ""; c.play.setAttribute("aria-pressed", "false");
         if (!a) return;
@@ -221,10 +238,11 @@
       const d = file ? await duration(file) : null; let q = null;
       try { q = await api2(`/quote?duration=${d || 30}`); } catch (e) {}
       if (!q) return;
-      line.textContent = ME.free_left > 0 ? `This preview is free (${ME.free_left} of 3 free previews left). Full HD export: ${q.hd} credits.`
-        : ME.credits >= q.preview ? `This preview costs ${q.preview} credits (you have ${ME.credits}). Full HD export: ${q.hd} credits.`
-        : `This preview costs ${q.preview} credits and you have ${ME.credits}. Top up: $9.99 = 100 credits.`;
-      $("#go").textContent = ME.free_left > 0 ? "Make my free preview" : `Make preview · ${q.preview} credits`;
+      const qv = { free: ME.free_left, hd: q.hd, cost: q.preview, credits: ME.credits };
+      line.textContent = ME.free_left > 0 ? T("This preview is free ({free} of 3 free previews left). Full HD export: {hd} credits.", qv)
+        : ME.credits >= q.preview ? T("This preview costs {cost} credits (you have {credits}). Full HD export: {hd} credits.", qv)
+        : T("This preview costs {cost} credits and you have {credits}. Top up: $9.99 = 100 credits.", qv);
+      $("#go").textContent = ME.free_left > 0 ? T("Make my free preview") : T("Make preview · {cost} credits", { cost: q.preview });
     }
     header().then(costLine); input.addEventListener("change", costLine);
     ["dragover", "dragenter"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
@@ -243,7 +261,7 @@
       if (!/^video\/(mp4|quicktime)$/.test(type)) return msg("Please upload an MP4 or MOV video.", true);
       if (file.size > 200 * 1048576) return msg("This video is larger than 200 MB. Trim or compress it, then try again.", true);
       const d = await duration(file);
-      if (d && d > 30.5) return msg(`This video is ${Math.round(d)} seconds long. The limit is 30 seconds.`, true);
+      if (d && d > 30.5) return msg(T("This video is {n} seconds long. The limit is 30 seconds.", { n: Math.round(d) }), true);
       const auto = $("[name=tplauto]").checked, tpls = [...document.querySelectorAll("[name=tpl]:checked")].map(x => x.value);
       if (!auto && !tpls.length) return msg("Choose a visual style, or Let us choose.", true);
       const music = $("[name=music]:checked").value, tracks = [...document.querySelectorAll("[name=track]:checked")].map(x => x.value);
@@ -257,7 +275,7 @@
         up.job = up.project;
         meter.style.display = "block";
         await new Promise((res, rej) => { const x = new XMLHttpRequest(); x.open("PUT", up.put_url); x.setRequestHeader("Content-Type", up.put_type);
-          x.upload.onprogress = p => { if (p.lengthComputable) { bar.style.width = (100 * p.loaded / p.total).toFixed(0) + "%"; msg(`Uploading… ${Math.round(100 * p.loaded / p.total)}%`); } };
+          x.upload.onprogress = p => { if (p.lengthComputable) { bar.style.width = (100 * p.loaded / p.total).toFixed(0) + "%"; msg(T("Uploading… {pct}%", { pct: Math.round(100 * p.loaded / p.total) })); } };
           x.onload = () => x.status < 300 ? res() : rej(new Error("The upload was interrupted. Please try again."));
           x.onerror = () => rej(new Error("The upload was interrupted. Please try again.")); x.send(file); });
         msg("Starting your preview…");
@@ -333,13 +351,13 @@
                     if (e.status === 404) { h1.textContent = "We can't find this video"; sub.textContent = "It may have been deleted or have expired."; return; }
                     note.textContent = "Connection problem. Retrying…"; return again(8000); }
         const me = await header(); const land = (v.options || {}).aspect === "16:9"; act.innerHTML = "";
-        if (q.get("topup") === "done") act.append(el("p", { class: "note", text: `Payment received. Your balance: ${me ? me.credits : "…"} credits.` }));
+        if (q.get("topup") === "done") act.append(el("p", { class: "note", text: T("Payment received. Your balance: {credits} credits.", { credits: me ? me.credits : "…" }) }));
         if (q.get("topup") === "canceled") act.append(el("p", { class: "note", text: "Checkout was canceled. You haven't been charged." }));
-        const tpl = (v.templates || []).join(" + "), until = v.expires_at ? ` Kept until ${fmtDate(v.expires_at)}.` : "";
+        const tpl = (v.templates || []).join(" + "), until = v.expires_at ? T(" Kept until {date}.", { date: fmtDate(v.expires_at) }) : "";
         const running = s => s === "queued" || s === "running", hd = v.kind === "hd" ? v : v.hd;
         if (running(v.status)) {
-          h1.textContent = v.kind === "hd" ? "Rendering your HD video" : `Making preview ${v.n}`;
-          sub.textContent = `${v.project_title || ""} · ${tpl}. This usually takes ${v.kind === "hd" ? "a few" : "2–4"} minutes; you can leave and come back from My Videos.`;
+          h1.textContent = v.kind === "hd" ? T("Rendering your HD video") : T("Making preview {n}", { n: v.n });
+          sub.textContent = T(v.kind === "hd" ? "{title} · {tpl}. This usually takes a few minutes; you can leave and come back from My Videos." : "{title} · {tpl}. This usually takes 2–4 minutes; you can leave and come back from My Videos.", { title: v.project_title || "", tpl });
           setProgress(vid, (v.progress || {}).progress || 0, { label: "rendering", note: (v.progress || {}).stalled ? "This is taking longer than usual. If it can't finish, nothing is charged." : "" });
           stageList((v.progress || {}).stages); loading(v.kind === "hd" ? "Rendering in full HD…" : "Rendering your preview…", land);
           const c = el("button", { class: "btn ghost", type: "button", text: "Cancel" });
@@ -348,17 +366,17 @@
         }
         if (v.status !== "done") {
           h1.textContent = v.status === "canceled" ? "This render was canceled" : "This render didn't finish";
-          sub.textContent = (v.status === "qa_failed" ? "It didn't pass our quality checks. " : v.status === "canceled" ? "" : "Something went wrong on our side. ") + "Nothing was charged: free previews and credits were returned.";
+          sub.textContent = (v.status === "qa_failed" ? T("It didn't pass our quality checks. ") : v.status === "canceled" ? "" : T("Something went wrong on our side. ")) + T("Nothing was charged: free previews and credits were returned.");
           setProgress(vid, 0, { stopped: true }); stageList([]); loading("Not available", land); phone.classList.remove("loading");
           act.append(el("a", { class: "btn", href: "videos.html", text: "Back to My Videos" })); return;
         }
         // done
         if (v.kind === "hd") {
           h1.textContent = "Your HD video is ready";
-          sub.textContent = `${v.project_title || ""} · version ${v.n} · ${tpl}. Full HD ${(v.report || {}).width}×${(v.report || {}).height}.${until} Downloading again is free.`;
+          sub.textContent = T("{title} · version {n} · {tpl}. Full HD {w}×{h}.{until} Downloading again is free.", { title: v.project_title || "", n: v.n, tpl, w: (v.report || {}).width, h: (v.report || {}).height, until });
         } else {
-          h1.textContent = `Preview ${v.n} is ready`;
-          sub.textContent = `${v.project_title || ""} · ${tpl}. First 10 seconds with a watermark.${until}`;
+          h1.textContent = T("Preview {n} is ready", { n: v.n });
+          sub.textContent = T("{title} · {tpl}. First 10 seconds with a watermark.{until}", { title: v.project_title || "", tpl, until });
         }
         show(v.video_url, land, () => setProgress(vid, 100, { playable: true, label: "ready" }));
         setProgress(vid, 99, { playable, label: "ready", note: playable ? "" : "Loading…" }); stageList([]);
@@ -372,16 +390,16 @@
           act.append(el("a", { class: "btn", href: `video.html?v=${hd.id}`, text: "HD export in progress…" }));
         } else if (v.kind === "preview") {
           const cost = v.hd_cost;
-          if (confirmFor === "hd") act.append(confirmBox(credits >= cost ? `Export this version in full 1080p for ${cost} credits? You have ${credits}; ${credits - cost} will be left. If the export fails, the credits come back.`
-            : `Exporting costs ${cost} credits and you have ${credits}.`, credits >= cost ? `Export for ${cost} credits` : "Top up first",
-            async () => { if (credits < cost) { const e = new Error(`Exporting costs ${cost} credits and you have ${credits}. Top up to continue.`); e.status = 402; throw e; }
+          if (confirmFor === "hd") act.append(confirmBox(credits >= cost ? T("Export this version in full 1080p for {cost} credits? You have {credits}; {left} will be left. If the export fails, the credits come back.", { cost, credits, left: credits - cost })
+            : T("Exporting costs {cost} credits and you have {credits}.", { cost, credits }), credits >= cost ? T("Export for {cost} credits", { cost }) : T("Top up first"),
+            async () => { if (credits < cost) { const e = new Error(T("Exporting costs {cost} credits and you have {credits}. Top up to continue.", { cost, credits })); e.status = 402; throw e; }
               const r = await api2(`/versions/${vid}/hd`, {}); location.href = `video.html?v=${r.version}`; }));
-          else { const b = el("button", { class: "btn", type: "button", text: `Export HD · ${cost} credits` }); b.onclick = () => { confirmFor = "hd"; atick(); }; act.append(b); }
+          else { const b = el("button", { class: "btn", type: "button", text: T("Export HD · {cost} credits", { cost }) }); b.onclick = () => { confirmFor = "hd"; atick(); }; act.append(b); }
         }
         if (v.kind === "preview") {
           const free = me && me.free_left > 0;
-          if (confirmFor === "regen") act.append(confirmBox(free ? `Make a new version from the same upload and settings? It's free (${me.free_left} of 3 free previews left). Your current versions stay in My Videos.`
-            : `Make a new version from the same upload and settings for ${v.preview_cost} credits? You have ${credits}. Your current versions stay saved, and if it fails the credits come back.`,
+          if (confirmFor === "regen") act.append(confirmBox(free ? T("Make a new version from the same upload and settings? It's free ({free} of 3 free previews left). Your current versions stay in My Videos.", { free: me.free_left })
+            : T("Make a new version from the same upload and settings for {cost} credits? You have {credits}. Your current versions stay saved, and if it fails the credits come back.", { cost: v.preview_cost, credits }),
             free || credits >= v.preview_cost ? "Yes, make a new version" : "Top up first",
             async () => { const r = await api2(`/projects/${v.project_id}/previews`, {}); location.href = `video.html?v=${r.version}`; }));
           else { const b = el("button", { class: "btn ghost", type: "button", text: "New version" }); b.onclick = () => { confirmFor = "regen"; atick(); }; act.append(b); }
@@ -498,40 +516,40 @@
     const dur = s => { s = Math.max(0, Math.round(+s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
     const dayKey = d => { const x = new Date(d); return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`; };
     const dayLabel = d => { const x = new Date(d), now = new Date();
-      return x.toLocaleDateString(undefined, x.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" }); };
+      return x.toLocaleDateString(window.I18N && I18N.locale, x.getFullYear() === now.getFullYear() ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" }); };
     // one project = every version made from one upload: previews, HD exports, downloads (the detailed view)
     function project(pr, a) {
         const head = el("div", { class: "proj-head" }, [
-          el("div", {}, [el("h2", { text: pr.title }), el("p", { class: "hint", text: `Uploaded ${fmtDate(pr.created_at)}${pr.source_expires_at ? ` · original kept until ${fmtDate(pr.source_expires_at)}` : ""}` })])]);
+          el("div", {}, [el("h2", { text: pr.title, "data-no-i18n": "" }), el("p", { class: "hint", text: T("Uploaded {date}", { date: fmtDate(pr.created_at) }) + (pr.source_expires_at ? T(" · original kept until {date}", { date: fmtDate(pr.source_expires_at) }) : "") })])]);
         const acts = el("div", { class: "row" });
-        const nv = el("button", { class: "btn ghost", type: "button", text: a.free_left > 0 ? "New version · free" : `New version · ${pr.costs.preview} credits` });
-        nv.onclick = async () => { if (!confirm2(nv, a.free_left > 0 ? `Make a new version from the same upload and settings? Free (${a.free_left} free previews left).` : `Make a new version for ${pr.costs.preview} credits? You have ${a.credits}.`)) return;
+        const nv = el("button", { class: "btn ghost", type: "button", text: a.free_left > 0 ? T("New version · free") : T("New version · {cost} credits", { cost: pr.costs.preview }) });
+        nv.onclick = async () => { if (!confirm2(nv, a.free_left > 0 ? T("Make a new version from the same upload and settings? Free ({free} free previews left).", { free: a.free_left }) : T("Make a new version for {cost} credits? You have {credits}.", { cost: pr.costs.preview, credits: a.credits }))) return;
           try { const r = await api2(`/projects/${pr.id}/previews`, {}); location.href = `video.html?v=${r.version}`; } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); nv.disabled = false; } };
         const dp = el("button", { class: "btn ghost", type: "button", text: "Delete" });
-        dp.onclick = async () => { if (!confirm2(dp, `Delete “${pr.title}” and all its versions? This can't be undone.`)) return;
+        dp.onclick = async () => { if (!confirm2(dp, T("Delete “{title}” and all its versions? This can't be undone.", { title: pr.title }))) return;
           try { await api2(`/projects/${pr.id}/delete`, {}); location.href = "videos.html"; } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); dp.disabled = false; } };
         acts.append(nv, dp); head.append(acts);
         const hdOf = id => pr.versions.find(x => x.kind === "hd" && x.source_version === id && !["failed", "qa_failed", "canceled"].includes(x.status));
         const cards = pr.versions.filter(v => v.kind === "preview").map(v => {
           const hd = hdOf(v.id), card = el("article", { class: "vcard" });
-          const thumb = el("a", { class: "vthumb" + ((v.options || {}).aspect === "16:9" ? " wide" : ""), href: `video.html?v=${v.id}`, "aria-label": `Open version ${v.n}` });
+          const thumb = el("a", { class: "vthumb" + ((v.options || {}).aspect === "16:9" ? " wide" : ""), href: `video.html?v=${v.id}`, "aria-label": T("Open version {n}", { n: v.n }) });
           if (v.thumb_url) thumb.append(el("img", { src: v.thumb_url, alt: "", loading: "lazy" }));
           thumb.append(el("span", { class: "vbadge " + v.status, text: running(v.status) ? `${(v.progress || {}).progress || 0}%` : v.status === "done" ? (hd && hd.status === "done" ? "HD" : "Preview") : v.status.replace("_", " ") }));
           const star = el("button", { class: "star" + (v.favorite ? " on" : ""), type: "button", "aria-pressed": String(!!v.favorite), "aria-label": "Favorite", text: v.favorite ? "★" : "☆" });
           star.onclick = async () => { await api2(`/versions/${v.id}/favorite`, { favorite: !v.favorite }); render(); };
-          const meta = el("div", { class: "vmeta" }, [el("div", { class: "vtitle" }, [el("b", { text: `Version ${v.n}` }), star]),
+          const meta = el("div", { class: "vmeta" }, [el("div", { class: "vtitle" }, [el("b", { text: T("Version {n}", { n: v.n }) }), star]),
             el("div", { class: "hint", text: (v.templates || []).join(" + ") + ` · ${(v.options || {}).aspect}` }),
-            el("div", { class: "hint", text: v.status === "done" ? `Preview kept until ${fmtDate(v.expires_at)}` + (hd && hd.status === "done" ? ` · HD until ${fmtDate(hd.expires_at)}` : "") : running(v.status) ? "Rendering…" : "Nothing was charged" })]);
+            el("div", { class: "hint", text: v.status === "done" ? T("Preview kept until {date}", { date: fmtDate(v.expires_at) }) + (hd && hd.status === "done" ? T(" · HD until {date}", { date: fmtDate(hd.expires_at) }) : "") : running(v.status) ? "Rendering…" : "Nothing was charged" })]);
           const row = el("div", { class: "row" });
           if (v.status === "done") {
             row.append(el("a", { class: "btn small", href: `video.html?v=${v.id}`, text: "Play" }));
             if (hd && hd.status === "done") { const d = el("a", { class: "btn small ghost", href: "#", text: "Download HD" });
               d.onclick = async e => { e.preventDefault(); location.href = (await api2(`/versions/${hd.id}`)).download_url; }; row.append(d); }
             else if (hd) row.append(el("a", { class: "btn small ghost", href: `video.html?v=${hd.id}`, text: "HD rendering…" }));
-            else row.append(el("a", { class: "btn small ghost", href: `video.html?v=${v.id}`, text: `Export HD · ${pr.costs.hd}` }));
+            else row.append(el("a", { class: "btn small ghost", href: `video.html?v=${v.id}`, text: T("Export HD · {cost}", { cost: pr.costs.hd }) }));
           }
           if (!running(v.status)) { const del = el("button", { class: "btn small ghost", type: "button", text: "Delete" });
-            del.onclick = async () => { if (!confirm2(del, `Delete version ${v.n}${hd ? " and its HD export" : ""}?`)) return;
+            del.onclick = async () => { if (!confirm2(del, T(hd ? "Delete version {n} and its HD export?" : "Delete version {n}?", { n: v.n }))) return;
               try { if (hd) await api2(`/versions/${hd.id}/delete`, {}); await api2(`/versions/${v.id}/delete`, {}); render(); } catch (e) { noteBox.replaceChildren(el("p", { class: "note bad", text: e.message })); } };
             row.append(del); }
           card.append(thumb, meta, row); return card;
@@ -553,12 +571,12 @@
         const bar = el("span", { class: "mvprog", role: "progressbar", "aria-label": "Processing", "aria-valuenow": String(pct), "aria-valuemin": "0", "aria-valuemax": "100" }, [el("i")]);
         bar.firstChild.style.width = pct + "%"; t.append(bar); }
       return el("a", { class: "mvcard", href: `videos.html?p=${encodeURIComponent(pr.id)}`,
-        "aria-label": `${pr.title || "Video"}, ${dur(pr.duration_s)}${live ? ", processing" : ""}` }, [t]);
+        "aria-label": T("{title}, {dur}", { title: pr.title || T("Video"), dur: dur(pr.duration_s) }) + (live ? T(", processing") : "") }, [t]);
     }
     const render = async () => {
       let data; try { data = await api2("/library"); } catch (e) { list.replaceChildren(el("p", { class: "note bad", text: e.message })); return; }
       const a = data.account;
-      if (q.get("topup") === "done") noteBox.replaceChildren(el("p", { class: "note", text: `Payment received. Your balance is ${a.credits} credits.` }));
+      if (q.get("topup") === "done") noteBox.replaceChildren(el("p", { class: "note", text: T("Payment received. Your balance is {credits} credits.", { credits: a.credits }) }));
       if (q.get("topup") === "canceled") noteBox.replaceChildren(el("p", { class: "note", text: "Checkout was canceled. You haven't been charged." }));
       if (pid) {
         const pr = data.projects.find(x => x.id === pid);
@@ -577,7 +595,7 @@
       });
       list.replaceChildren(...groups.map(g => el("section", { class: "mvday" }, [
         el("h2", {}, [cal(), document.createTextNode(g.label + " "),
-          el("span", { text: `(${g.items.length} video${g.items.length === 1 ? "" : "s"})` })]),
+          el("span", { text: T(g.items.length === 1 ? "({n} video)" : "({n} videos)", { n: g.items.length }) })]),
         el("div", { class: "mvgrid" }, g.items.map(tile))])));
       if (data.projects.some(pr => pr.versions.some(v => running(v.status)))) setTimeout(render, 4000);
     };
@@ -609,7 +627,7 @@
       Object.assign(el("button", { class: "btn ghost", type: "button", text: "Sign out" }), { onclick: () => auth.signOut() })]);
     if (!me) { body.replaceChildren(profile, el("p", { class: "note bad", text: "Your balance and history could not be loaded right now. Please try again in a moment." })); return; }
     // balance + free previews + buy
-    const buy = el("button", { class: "btn", type: "button", text: `Buy ${me.topup.credits} credits · $${(me.topup.cents / 100).toFixed(2)}` }), bnote = el("p", { class: "hint", text: "" });
+    const buy = el("button", { class: "btn", type: "button", text: T("Buy {credits} credits · ${price}", { credits: me.topup.credits, price: (me.topup.cents / 100).toFixed(2) }) }), bnote = el("p", { class: "hint", text: "" });
     buy.onclick = async () => { buy.disabled = true; try { location.href = (await api2("/topup", { return_to: "/account.html#billing" })).url; } catch (e) { buy.disabled = false; bnote.textContent = e.message; } };
     const lim = me.free_limit || 3;
     const stats = el("div", { class: "stats" }, [
@@ -619,16 +637,16 @@
     const billing = card("Credits & Billing", [stats, el("div", { class: "row" }, [buy, el("a", { class: "btn ghost", href: "videos.html", text: "My Videos" })]), bnote,
       el("h3", { text: "Purchases and charges" }), hist], "billing");
     const notes = [];
-    if (q.get("topup") === "done") notes.push(el("p", { class: "note", text: `Payment received. Your balance is ${me.credits} credits.` }));
+    if (q.get("topup") === "done") notes.push(el("p", { class: "note", text: T("Payment received. Your balance is {credits} credits.", { credits: me.credits }) }));
     if (q.get("topup") === "canceled") notes.push(el("p", { class: "note", text: "Payment canceled. Nothing was charged." }));
     body.replaceChildren(...notes, profile, billing);
     if (location.hash === "#billing") billing.scrollIntoView();
     try {
       const { items } = await api2("/history");
       if (!items.length) return hist.replaceChildren(el("p", { class: "hint", text: "No purchases or charges yet." }));
-      const fmt = s => new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-      const amt = x => x.type === "purchase" ? `+${x.credits} credits` + (x.amount_cents ? ` · $${(x.amount_cents / 100).toFixed(2)}` : "")
-        : x.free ? "Free preview" : `${x.credits} credits`;
+      const fmt = s => new Date(s).toLocaleString(window.I18N && I18N.locale, { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+      const amt = x => x.type === "purchase" ? T("+{credits} credits", { credits: x.credits }) + (x.amount_cents ? ` · $${(x.amount_cents / 100).toFixed(2)}` : "")
+        : x.free ? T("Free preview") : T("{credits} credits", { credits: x.credits });
       const st = { charged: "Charged", refunded: "Refunded", "in progress": "In progress", paid: "Paid", granted: "Granted", applied: "Applied" };
       hist.replaceChildren(el("table", { class: "htab" }, [
         el("thead", {}, [el("tr", {}, ["Date", "Item", "Amount", "Status"].map(h => el("th", { text: h })))]),

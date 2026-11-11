@@ -8,23 +8,24 @@
 <link rel="stylesheet" href="app.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
+<script src="i18n.js"></script>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <a class="logo" href="/"><picture><source srcset="brand/eva-logo.webp" type="image/webp"><img src="brand/eva-logo.png" alt="EVA Video Studio" width="526" height="168"></picture></a>
-    <nav><a href="/#examples">Examples</a><a href="templates.html">Templates</a><a href="/#studio">Make a video</a><a href="pricing.html">Pricing</a></nav>
+    <nav><a href="/#how">How it works</a><a href="templates.html">Templates</a><a href="/#studio">Make a video</a><a href="pricing.html">Pricing</a></nav>
   </header>
 
   <section class="hero hero2">
     <div>
-      <h1>Your raw clip in. A <span class="grad">finished short</span> out.</h1>
+      <h1 data-i18n-html>Your raw clip in. A <span class="grad">finished short</span> out.</h1>
       <p class="lede">Upload a talking-head video from your phone. We add captions, motion cards and music, then cut it for Reels, TikTok or YouTube.</p>
       <a class="btn" href="#studio">Upload a video</a>
       <ul class="facts">
-        <li><b>3 free</b> previews</li>
-        <li><b>$9.99</b> = 100 credits</li>
-        <li>Ready in about <b>5 minutes</b></li>
+        <li data-i18n-html><b>3 free</b> previews</li>
+        <li data-i18n-html><b>$9.99</b> = 100 credits</li>
+        <li data-i18n-html>Ready in about <b>5 minutes</b></li>
       </ul>
     </div>
     <div class="duo">
@@ -35,14 +36,52 @@
   </section>
 </div>
 
-<section class="band" id="examples">
-  <div class="wrap cats">
-    <div>
-      <h2>Made from real uploads</h2>
-      <p class="hint" style="font-size:17px;max-width:42ch">Each example is the presenter's original clip on the left and the studio's edit on the right, with nothing touched up by hand.</p>
-      <div class="switch" role="group" aria-label="Example category" id="catSwitch"></div>
+<section class="how" id="how" aria-labelledby="howT">
+  <div class="wrap how-in">
+    <div class="how-head">
+      <h2 id="howT">How EVA works</h2>
+      <p class="hint">Three steps from your phone video to a finished, edited short.</p>
     </div>
-    <div><div class="phone" id="catPhone"></div></div>
+    <div class="how-grid">
+      <div class="how-flow">
+        <svg class="how-path" viewBox="0 0 600 200" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="howG" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#2f8cff"/><stop offset=".55" stop-color="#5b4bff"/><stop offset="1" stop-color="#b026ff"/></linearGradient></defs>
+          <path class="how-track" d="M10 170 C 140 170, 170 110, 300 110 S 470 40, 590 40"/>
+          <path class="how-flowline" d="M10 170 C 140 170, 170 110, 300 110 S 470 40, 590 40"/>
+        </svg>
+        <ol class="how-steps">
+          <li class="how-step s1">
+            <span class="how-n">1</span>
+            <div class="how-ic up" aria-hidden="true"><i></i></div>
+            <h3>Upload a video</h3>
+            <p>MP4 or MOV, up to 30 seconds, with you speaking.</p>
+          </li>
+          <li class="how-step s2">
+            <span class="how-n">2</span>
+            <div class="how-ic pick" aria-hidden="true"><i></i><i></i><i class="on"></i><i></i></div>
+            <h3>Choose a template</h3>
+            <p>Pick a style, or let us choose for you.</p>
+          </li>
+          <li class="how-step s3">
+            <span class="how-n">3</span>
+            <div class="how-ic gen" aria-hidden="true"><span class="how-bar"><i></i></span></div>
+            <h3>Generate your video</h3>
+            <p>A free preview in a few minutes, then export in full HD.</p>
+          </li>
+        </ol>
+        <ul class="how-feats">
+          <li><b>Your real footage</b><span>Captions, motion cards and music added to your own clip</span></li>
+          <li><b>25 styles, growing</b><span>5 ready to use today, more on the way</span></li>
+          <li><b>Ready to post</b><span>1080p for Reels, TikTok, Shorts and YouTube</span></li>
+        </ul>
+      </div>
+      <aside class="how-gal" aria-labelledby="howGalT">
+        <div class="how-gal-head"><h3 id="howGalT">25 video styles</h3><span class="hint">5 ready to use now</span></div>
+        <div class="how-chips" id="howChips" role="group" aria-label="Template category"></div>
+        <div class="how-tiles" id="howTiles"></div>
+        <a class="btn how-all" data-i18n-html href="templates.html">Explore all templates <span aria-hidden="true">→</span></a>
+      </aside>
+    </div>
   </div>
 </section>
 
