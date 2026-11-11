@@ -1,0 +1,57 @@
+# Re-runs ONLY the live end-to-end tests against the production stack that is already deployed. Nothing is deployed,
+# migrated or reconfigured: no Modal deploy, no Vercel deploy, no migration, no webhook or CORS change.
+# Same tests as the last step of mvp-deploy.yml: throwaway test users (deleted afterwards), Stripe TEST mode only.
+# Needs the "production" environment approval (secrets: Supabase, Stripe TEST key, R2 for the private test clip).
+name: production · live tests only (no deploy)
+on:
+  workflow_dispatch:
+  push:   # dispatch needs the file on the default branch, so it runs when this file changes on feat/mvp-launch
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/production-live-tests.yml]
+permissions: { contents: read }
+jobs:
+  live-tests:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    env:
+      SITE_URL: https://eva-video-studio.vercel.app                # production site (from deploy run 42964188174)
+      API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run    # production API (same run)
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET || 'eva-video-studio' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Stripe key must be TEST mode
+        run: case "$STRIPE_SECRET_KEY" in sk_test_*|rk_test_*) echo "Stripe TEST key";; *) echo "::error::not a Stripe TEST key"; exit 1;; esac
+      - name: Live end-to-end tests (accounts, HD export + download, balance, refunds, gallery, privacy probes)
+        run: |
+          set -e
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1" "boto3~=1.35" "playwright~=1.48"
+          python -m playwright install --with-deps chromium >/dev/null
+          curl -fsS "$API_URL/api/health"; echo
+          M=saas/tests/media; mkdir -p e2e
+          python -c "import sys; sys.path.insert(0,'saas/web'); import store; s=store.R2(); s.size('testdata/new30.mp4') and s.download('testdata/new30.mp4','e2e/new30.mp4')" || true
+          V=e2e/new30.mp4; [ -f $V ] || V=$M/new30.mp4; [ -f $V ] || { echo "::warning::new30.mp4 missing; using the 20 s real-upload pair"; ffmpeg -loglevel error -y -i $M/education.mp4 -i $M/realestate.mp4 -filter_complex "[0:v]fps=30,scale=720:1280,setsar=1[a];[1:v]fps=30,scale=720:1280,setsar=1[b];[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][au]" -map "[v]" -map "[au]" -c:v libx264 -crf 20 -c:a aac e2e/fallback.mp4; V=e2e/fallback.mp4; }
+          echo "test clip: $V ($(ffprobe -v error -show_entries format=duration -of csv=p=0 $V) s)"
+          python saas/tests/live_accounts_e2e.py "$API_URL" "$SITE_URL" $V e2e/accounts.json
+          python saas/tests/browser_gallery.py "$SITE_URL" e2e/gallery
+          python saas/tests/live_checks.py "$API_URL" e2e/purchase/summary.json e2e/checks.json
+      - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08  # v4.6.0
+        if: always()
+        with:
+          name: live-tests
+          if-no-files-found: ignore
+          path: |
+            e2e/*.json
+            e2e/gallery/*.png

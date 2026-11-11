@@ -37,7 +37,16 @@ def signin(tag):
 def call(h, m, path, **kw): return requests.request(m, API + "/api/v2" + path, headers=h, timeout=60, **kw)
 
 
-def upload(h, name, dur=10.0):
+def probe_duration(f):   # the real length of the test clip, as the website measures it before uploading
+    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(f)], capture_output=True, text=True, check=True).stdout
+    return round(float(out.strip()), 2)
+
+
+DUR = probe_duration(VIDEO)
+
+
+def upload(h, name, dur=None):
+    dur = DUR if dur is None else dur
     data = VIDEO.read_bytes(); j = call(h, "POST", "/projects", json={"name": name, "size": len(data), "type": "video/mp4", "duration": dur}).json()
     requests.put(j["put_url"], data=data, headers={"Content-Type": "video/mp4", **O}, timeout=300).raise_for_status(); return j
 
@@ -56,7 +65,10 @@ def main():
     A, a_id = signin("a"); B, _ = signin("b")
     check("sign-in required", call(O, "GET", "/me").status_code == 401)
     me = call(A, "GET", "/me").json(); check("new account: 3 free previews, 0 credits", me["free_left"] == 3 and me["credits"] == 0, me)
-    p = upload(A, "Release test"); check("costs shown before generating", p["costs"] == {"preview": 13, "hd": 43}, p["costs"])
+    # expected prices come from the server's own quote for the clip's real duration (12-15 preview / 38-52 HD by length)
+    Q = call(A, "GET", f"/quote?duration={DUR}").json(); PV, HD = Q["preview"], Q["hd"]; E["clip"] = {"duration_s": DUR, "preview": PV, "hd": HD}
+    check("quote matches the duration formula", 12 <= PV <= 15 and 38 <= HD <= 52, {"duration_s": DUR, **Q})
+    p = upload(A, "Release test"); check("costs shown before generating", p["costs"] == {"preview": PV, "hd": HD}, p["costs"])
     r = call(A, "POST", f"/projects/{p['project']}/previews", json=OPTS).json(); v1 = r["version"]; check("preview 1 is free", r["charge"]["type"] == "free", r["charge"])
     v, secs, prog = wait(A, v1); E["timings"]["preview_1_s"] = secs
     check("preview 1 done on Modal with thumbnail + signed video", v["status"] == "done" and v.get("thumb_url") and v.get("video_url"), v.get("error"))
@@ -75,8 +87,8 @@ def main():
     check("top-up Checkout: TEST mode, $9.99, 100 credits, returns to the selected video", s["livemode"] is False and s["amount_total"] == 999 and s["metadata"]["type"] == "topup"
           and s["metadata"]["credits"] == "100" and f"/video.html?v={v1}" in s["success_url"], {"status": s["status"]})
     DB.rpc("eva_topup", user_id=a_id, session_id=f"e2e-grant-{RUN}", credits=100, amount_cents=0, livemode=False)   # labelled test grant
-    r = call(A, "POST", f"/versions/{v1}/hd").json(); h = r["version"]; check("HD export of the older version charged 43", r["charge"]["amount"] == 43 and call(A, "GET", "/me").json()["credits"] == 57, r)
-    check("second HD request = same export, no charge", call(A, "POST", f"/versions/{v1}/hd").json().get("existing") == h and call(A, "GET", "/me").json()["credits"] == 57)
+    r = call(A, "POST", f"/versions/{v1}/hd").json(); h = r["version"]; check(f"HD export of the older version charged {HD}", r["charge"]["amount"] == HD and call(A, "GET", "/me").json()["credits"] == 100 - HD, r)
+    check("second HD request = same export, no charge", call(A, "POST", f"/versions/{v1}/hd").json().get("existing") == h and call(A, "GET", "/me").json()["credits"] == 100 - HD)
     v, secs, _ = wait(A, h); E["timings"]["hd_s"] = secs; rowh = DB.rpc("eva_version", version_id=h); E["cost_hd"] = rowh.get("cost"); E["qa_hd"] = rowh.get("qa")
     with tempfile.TemporaryDirectory() as d:
         f = Path(d) / "hd.mp4"; f.write_bytes(requests.get(v["download_url"], timeout=300).content)
@@ -88,7 +100,7 @@ def main():
     c0 = call(A, "GET", "/me").json()["credits"]
     r = call(A, "POST", f"/projects/{upload(A, 'e2e-fail paid')['project']}/previews", json=OPTS).json()
     c1 = call(A, "GET", "/me").json()["credits"]; v, _, _ = wait(A, r["version"]); call(A, "POST", f"/versions/{hold}/cancel")
-    check("failed paid preview: 13 credits charged, then refunded", c0 - c1 == 13 and v["status"] == "failed" and call(A, "GET", "/me").json()["credits"] == c0,
+    check(f"failed paid preview: {PV} credits charged, then refunded", c0 - c1 == PV and v["status"] == "failed" and call(A, "GET", "/me").json()["credits"] == c0,
           {"charged": c0 - c1, "status": v["status"]})
     # My Account: purchase/charge history (read-only view of the ledger; needs the service key to read the table)
     hist = call(A, "GET", "/history"); items = hist.json().get("items", []) if hist.status_code == 200 else []
