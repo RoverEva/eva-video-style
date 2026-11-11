@@ -48,6 +48,8 @@ jobs:
       - name: Unit + server-side post-payment tests (signed webhook events, order state, render job, delivery, render failure, retry, refund)
         run: |
           pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1"
+          # test_versions_qa makes thumbnails with ffmpeg; the runner image no longer ships it (the ffmpeg package includes ffprobe)
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null && ffmpeg -version | head -1 && ffprobe -version | head -1
           python saas/tests/test_planner.py && python saas/tests/test_api.py && python saas/tests/test_versions_qa.py
           # credits / free previews / library SQL on a throwaway Postgres 16 (same functions Supabase runs), incl. concurrency
           sudo apt-get install -y -qq postgresql-client >/dev/null
