@@ -66,7 +66,20 @@
   /* 9:16: a talking head owns the phone screen, so the presenter is full-bleed whenever no card is up (gaps ≥ 1.2 s) */
   const W0 = C.portrait ? FULL : skinOf(0).win, GAP = C.portrait ? 1.0 : 3.2;
   const keys = [{ t: 0, d: 0, L: Object.assign({}, W0, { o: 0 }) }, { t: .05, d: .4, L: W0 }];
-  secs.forEach((s, i) => {
+  if (C.portrait) {
+    /* 9:16: the template window (re-laid below the card block by portLayout) comes in for every run of cards and the
+       presenter goes full-bleed only in real gaps (≥ GAP). Before 2026-11-11 the window was only keyed at the end of a long
+       gap, so back-to-back cards left the presenter full-bleed and the template look never appeared. */
+    const cl = [];
+    cards.slice().sort((a, b) => a.t_in - b.t_in).forEach(c => { const l = cl[cl.length - 1];
+      if (l && c.t_in - (l.t1 + .4) < GAP) l.t1 = Math.max(l.t1, c.t_out); else cl.push({ t0: c.t_in, t1: c.t_out, i: c.section }); });
+    cl.forEach((c, j) => {
+      keys.push({ t: Math.max(.05, c.t0 - .55), d: .45, L: skinOf(c.i).win });
+      secs.forEach((s, i) => { if (s.t0 > c.t0 && s.t0 < c.t1) keys.push({ t: s.t0, d: .45, L: skinOf(i).win }); });
+      const nx = cl[j + 1]; if (!nx || nx.t0 - (c.t1 + .4) >= GAP) keys.push({ t: c.t1 + .4, d: .5, L: FULL });
+    });
+    keys.sort((a, b) => a.t - b.t);
+  } else secs.forEach((s, i) => {
     const sk = skinOf(i); if (i > 0 && !C.portrait) keys.push({ t: s.t0, d: .45, L: sk.win });
     const inSec = cards.filter(c => c.section === i).sort((a, b) => a.t_in - b.t_in);
     let free = s.t0 + (C.portrait ? 0 : .6); const gaps = [];

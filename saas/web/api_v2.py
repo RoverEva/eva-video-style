@@ -65,6 +65,9 @@ SPAWN_TIMEOUT = float(os.environ.get("EVA_SPAWN_TIMEOUT", "20"))   # seconds to 
 _SPAWNER = ThreadPoolExecutor(4, thread_name_prefix="spawn")
 
 
+MIN_SECTION_S = float(os.environ.get("EVA_MIN_SECTION_S", "3.0"))   # = planner.MIN_SECTION_S
+
+
 class Unavailable(Exception): pass   # a read-only view the database could not serve → HTTP 503
 
 
@@ -163,7 +166,12 @@ class Accounts:
         if not pr.get("upload_key") or not self.s.size(pr["upload_key"]): raise ValueError("The upload has not finished yet (or has expired).")
         opts = self.options(b) if b.get("aspect") else (pr["versions"][0]["options"] if pr["versions"] else None)
         if not opts: raise ValueError("Choose your settings first.")
-        vid = new_id("v"); cost = preview_cost(self.duration(pr))
+        dur = self.duration(pr)
+        if opts and opts.get("template_mode") == "multi" and len(opts.get("templates") or []) > max(1, int(dur // MIN_SECTION_S)):
+            n = max(1, int(dur // MIN_SECTION_S))   # same rule as planner.choose_templates: never drop a selected template silently
+            raise ValueError(f"This {dur:.0f}-second video fits up to {n} template{'s' if n > 1 else ''} (about {MIN_SECTION_S:.0f} s each). "
+                             f"Choose up to {n}, or upload a longer clip.")
+        vid = new_id("v"); cost = preview_cost(dur)
         r = self.db.rpc("eva_start_preview", user_id=u["id"], project_id=pid, version_id=vid, cost=cost, options=opts)
         if not r.get("ok"): return r
         self.launch("preview", vid)

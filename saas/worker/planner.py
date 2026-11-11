@@ -68,23 +68,40 @@ def find_word(words, text, t_from=0.0, t_to=1e9):
 
 
 # ───────────────────────── sections ─────────────────────────
+MIN_SECTION_S = float(os.environ.get("EVA_MIN_SECTION_S", "3.0"))   # shortest stretch one template may get
+COVERAGE_TARGET = {"meaningful": float(os.environ.get("EVA_TARGET_MEANINGFUL", "0.6")),   # share of the video with a card on screen
+                   "template": float(os.environ.get("EVA_TARGET_TEMPLATE", "0.75")),       # share with any template look
+                   "max_raw_s": float(os.environ.get("EVA_MAX_RAW_S", "2.5"))}             # longest raw full-frame stretch
+
+
+class TooShort(ValueError): pass
+
+
+def max_templates(dur): return max(1, int(dur // MIN_SECTION_S))
+
+
 def choose_templates(mode, templates, dur):
-    templates = [t for t in (templates or []) if t in TEMPLATES] or ["T17"]
-    if mode == "single": return templates[:1]
+    sel = [t for t in (templates or []) if t in TEMPLATES]
+    sel = [t for i, t in enumerate(sel) if t not in sel[:i]] or ["T17"]   # keep the person's order, no duplicates
+    if mode == "single": return sel[:1]
     if mode == "auto":   # AI Auto Mix: about one look per 8 s (videos are ≤ 30 s), at most four
         n = max(1, min(4, round(dur / 8)))
         return ["T17", "T23", "T01", "T21"][:n] if n > 1 else ["T17"]   # launch looks, contrasting order
-    n = max(1, min(len(templates), int(dur // 5)))    # each look gets at least ~5 s
-    return templates[:n]
+    if len(sel) > max_templates(dur):   # never drop a selected template silently: the API checks this before charging
+        raise TooShort(f"{len(sel)} templates need at least {len(sel) * MIN_SECTION_S:.0f} s of video (this one is {dur:.1f} s). "
+                       f"Choose up to {max_templates(dur)} templates or a longer clip.")
+    return sel
 
 
 def sections(words, dur, tpls):
     n = len(tpls); bounds = [0.0]
     gaps = [((words[i]["end"] + words[i + 1]["start"]) / 2, words[i + 1]["start"] - words[i]["end"]) for i in range(len(words) - 1)]
-    for k in range(1, n):
+    avg = dur / n
+    for k in range(1, n):   # cut near k·avg, preferring a real pause; every look keeps at least 80 % of an equal share
         target = dur * k / n
-        cands = [(abs(t - target) - 2.5 * g, t) for t, g in gaps if abs(t - target) < dur / (2 * n) and t > bounds[-1] + 4]
-        t = min(cands)[1] if cands else target
+        lo, hi = max(bounds[-1] + .8 * avg, target - .35 * avg), min(target + .35 * avg, dur - (n - k) * .8 * avg)
+        cands = [(abs(t - target) - 2.5 * g, t) for t, g in gaps if lo <= t <= hi]
+        t = min(cands)[1] if cands else min(max(target, lo), hi)
         bounds.append(round(round(t * FPS) / FPS, 3))
     bounds.append(round(dur, 3))
     return [{"t0": bounds[i], "t1": bounds[i + 1], "template": tpls[i]} for i in range(n)]
@@ -138,6 +155,25 @@ def keywords(text):
 
 
 def heuristic_beats(segs, dur, secs):
+    """Deterministic planner: one card candidate per spoken segment (sentence) that has content words, so every look is
+    filled with the speaker's own key words; build_cards keeps one card at a time and fill_cards closes the gaps."""
+    beats = []
+    for s in segs:
+        if s["end"] - s["start"] < .6: continue
+        kw = keywords(s["text"])
+        if not kw: continue
+        parts = [p.strip(" .!?") for p in re.split(r",|;| and | then ", s["text"]) if keywords(p)]
+        if len(parts) >= 3:
+            items = [{"title": max(keywords(p), key=len), "sub": clip(p, 30)} for p in parts[:4]]
+            if len(set(i["title"].lower() for i in items)) == len(items):
+                beats.append({"seg": s["id"], "kind": "steps", "title": "", "sub": "", "anchor": [i["title"] for i in items], "items": items}); continue
+        title = max(kw, key=len)
+        beats.append({"seg": s["id"], "kind": "statement" if len(beats) % 3 == 2 else "hero", "title": title,
+                      "sub": clip(s["text"].rstrip(".!?"), 34), "anchor": [title], "items": []})
+    return beats
+
+
+def heuristic_beats_sparse(segs, dur, secs):   # previous planner (kept for comparison in tests)
     """Deterministic fallback: windows of ~6 s inside each section (so every look gets at least one card);
     in each window the segment with the most content words becomes a card. Text = the speaker's own words."""
     beats, used = [], set()
@@ -218,6 +254,31 @@ def to_card(i, b, segs, words, secs):
     return {"spec": spec, "t_in": round(t_in, 3), "t_out": round(t_out, 3), "section": sec, "kind": kind}, None
 
 
+def fill_cards(cards, segs, words, secs):
+    """Close the raw gaps the renderer would otherwise show full-frame:
+    1. a section without a card gets one, from the sentence being spoken when the section starts;
+    2. each card stays until shortly before the next card in its section (at most 7 s), the last one until the section ends."""
+    out = list(cards)
+    for k, sec in enumerate(secs):
+        if any(c["section"] == k for c in out) or sec["t1"] - sec["t0"] < 2.4: continue
+        a = sec["t0"] + .35
+        cand = sorted((s for s in segs if s["end"] > a + .5 and s["start"] < sec["t1"] - 1.0 and keywords(s["text"])),
+                      key=lambda s: abs(s["start"] - a))
+        if not cand: continue
+        s0 = cand[0]; kw = keywords(s0["text"]); title = max(kw, key=len)
+        seg = {"id": 10000 + k, "start": max(s0["start"], a), "end": min(s0["end"], sec["t1"] - .2), "text": s0["text"]}
+        c, why = to_card(len(out) + 1, {"seg": seg["id"], "kind": "hero", "title": title, "sub": clip(s0["text"].rstrip(".!?"), 34), "anchor": [title]},
+                         segs + [seg], words, secs)
+        if c and c["section"] == k: c["filled"] = True; out.append(c)
+    out.sort(key=lambda c: c["t_in"])
+    for i, c in enumerate(out):
+        sec = secs[c["section"]]; nxt = next((d for d in out[i + 1:] if d["section"] == c["section"]), None)
+        end = (nxt["t_in"] - .45) if nxt else (sec["t1"] - .1)
+        c["t_out"] = round(max(c["t_out"], min(end, c["t_in"] + 7.0)), 3)
+    for i, c in enumerate(out): c["spec"]["id"] = f"card_{i + 1:03}"
+    return out
+
+
 def pick_icon(text):
     ws = set(norm(w) for w in text.split())
     best = max(ICON_HINTS, key=lambda k: len(ws & set(ICON_HINTS[k].split())))
@@ -230,7 +291,7 @@ def build_cards(beats, segs, words, secs):
         c, why = to_card(len(cards) + 1, b, segs, words, secs)
         if not c: rejected.append({"beat": b, "why": why}); continue
         if cards and c["t_in"] < cards[-1]["t_out"] + .4:        # one card at a time
-            if c["section"] == cards[-1]["section"] and c["t_in"] > cards[-1]["t_in"] + 1.5: cards[-1]["t_out"] = round(c["t_in"] - .45, 3)
+            if c["section"] == cards[-1]["section"] and c["t_in"] - .45 >= cards[-1]["t_in"] + 2.0: cards[-1]["t_out"] = round(c["t_in"] - .45, 3)
             else: rejected.append({"beat": b, "why": "overlaps previous card"}); continue
         if c["t_in"] < secs[c["section"]]["t0"] + .3: rejected.append({"beat": b, "why": "too close to a section cut"}); continue
         if c["t_out"] - c["t_in"] < 2.0: rejected.append({"beat": b, "why": "less than 2 s on screen"}); continue
@@ -244,11 +305,14 @@ def main(argv=None):
     ap.add_argument("--templates", default="T17"); ap.add_argument("--mode", choices=["single", "multi", "auto"], default="single")
     ap.add_argument("--face", help="face calibration JSON {x,y,h}"); ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--model", default=os.environ.get("EVA_PLANNER_MODEL", "claude-haiku-5-5"))
+    ap.add_argument("--aspect", default="16:9", help="output aspect, for the coverage timeline")
     a = ap.parse_args(argv)
     d, words = load_transcript(a.transcript)
     if not words: print("planner: transcript has no words", file=sys.stderr); return 5
     dur = a.duration
-    secs = sections(words, dur, choose_templates(a.mode, a.templates.split(","), dur))
+    try: tpls = choose_templates(a.mode, a.templates.split(","), dur)
+    except TooShort as e: print(f"planner: {e}", file=sys.stderr); return 6   # pipeline turns this into a clear rejection
+    secs = sections(words, dur, tpls)
     segs = segments_list(d)
     source, usage, beats = "heuristic", None, None
     key = os.environ.get("ANTHROPIC_API_KEY")
@@ -261,16 +325,23 @@ def main(argv=None):
     if len(cards) < max(1, round(dur / 15)):   # too little survived validation
         source += "+heuristic" if beats else ""
         cards, rejected2 = build_cards(heuristic_beats(segs, dur, secs), segs, words, secs); rejected += rejected2
+    cards = fill_cards(cards, segs, words, secs)
     face = json.loads(Path(a.face).read_text()) if a.face else None
     for sec in secs: sec["box"] = list(box_for(sec["template"]))   # card block: 9:16 pages scale it into the top zone (auto.js)
     plan = {"version": 1, "end": round(dur, 3), "evaDir": "../media/eva", "face": face, "sections": secs, "cards": cards,
             "planner": {"source": source, "usage": usage, "rejected": rejected}}
+    import coverage   # editing-coverage timeline with the renderer's layout rules (saas/worker/coverage.py)
+    cov = coverage.timeline(plan, a.aspect, a.templates.split(",") if a.mode == "multi" else None)
+    plan["coverage"] = {k: cov[k] for k in ("aspect", "meaningful_coverage", "template_coverage", "meaningful_s", "template_static_s", "raw_s",
+                                            "longest_raw_s", "templates_selected", "templates_used", "templates_dropped")}
+    plan["coverage"]["targets"] = COVERAGE_TARGET
     out = Path(a.out_dir); out.mkdir(parents=True, exist_ok=True)
     (out / "plan.json").write_text(json.dumps(plan, indent=1, ensure_ascii=False))
     (out / "plan.js").write_text("window.EVA_PLAN = " + json.dumps(plan, ensure_ascii=False) + ";\n")
     sb = {"sections": [{"start": s["t0"], "template": s["template"]} for s in secs], "highlights": [c["t_in"] for c in cards]}
     (out / "storyboard.json").write_text(json.dumps(sb))
-    print(f"planner: {len(secs)} section(s) {[s['template'] for s in secs]}, {len(cards)} card(s), source={source}, rejected={len(rejected)}")
+    print(f"planner: {len(secs)} section(s) {[s['template'] for s in secs]}, {len(cards)} card(s), source={source}, rejected={len(rejected)}, "
+          f"meaningful {cov['meaningful_coverage']:.0%}, template {cov['template_coverage']:.0%}, longest raw {cov['longest_raw_s']} s")
     return 0
 
 

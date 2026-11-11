@@ -138,8 +138,11 @@ def prepare(inp, jd, opts):
         if o.get("reuse_plan") and (J.d / "plan.json").exists():   # HD export of a saved version: its exact plan, no planner/AI call
             J.log.write("plan: reusing the saved version plan\n")
             (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt"); return
-        sh([PY, HERE / "planner.py", J.d / "srt/talk.transcript.js", J.d, "--duration", J.j["end"],
-            "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json"], J.log)
+        try: sh([PY, HERE / "planner.py", J.d / "srt/talk.transcript.js", J.d, "--duration", J.j["end"],
+            "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json", "--aspect", o.get("aspect", "16:9")], J.log)
+        except subprocess.CalledProcessError as e:   # 6 = selected templates do not fit the clip: say so, never drop one silently
+            if e.returncode == 6: raise Reject(f"{len(o['templates'])} templates need at least {3 * len(o['templates'])} s of video. Choose fewer templates or a longer clip.")
+            raise
         (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt")   # music.py speech map
 
     def page():
@@ -320,6 +323,16 @@ def finish(jd, preview=False):
         report.update({"ok": True, "file": final.name, "duration": float(pr["format"]["duration"]), "width": v["width"], "height": v["height"],
                        "fps": v["r_frame_rate"], "lufs": float(I[-1]) if I else None, "bytes": final.stat().st_size,
                        "source_frames": J.j["frames"], "planner": json.loads((J.d / "plan.json").read_text())["planner"]["source"]})
+        # editing coverage on the real frames (full-length render, before the preview cut): timeline + report next to the video
+        cov_dir = J.d / "out/coverage"; full = J.d / "out" / ("preview_hd.mp4" if preview else "final.mp4")
+        try:
+            sh([PY, HERE / "visual_qa.py", full, J.d / "src.mp4", J.d / "plan.json", cov_dir, "--aspect", o.get("aspect", "16:9"),
+                "--selected", ",".join(o["templates"]) if o.get("template_mode") == "multi" else ""], J.log)
+            c = json.loads((cov_dir / "coverage.json").read_text())
+            report["coverage"] = {"verdict": c["verdict"], **c["visual"], "templates": c["templates"], "issues": c["issues"]}
+            if c["verdict"] != "PASS": report.setdefault("warnings", []).extend(i["text"] for i in c["issues"])
+        except Exception as e:   # the coverage check must not lose a finished render; the gap is reported instead
+            report["coverage"] = {"verdict": "NOT_RUN", "error": f"{type(e).__name__}: {e}"[:200]}
 
     for name, fn in (("audio", audio), ("captions", captions), ("assemble", assemble), ("music", music), ("deliver", deliver)):
         J.stage(f"{tag}_{name}", fn)
