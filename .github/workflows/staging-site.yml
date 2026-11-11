@@ -44,7 +44,9 @@ jobs:
       - name: Browser check — magic link → staging, session persists, sign out
         env: { SITE: "${{ steps.deploy.outputs.site }}" }
         run: |
-          pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
+          pip install -q "playwright~=1.48" && python -m playwright install chromium >/dev/null
+          # system libraries via apt: best effort (the runner already has most; apt mirrors were unreachable on 2026-11-11)
+          sudo env PATH="$PATH" python -m playwright install-deps chromium >/dev/null 2>&1 || echo "::warning::playwright install-deps failed; using the runner's libraries"
           python saas/tests/browser_staging_login.py
       - name: Homepage on staging — logo, favicon, 9:16 + 16:9 demos, phone layout (browser checks)
         if: always()
