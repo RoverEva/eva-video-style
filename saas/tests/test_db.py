@@ -5,7 +5,7 @@
 
 Covers: 3 lifetime free previews (no daily reset), failure/cancel/QA-failure release, credits fallback, insufficient
 credits, concurrency (20 parallel requests for 3 free slots and for one credit balance), HD export once per version
-(repeat = free), top-up idempotency, ownership checks, deletion, retention, privileges (anon cannot touch anything)."""
+(repeat = free), top-up idempotency, ownership checks, deletion, retention, My Account history (002), privileges (anon cannot touch anything)."""
 import json, os, subprocess, sys, uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -42,7 +42,8 @@ def finish(vid, status, days=30): return PG.rpc("eva_finish", version_id=vid, st
 
 
 def main():
-    subprocess.run(PSQL + ["-q", "-1", "-f", str(Path(__file__).resolve().parents[1] / "db/001_accounts_credits.sql")], check=True, capture_output=True)
+    for m in sorted((Path(__file__).resolve().parents[1] / "db").glob("[0-9]*.sql")):   # 001, 002, … in order, like the deploy
+        subprocess.run(PSQL + ["-q", "-1", "-f", str(m)], check=True, capture_output=True)
 
     # ── lifetime free previews; failures never consume ──
     u = new_user(); p = project(u)
@@ -112,11 +113,41 @@ def main():
     dp = PG.rpc("eva_delete", user_id=poor, project_id=pp); assert f"uploads/{pp}/input.mp4" in dp["keys"] and PG.rpc("eva_library", user_id=poor) == []
     print("library: owner-only, favorites, delete (R2 keys returned), retention expiry of versions and source uploads")
 
+    # ── My Account history (002 eva_history): grants, purchases, charges, refunds, free previews; own rows only ──
+    hu = new_user(); hp = project(hu)
+    PG.rpc("eva_topup", user_id=hu, session_id="e2e-grant-" + uuid.uuid4().hex[:8], credits=100, amount_cents=0)        # labelled grant
+    PG.rpc("eva_topup", user_id=hu, session_id="cs_test_" + uuid.uuid4().hex, credits=100, amount_cents=999)             # paid top-up
+    fv, _ = preview(hu, hp); finish(fv, "done")                                                                           # free preview
+    for _ in range(2): x, _ = preview(hu, hp); finish(x, "done")
+    cv, r = preview(hu, hp, 14); assert r["charge"]["amount"] == 14; finish(cv, "done")                                   # paid preview
+    rv, _ = preview(hu, hp, 14); finish(rv, "failed")                                                                     # refunded preview
+    hh = "h" + uuid.uuid4().hex[:11]; PG.rpc("eva_start_hd", user_id=hu, version_id=hh, source_version=cv, cost=47); finish(hh, "done", 90)
+    other = new_user(); PG.rpc("eva_topup", user_id=other, session_id="cs_test_" + uuid.uuid4().hex, credits=100, amount_cents=999)
+    rows = PG.history(hu, 200); kinds = [r["kind"] for r in rows]
+    assert rows and [r["created_at"] for r in rows] == sorted((r["created_at"] for r in rows), reverse=True), "newest first"
+    assert kinds.count("topup") == 2 and "release" in kinds and "capture" in kinds, kinds
+    assert all(set(r) == {"id", "kind", "ref", "credits", "free", "meta", "created_at"} for r in rows)
+    assert {r["ref"] for r in rows}.isdisjoint({r["ref"] for r in PG.history(other, 200)})                                   # own rows only
+    assert len(PG.history(hu, 3)) == 3 and PG.history(str(uuid.uuid4())) == []
+    import api_v2
+    acc = api_v2.Accounts.__new__(api_v2.Accounts); acc.db = PG; acc.account = lambda u: acct(u["id"])
+    items = acc.history({"id": hu})["items"]; by = {(i["type"], i["status"], i.get("free", False)) for i in items}
+    want = {("purchase", "granted", False), ("purchase", "paid", False), ("preview", "charged", True), ("preview", "charged", False),
+            ("preview", "refunded", False), ("hd", "charged", False)}
+    assert want <= by, by
+    assert next(i for i in items if i["status"] == "paid")["amount_cents"] == 999 and next(i for i in items if i["type"] == "hd")["credits"] == -47
+    assert all(i.get("version") != "x" for i in acc.history({"id": other})["items"]) and len(acc.history({"id": other})["items"]) == 1
+    print("history: grant, paid top-up, free/paid previews, refund, HD export listed newest first; each user sees only their own")
+
     # ── privileges: browser roles can't read tables or call functions ──
     for role in ("anon", "authenticated"):
         assert sql("select count(*) from public.accounts", role).returncode != 0
         assert sql(f"select public.eva_topup('{{\"user_id\":\"{u}\",\"session_id\":\"x\",\"credits\":999}}'::jsonb)", role).returncode != 0
     assert sql(f"select public.eva_account('{{\"user_id\":\"{u}\"}}'::jsonb)", "service_role").returncode == 0
+    for role in ("anon", "authenticated"):
+        assert sql(f"select public.eva_history('{{\"user_id\":\"{u}\"}}'::jsonb)", role).returncode != 0
+    assert sql(f"select public.eva_history('{{\"user_id\":\"{u}\"}}'::jsonb)", "service_role").returncode == 0
+    assert sql("select count(*) from public.ledger", "service_role").returncode != 0   # like production: no table access, functions only
     print("privileges: anon/authenticated denied on tables and functions; service_role allowed")
     print("db tests: ok")
 

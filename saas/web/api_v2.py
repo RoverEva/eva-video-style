@@ -59,6 +59,9 @@ def new_id(prefix): return prefix + secrets.token_hex(6)[:11]   # 12 characters,
 def err(msg, code=400, **kw): return JSONResponse(dict(error=msg, **kw), status_code=code)
 
 
+class Unavailable(Exception): pass   # a read-only view the database could not serve → HTTP 503
+
+
 class Accounts:
     def __init__(self, db, store, kv, spawn, stripe_mod=stripe_lite, cancel=None):
         self.db, self.s, self.kv, self.spawn, self.stripe, self.cancel_call = db, store, kv, spawn, stripe_mod, cancel
@@ -105,7 +108,11 @@ class Accounts:
 
     def history(self, u):
         """credit purchases and charges for the My Account page — read-only view of the existing ledger"""
-        self.account(u); rows = self.db.history(u["id"], 200); out, by = [], {}
+        self.account(u)
+        try: rows = self.db.history(u["id"], 200)
+        except Exception as e:   # read-only page: report it as unavailable instead of a bare 500
+            print("history unavailable:", type(e).__name__, str(e)[:200], flush=True); raise Unavailable("History is unavailable right now.")
+        out, by = [], {}
         for r in rows: by.setdefault((r["kind"], r["ref"]), r)
         for r in rows:
             m = r.get("meta") or {}
@@ -240,6 +247,7 @@ def routes(acc: Accounts, site_of):
             except LookupError as e: return err("not found" if str(e) == "'not found'" or str(e) == "not found" else str(e), 404)
             except PermissionError as e: return err(str(e), 429)
             except stripe_lite.StripeError as e: return err(f"payment unavailable: {e}", 503)
+            except Unavailable as e: return err(str(e), 503)
         return h
 
     async def me(req, u): return JSONResponse(acc.me(u))

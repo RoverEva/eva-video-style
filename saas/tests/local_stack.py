@@ -70,7 +70,7 @@ def main():
     # ── account features (My Videos, credits): local Postgres + stand-in sign-in + fake Stripe top-up ──
     import db as DBM, api_v2, versions, uuid
     DB = DBM.LocalPG()
-    subprocess.run(["psql", *DB.args, "-q", "-1", "-f", str(REPO / "saas/db/001_accounts_credits.sql")], check=True, capture_output=True)
+    for m in sorted((REPO / "saas/db").glob("[0-9]*.sql")): subprocess.run(["psql", *DB.args, "-q", "-1", "-f", str(m)], check=True, capture_output=True)
 
     def run_version(kind, vid):
         import pipeline, progress

@@ -25,11 +25,8 @@ class Supabase:
         return r.json()
 
     def history(self, user_id, limit=100):
-        """read-only: the user's ledger rows, newest first (service key; the browser has no table access)"""
-        r = requests.get(f"{self.url}/rest/v1/ledger", headers=self.h, timeout=30,
-                         params={"select": "kind,ref,credits,free,meta,created_at", "user_id": f"eq.{user_id}", "order": "created_at.desc,id.desc", "limit": str(int(limit))})
-        if r.status_code >= 300: raise DBError(f"ledger: HTTP {r.status_code} {r.text[:200]}")
-        return r.json()
+        """read-only: the user's ledger rows, newest first, via eva_history (002) — the server role has no table access"""
+        return self.rpc("eva_history", user_id=str(user_id), limit=int(limit)) or []
 
     def user(self, token):
         """{id, email} for a valid Supabase access token, else None"""
@@ -57,13 +54,8 @@ class LocalPG:
         out = r.stdout.strip()
         return json.loads(out) if out else None
 
-    def history(self, user_id, limit=100):
-        import uuid; uid = str(uuid.UUID(str(user_id)))   # validated before it goes into SQL
-        q = (f"select coalesce(json_agg(x), '[]') from (select kind, ref, credits, free, meta, created_at from public.ledger "
-             f"where user_id = '{uid}' order by created_at desc, id desc limit {int(limit)}) x")
-        r = subprocess.run(["psql", *self.args, "-At", "-v", "ON_ERROR_STOP=1", "-c", q], capture_output=True, text=True)
-        if r.returncode: raise DBError(f"ledger: {r.stderr.strip()[:300]}")
-        return json.loads(r.stdout.strip() or "[]")
+    def history(self, user_id, limit=100):   # same function as production
+        import uuid; return self.rpc("eva_history", user_id=str(uuid.UUID(str(user_id))), limit=int(limit)) or []
 
     def user(self, token): return self.tokens.get(token)
 

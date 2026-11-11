@@ -8,14 +8,20 @@ begin;
 \ir ../001_accounts_credits.sql
 \echo 'migration 001: second apply (must be idempotent)'
 \ir ../001_accounts_credits.sql
+\echo 'migration 002 (history): applied twice'
+\ir ../002_history.sql
+\ir ../002_history.sql
 
 create temp table _r (n serial, check_name text, ok boolean, detail text) on commit drop;
 create or replace function pg_temp.ok(c boolean, name text, detail text default null) returns void language sql as
   $$ insert into _r(check_name, ok, detail) values (name, coalesce(c, false), detail) $$;
 
 -- ── schema + lockdown ──
-select pg_temp.ok((select max(version) from public.eva_schema) = 1, 'schema version 1 recorded once',
-                  (select count(*)::text from public.eva_schema));
+select pg_temp.ok((select array_agg(version order by version) from public.eva_schema) = array[1, 2], 'schema versions 1 and 2 recorded once each',
+                  (select string_agg(version::text, ',' order by version) from public.eva_schema));
+select pg_temp.ok(has_function_privilege('service_role', 'public.eva_history(jsonb)', 'execute')
+                  and not has_function_privilege('anon', 'public.eva_history(jsonb)', 'execute')
+                  and not has_function_privilege('authenticated', 'public.eva_history(jsonb)', 'execute'), 'history function: server only');
 select pg_temp.ok(bool_and(c.relrowsecurity), 'RLS on for every eva table', string_agg(c.relname, ',')) from pg_class c
   join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relname in ('accounts','projects','versions','reservations','ledger','eva_schema');
 select pg_temp.ok(not exists (select 1 from pg_policies where schemaname = 'public' and tablename in ('accounts','projects','versions','reservations','ledger','eva_schema')),
