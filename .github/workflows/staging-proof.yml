@@ -5,6 +5,7 @@
 # Containers: fetch + publish get only R2 access; render (Opus planning + rendering) gets only the staging Anthropic key.
 # Needs: Modal secret `eva-anthropic-staging` in the Modal environment `staging` (verified by run 43106311583).
 # First attempt 43108986887: Opus ping OK, stopped in fetch (wrong source key; fixed in the dev code).
+# Second attempt 43117215844: fetch OK, the Opus storyboard call was refused within ~3 s; the summary now shows the API error text.
 name: staging · Opus 5.5 proof render (Modal, private outputs)
 on:
   push:
@@ -36,7 +37,7 @@ jobs:
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with: { persist-credentials: false, ref: a3fb1fcfd4d84028a56f5203edd80135a18304d6 }   # pinned dev commit on feat/render-coverage (not the production branch)
+        with: { persist-credentials: false, ref: 526c3a118cfae732c1a23b17439af54d4f3a28b7 }   # pinned dev commit on feat/render-coverage (not the production branch)
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
       - name: Proof render (aggregate results only)
