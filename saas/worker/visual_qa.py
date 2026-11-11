@@ -29,15 +29,18 @@ def content_relevance(plan, transcript):
     """per card: share of its content words spoken while it is on screen (±3 s before, +1 s after); keyword-only cards
     (one short headline, no sub/steps) are flagged — they are on-topic but are not storytelling"""
     if not transcript: return None
+    DIAGRAMS = {"steps", "process", "compare", "checklist", "stat", "bars", "network", "orbit", "journey", "feature"}   # structured explanations, never "keyword cards"
     _, words = planner.load_transcript(transcript)
     norm = planner.norm; out = []
     for c in plan.get("cards", []):
         k = c["spec"]["content"]
-        text = " ".join([*(k.get("words") or []), k.get("sub") or "", *[i.get("title", "") + " " + i.get("sub", "") for i in k.get("items") or []]])
+        side = lambda x: " ".join([(x or {}).get("title", ""), *((x or {}).get("points") or [])])
+        text = " ".join([*(k.get("words") or []), k.get("sub") or "", k.get("title") or "", k.get("body") or "", k.get("center") or "", k.get("kicker") or "", k.get("label") or "",
+                         side(k.get("left")), side(k.get("right")), *[i.get("title", "") + " " + i.get("sub", "") + " " + i.get("label", "") for i in k.get("items") or []]])
         kws = [norm(w) for w in planner.keywords(text)]
         near = {norm(w["w"]) for w in words if c["t_in"] - 3 <= w["start"] <= c["t_out"] + 1}
         hit = sum(1 for w in kws if w in near) / max(len(kws), 1)
-        keyword_only = c.get("kind") != "steps" and len((k.get("words") or [""])[0].split()) <= 1 and len((k.get("sub") or "").split()) <= 3
+        keyword_only = c.get("kind") not in DIAGRAMS and len((k.get("words") or [""])[0].split()) <= 1 and len((k.get("sub") or "").split()) <= 3
         out.append({"t_in": c["t_in"], "relevance": round(hit, 2), "keyword_only": keyword_only, "kind": c.get("kind")})
     return {"cards": out, "mean_relevance": round(sum(x["relevance"] for x in out) / max(len(out), 1), 2),
             "keyword_only_cards": sum(x["keyword_only"] for x in out), "kinds": sorted({x["kind"] for x in out})}

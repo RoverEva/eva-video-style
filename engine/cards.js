@@ -224,6 +224,35 @@
       const num = EC.word(g, '0', 0, 0, size, th, {}); const lab = txt(g, d.label || '', 6, size * 1.08, size * .2, th.mute, SANS, 700, { width: b.w + 'px', whiteSpace: 'normal' });
       return { at: (t, ts) => { EC.move(g, t, ts[0] - .2, th, {}); const u = ease.outExpo ? ease.outExpo(P(t, ts[0], 1.1)) : P(t, ts[0], 1.1);
         num.textContent = (d.prefix || '') + (v * u).toFixed(dec) + (d.suffix || ''); lab.style.opacity = String(P(t, ts[0] + .5, .4)); } }; },
+    'bars': (L, d, b, th) => { const it = (d.items || []).slice(0, 5), n = Math.max(1, it.length), rh = Math.min(96, (b.h - 30 * (n - 1)) / n), lw = b.w * .34;
+      const max = it.some(x => x.value != null) ? Math.max(...it.map(x => +x.value || 1), 1) : 1;
+      const rows = it.map((c, k) => { const y = b.y + k * (rh + 30), g = EC.group(L, b.x, y, b.w, rh, 15);
+        const lab = title(g, c.label || '', 0, rh * .22, Math.min(40, rh * .42), th, { width: (lw - 20) + 'px' });
+        const track = el(g, 'div', 'abs', { left: lw + 'px', top: rh * .18 + 'px', width: (b.w - lw) + 'px', height: rh * .64 + 'px', borderRadius: rh * .32 + 'px', background: th.surf[1], boxShadow: EC.cardShadow(th) });
+        const bar = el(track, 'div', 'abs', { left: 0, top: 0, height: '100%', width: '0px', borderRadius: rh * .32 + 'px', background: `linear-gradient(90deg, ${th.acc}, ${th.hi || th.acc})` });
+        const val = c.value != null ? txt(g, (c.prefix || '') + c.value + (c.suffix || ''), lw + 16, rh * .2, rh * .42, '#fff', th.head, th.headW, { opacity: 0, zIndex: 3 }) : null;
+        return { g, bar, val, f: (+c.value || +c.level || 1) / max, W: b.w - lw }; });
+      const lab = tag(L, Object.assign({}, b, { y: b.y + n * (rh + 30) + 10, h: 40 }), th, d.illustrative);
+      return { at: (t, ts) => { rows.forEach((r, k) => { EC.move(r.g, t, ts[k] - .3, th, { k }); const u = ease.outExpo(P(t, ts[k], .9));
+          r.bar.style.width = (r.W * r.f * u).toFixed(1) + 'px'; if (r.val) r.val.style.opacity = String(P(t, ts[k] + .5, .3)); }); if (lab) lab.style.opacity = String(.8 * P(t, ts[0], .5)); } }; },
+    'network': (L, d, b, th) => { const it = (d.items || []).slice(0, 6), n = it.length, cx = b.x + b.w / 2, cy = b.y + b.h / 2, R = Math.min(b.w, b.h) * .38, sz = Math.min(170, R * .62);
+      const hub = EC.IconCard(L, { title: d.center || '', icon: d.icon || 'idea' }, cx, cy, sz * 1.25, th, { shape: 'disc', preset: 'pop', z: 18 });
+      const pts = it.map((_, k) => { const a = -Math.PI / 2 + 2 * Math.PI * k / Math.max(1, n); return [cx + R * Math.cos(a), cy + R * Math.sin(a)]; });
+      const nodes = it.map((c, k) => EC.IconCard(L, c, pts[k][0], pts[k][1], sz, th, { shape: 'disc', preset: 'pop', z: 17 }));
+      const lines = pts.map(([x, y]) => EC.connector(L, `M${cx} ${cy} L${x} ${y}`, th, 4, false, 14));
+      const pulses = pts.map(() => el(L, 'div', 'abs', { left: 0, top: 0, width: '14px', height: '14px', borderRadius: '50%', background: th.acc, boxShadow: `0 0 12px ${th.acc}`, zIndex: 16, opacity: 0 }));
+      return { at: (t, ts) => { hub.at(t, ts[0] - .35, 0);
+        nodes.forEach((c, k) => { c.at(t, ts[k], k + 1); lines[k].at(P(t, ts[k] - .3, .4)); const live = t > ts[k] + .2; pulses[k].style.opacity = live ? '1' : '0';
+          if (live) { const u = ((t - ts[k]) * .8) % 1, [x, y] = pts[k]; pulses[k].style.transform = `translate(${cx + (x - cx) * u - 7}px, ${cy + (y - cy) * u - 7}px)`; } }); } }; },
+    'hook': (L, d, b, th) => { const ws = (d.words || []).slice(0, 4), size = Math.min(200, b.w / Math.max(4, Math.max(...ws.map(w => w.length)) * .62));
+      const g = EC.group(L, b.x, b.y + b.h * .12, b.w, b.h * .8, 18);
+      const items = ws.map((w, k) => EC.word(g, w, 0, k * size * 1.02, size, th, {}));
+      const chip = d.kicker ? el(g, 'div', 'abs', { left: '4px', top: (-size * .55) + 'px', padding: '10px 22px', borderRadius: '999px', background: th.acc, color: '#fff',
+        fontFamily: SANS, fontWeight: 800, fontSize: (size * .2) + 'px', letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0 }, d.kicker) : null;
+      const bar = el(g, 'div', 'abs', { left: 0, top: (ws.length * size * 1.02 + 6) + 'px', height: '14px', width: '0px', borderRadius: '7px', background: th.acc });
+      return { at: (t, ts) => { items.forEach((e, k) => { const u = P(t, ts[k], .32); tf(e, { s: .4 + .6 * ease.outBack(u, 2.2), o: clamp(u * 3), y: 30 * (1 - u) }); });
+        if (chip) tf(chip, { s: .7 + .3 * ease.outBack(P(t, ts[0] - .4, .35), 2), o: P(t, ts[0] - .4, .2) });
+        bar.style.width = (b.w * .6 * ease.outExpo(P(t, ts[ts.length - 1] + .2, .6))).toFixed(1) + 'px'; } }; },
   });
   EC.layout = (L, name, data, box, th) => { const f = EC.LAYOUTS[name]; if (!f) throw new Error('EVA cards: unknown layout ' + name); return f(L, data, box, th); };
 
@@ -237,7 +266,7 @@
   EC.overlapsFace = (box, faceRect) => !(box.x + box.w < faceRect.x || faceRect.x + faceRect.w < box.x || box.y + box.h < faceRect.y || faceRect.y + faceRect.h < box.y);
 
   /* ---------- JSON card specs (see references/cards.md). type: hero | step | icon | flow | feature | layout ---------- */
-  const EXPLAIN = { process: c => (c.items || []).length, checklist: c => (c.items || []).length, compare: () => 2, stat: () => 1 };   // number of timed beats
+  const EXPLAIN = { process: c => (c.items || []).length, checklist: c => (c.items || []).length, compare: () => 2, stat: () => 1, bars: c => (c.items || []).length, network: c => (c.items || []).length, hook: c => (c.words || []).length };   // number of timed beats
   const TYPE2LAYOUT = { hero: 'hero', step: 'steps-v', icon: 'grid', flow: 'journey', feature: 'feature' };
   EC.validate = spec => { const e = [], types = ['hero', 'step', 'icon', 'flow', 'feature', 'layout'];
     if (!spec || typeof spec !== 'object') return ['spec must be an object'];

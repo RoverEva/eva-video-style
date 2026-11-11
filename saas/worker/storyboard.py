@@ -51,6 +51,14 @@ REGISTRY = {
                   "use": "a timeline or journey with milestones along a curved path"},
     "feature":   {"layout": "feature", "beats": 1, "content": {"title": S(18), "body": S(90), "icon": {"type": "string", "enum": ICONS}}, "required": ["title", "body"],
                   "use": "explain ONE concept in a little more detail: large card with title, one-sentence body and an icon"},
+    "bars":      {"layout": "bars", "beats": "items", "content": {"items": {"type": "array", "minItems": 2, "maxItems": 5, "items": {"type": "object", "additionalProperties": False, "required": ["label", "level"],
+                  "properties": {"label": S(16), "level": {"type": "string", "enum": ["low", "medium", "high", "full"]}}}}}, "required": ["items"],
+                  "use": "an animated bar chart comparing amounts the speaker contrasts (more/less, faster/slower). Relative levels only, "
+                         "no numbers unless spoken; mark illustrative = true when the sizes are conceptual"},
+    "network":   {"layout": "network", "beats": "items", "content": {"center": S(16), "icon": {"type": "string", "enum": ICONS}, "items": {"type": "array", "items": ITEM, "minItems": 3, "maxItems": 6}}, "required": ["center", "items"],
+                  "use": "a hub-and-spoke network: one central idea connected to the things it links or powers, with data pulses along the links"},
+    "hook":      {"layout": "hook", "beats": "words", "content": {"kicker": S(14), "words": {"type": "array", "items": S(12), "minItems": 1, "maxItems": 4}}, "required": ["words"],
+                  "use": "the opening hook or a signature punch line: 1–4 giant words popping in on the spoken words; best in the first 3 s"},
     "presenter": {"layout": None, "beats": 0, "content": {}, "required": [],
                   "use": "speaker alone, full frame, for a personal or emotional moment; at most 2.5 s each and rarely"},
 }
@@ -59,7 +67,7 @@ LIMITS = {"min_beat_s": 1.6, "max_card_s": 8.0, "max_presenter_s": 2.5, "max_gap
 
 def registry_for_prompt():
     return {k: {"use": v["use"], "content": v["content"], "required": v["required"],
-                "timed_elements": v["beats"] if isinstance(v["beats"], int) else "one per item"} for k, v in REGISTRY.items()}
+                "timed_elements": v["beats"] if isinstance(v["beats"], int) else f"one per entry of {v['beats']}"} for k, v in REGISTRY.items()}
 
 
 def tool_schema(templates):
@@ -78,7 +86,9 @@ video: EVA templates provide the look (colours, type, motion language, face-safe
 Rules
 - Read the whole transcript for MEANING. Every beat illustrates what is being said at that moment, timed to the words.
 - Explain, don't decorate: when the speaker explains how something works, use `process` (animated stages + flowing data),
-  for A vs B use `compare`, for named steps `steps`, for included/required things `checklist`, for a spoken number `stat`.
+  for A vs B use `compare`, for named steps `steps`, for included/required things `checklist`, for a spoken number `stat`,
+  for more/less contrasts `bars`, for one idea linking many things `network`, for the opening line or a punch line `hook`.
+  Rhythm: change the visual every 1.5–3 s where the speech allows (a multi-item component counts as one change per item).
   Use `hero`/`statement` for hooks, claims and endings. Vary components; never three identical components in a row.
 - Rhythm: a new beat every 2–5 s, cut on phrase boundaries. Beats are contiguous: the next beat starts where the previous
   ends (gaps ≤ 0.6 s). The first beat starts at 0, the last ends at the clip end.
@@ -184,7 +194,7 @@ def validate(sb, words, dur, templates):
         if i and b["start"] - beats[i - 1]["end"] > LIMITS["max_gap_s"]: errs.append(f"{p}: gap of {b['start'] - beats[i - 1]['end']:.2f} s after the previous beat (max {LIMITS['max_gap_s']})")
         if i and b["start"] < beats[i - 1]["end"] - .05: errs.append(f"{p}: overlaps the previous beat")
         errs += _schema_errors(b.get("content") or {}, {"type": "object", "properties": reg["content"], "required": reg["required"]}, f"{p} content")
-        need = reg["beats"] if isinstance(reg["beats"], int) else len((b.get("content") or {}).get("items") or [])
+        need = reg["beats"] if isinstance(reg["beats"], int) else len((b.get("content") or {}).get(reg["beats"]) or [])
         aw = b.get("anchor_words") or []
         if len(aw) != need: errs.append(f"{p}: needs exactly {need} anchor_words (one per timed element), got {len(aw)}")
         for w in aw:
@@ -193,7 +203,7 @@ def validate(sb, words, dur, templates):
         for n in re.findall(r"(?<![\w.])\d+(?:\.\d+)?", text):
             if float(n) not in nums: errs.append(f"{p}: the number {n} is not spoken in the clip")
         if b.get("component") == "stat" and float((b.get("content") or {}).get("value", -1)) not in nums: errs.append(f"{p}: stat value must be a number the speaker says")
-        kws = [_norm(x) for x in re.findall(r"[A-Za-z']{4,}", text) if _norm(x) not in ("title", "items", "points", "left", "right", "label", "kicker", "body", "icon", "prefix", "suffix", "value") + tuple(ICONS)]
+        kws = [_norm(x) for x in re.findall(r"[A-Za-z']{4,}", text) if _norm(x) not in ("title", "items", "points", "left", "right", "label", "kicker", "body", "icon", "prefix", "suffix", "value", "level", "center", "words", "full", "high", "medium") + tuple(ICONS)]
         if kws and not b.get("illustrative") and sum(1 for k in kws if k in spoken) / len(kws) < .35:
             errs.append(f"{p}: on-screen words are mostly not from the speech; use the speaker's words or set illustrative = true")
     used = {}
@@ -233,6 +243,8 @@ def to_plan(sb, words, dur, box_for):
         else:
             content = c; pos = {"x": bx / W, "y": by / H, "w": bw / W, "h": bh / H}
             if reg["layout"] == "stack": content = {"items": [dict(it, title=it["title"].upper()) for it in c["items"]]}
+            if reg["layout"] == "bars": content = {"items": [{"label": it["label"], "level": {"low": .3, "medium": .55, "high": .8, "full": 1.0}[it["level"]]} for it in c["items"]]}
+            if reg["layout"] == "hook": content = {"words": [w.upper() for w in c["words"]], "kicker": c.get("kicker", "")}
             if reg["layout"] == "feature": content = {"title": c["title"], "body": c["body"], "icon": c.get("icon", "idea")}
         spec = {"id": f"card_{len(cards) + 1:03}", "type": "layout", "layout": reg["layout"], "content": content, "position": pos,
                 "animation": {"times": [round(t, 3) for t in times]}, "illustrative": bool(b.get("illustrative"))}
@@ -266,7 +278,8 @@ def plan(words, segs, dur, templates, box_for, instructions="", style="", intens
         log(f"storyboard attempt {attempt}: {len(sb['beats'])} beats, {len(errs)} validation error(s), {secs_taken} s")
         if not errs:
             secs, cards = to_plan(sb, words, dur, box_for)
-            return secs, cards, {"source": f"llm:{MODEL}", "model": MODEL, "attempts": attempts, "usage": cost(usages), "storyboard": sb}
+            return secs, cards, {"source": f"llm:{MODEL}", "model": raw.get("model") or MODEL, "requested_model": MODEL, "attempts": attempts,
+                                 "usage": cost(usages), "storyboard": sb}
         prior = [{"role": "assistant", "content": raw["content"]},
                  {"role": "user", "content": [{"type": "tool_result", "tool_use_id": use["id"], "is_error": True,
                                                "content": "The storyboard is not executable. Fix exactly these problems and submit the whole storyboard again:\n- " + "\n- ".join(errs[:30])}]}]
