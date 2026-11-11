@@ -15,14 +15,15 @@ RETENTION = (("uploads/", UPLOAD_DAYS), ("outputs/", OUTPUT_DAYS), ("jobs/", OUT
 
 
 class R2:
-    def __init__(self):
+    def __init__(self, connect_timeout=None, read_timeout=None, attempts=5):
         import boto3
         from botocore.config import Config
         E = lambda k: "".join(os.environ[k].split())   # pasted secrets can carry newlines/spaces; keys never contain any
         self.b = E("R2_BUCKET")
         self.c = boto3.client("s3", endpoint_url=f"https://{E('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com",
                               aws_access_key_id=E("R2_ACCESS_KEY_ID"), aws_secret_access_key=E("R2_SECRET_ACCESS_KEY"),
-                              region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": 5, "mode": "standard"}))
+                              region_name="auto", config=Config(signature_version="s3v4", retries={"max_attempts": attempts, "mode": "standard"},
+                                            **({"connect_timeout": connect_timeout, "read_timeout": read_timeout} if connect_timeout else {})))
 
     def put_json(self, key, obj): self.c.put_object(Bucket=self.b, Key=key, Body=json.dumps(obj).encode(), ContentType="application/json")
 
@@ -112,9 +113,9 @@ class Local:
     def setup_bucket(self): return {}
 
 
-def from_env():
+def from_env(**r2_opts):   # r2_opts: short timeouts for the web API (see modal_app._accounts); the workers use the defaults
     if os.environ.get("EVA_LOCAL_STORE"): return Local(os.environ["EVA_LOCAL_STORE"], os.environ.get("EVA_LOCAL_BASE", "http://127.0.0.1:8000"))
-    return R2()
+    return R2(**r2_opts)
 
 
 def now(): return time.time()

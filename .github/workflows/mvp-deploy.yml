@@ -57,6 +57,7 @@ jobs:
           for i in $(seq 1 30); do pg_isready -h 127.0.0.1 -p 54329 -q && break; sleep 1; done
           psql -h 127.0.0.1 -p 54329 -U postgres -q -c "create role anon; create role authenticated; create role service_role;"
           EVA_PG_HOST=127.0.0.1 EVA_PG_PORT=54329 python saas/tests/test_db.py
+          EVA_PG_HOST=127.0.0.1 EVA_PG_PORT=54329 python saas/tests/test_api_reliability.py
       - name: Which accounts are configured
         id: have
         run: |

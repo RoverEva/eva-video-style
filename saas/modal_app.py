@@ -235,7 +235,8 @@ def _accounts():
     def cancel(vid):
         cid = counters.get(f"call:{vid}")
         if cid: modal.FunctionCall.from_id(cid).cancel()
-    return api_v2.Accounts(DB.from_env(), store.from_env(), counters, spawn, cancel=cancel)
+    D = DB.from_env(); D.timeout = (5, 15)   # web requests: fail fast instead of holding the request (Modal cuts it at 60 s)
+    return api_v2.Accounts(D, store.from_env(connect_timeout=5, read_timeout=10, attempts=2), counters, spawn, cancel=cancel)
 
 
 # ───────────────────────────── operations ─────────────────────────────

@@ -20,7 +20,7 @@ class Supabase:
         self._users = {}
 
     def rpc(self, fn, **p):
-        r = requests.post(f"{self.url}/rest/v1/rpc/{fn}", headers=self.h, data=json.dumps({"p": p}, default=str), timeout=30)
+        r = requests.post(f"{self.url}/rest/v1/rpc/{fn}", headers=self.h, data=json.dumps({"p": p}, default=str), timeout=getattr(self, "timeout", (5, 30)))
         if r.status_code >= 300: raise DBError(f"{fn}: HTTP {r.status_code} {r.text[:300]}")
         return r.json()
 

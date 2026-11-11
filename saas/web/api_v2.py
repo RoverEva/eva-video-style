@@ -14,6 +14,8 @@ import json, os, re, secrets, time
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route
+from starlette.concurrency import run_in_threadpool as off   # blocking work (Supabase, R2, Modal) runs off the event loop
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 try: from . import progress, stripe_lite
 except ImportError: import progress, stripe_lite
@@ -57,6 +59,10 @@ def new_id(prefix): return prefix + secrets.token_hex(6)[:11]   # 12 characters,
 
 
 def err(msg, code=400, **kw): return JSONResponse(dict(error=msg, **kw), status_code=code)
+
+
+SPAWN_TIMEOUT = float(os.environ.get("EVA_SPAWN_TIMEOUT", "20"))   # seconds to hand a render to Modal before giving up
+_SPAWNER = ThreadPoolExecutor(4, thread_name_prefix="spawn")
 
 
 class Unavailable(Exception): pass   # a read-only view the database could not serve → HTTP 503
@@ -160,15 +166,28 @@ class Accounts:
         vid = new_id("v"); cost = preview_cost(self.duration(pr))
         r = self.db.rpc("eva_start_preview", user_id=u["id"], project_id=pid, version_id=vid, cost=cost, options=opts)
         if not r.get("ok"): return r
-        self.spawn("preview", vid)
+        self.launch("preview", vid)
         return dict(r, version=vid)
+
+    def launch(self, kind, vid):
+        """Hand the render to Modal. If that fails or takes longer than SPAWN_TIMEOUT, the reservation is released at once
+        (free preview / credits back) and the person gets a clear error. eva_finish only acts on a queued/running version,
+        so releasing twice is a no-op, and a render that still starts late finds the version failed and skips it."""
+        t = time.time()
+        try: _SPAWNER.submit(self.spawn, kind, vid).result(timeout=SPAWN_TIMEOUT)
+        except Exception as e:
+            why = "timeout" if isinstance(e, FutureTimeout) else type(e).__name__
+            rel = self.db.rpc("eva_finish", version_id=vid, status="failed", retain_days=0, error=f"could not start: {why}")
+            print(f"render start failed {kind} {vid}: {why} after {time.time() - t:.1f} s; released={bool(rel.get('ok'))}", flush=True)
+            raise Unavailable("We couldn't start your video right now. Nothing was charged. Please try again in a minute.")
+        print(f"render start {kind} {vid}: {time.time() - t:.2f} s", flush=True)
 
     def start_hd(self, u, src_vid):
         src = self.db.rpc("eva_version", version_id=src_vid, user_id=u["id"])
         if not src or src["kind"] != "preview": raise LookupError("not found")
         pr = self.project_of(u, src["project_id"]); vid = new_id("h")
         r = self.db.rpc("eva_start_hd", user_id=u["id"], version_id=vid, source_version=src_vid, cost=hd_cost(self.duration(pr)))
-        if r.get("ok") and not r.get("existing") and not r.get("duplicate"): self.spawn("hd", vid); r["version"] = vid
+        if r.get("ok") and not r.get("existing") and not r.get("duplicate"): self.launch("hd", vid); r["version"] = vid
         elif r.get("existing"): r["version"] = r["existing"]
         return r
 
@@ -240,47 +259,54 @@ def routes(acc: Accounts, site_of):
 
     def guarded(fn):
         async def h(req):
-            u = user(req)
-            if not u: return err("Please sign in.", 401)
-            try: return await fn(req, u)
-            except ValueError as e: return err(str(e))
-            except LookupError as e: return err("not found" if str(e) == "'not found'" or str(e) == "not found" else str(e), 404)
-            except PermissionError as e: return err(str(e), 429)
-            except stripe_lite.StripeError as e: return err(f"payment unavailable: {e}", 503)
-            except Unavailable as e: return err(str(e), 503)
+            t = time.time(); r = None
+            try:
+                u = await off(user, req)
+                if not u: r = err("Please sign in.", 401); return r
+                r = await fn(req, u); return r
+            except ValueError as e: r = err(str(e)); return r
+            except LookupError as e: r = err("not found" if str(e) == "'not found'" or str(e) == "not found" else str(e), 404); return r
+            except PermissionError as e: r = err(str(e), 429); return r
+            except stripe_lite.StripeError as e: r = err(f"payment unavailable: {e}", 503); return r
+            except Unavailable as e: r = err(str(e), 503); return r
+            finally:   # per-request timing (route, status, seconds) — no user data
+                dt = time.time() - t
+                if r is not None: r.headers["Server-Timing"] = f"app;dur={dt * 1000:.0f}"
+                if dt > 2 or r is None or r.status_code >= 500:
+                    print(f"api {req.method} {req.url.path} → {getattr(r, 'status_code', 'error')} in {dt:.2f} s", flush=True)
         return h
 
-    async def me(req, u): return JSONResponse(acc.me(u))
-    async def history(req, u): return JSONResponse(acc.history(u))
+    async def me(req, u): return JSONResponse(await off(acc.me, u))
+    async def history(req, u): return JSONResponse(await off(acc.history, u))
     async def quote(req, u):
         d = req.query_params.get("duration"); return JSONResponse({"preview": preview_cost(d), "hd": hd_cost(d)})
-    async def projects(req, u): return JSONResponse(acc.create_project(u, await body(req)))
+    async def projects(req, u): return JSONResponse(await off(acc.create_project, u, await body(req)))
     async def previews(req, u):
-        r = acc.start_preview(u, req.path_params["pid"], await body(req))
+        r = await off(acc.start_preview, u, req.path_params["pid"], await body(req))
         if r.get("ok"): return JSONResponse(r)
         msgs = {"insufficient_credits": f"This preview costs {r.get('need')} credits and you have {r.get('have')}. Top up to continue.",
                 "busy": "A preview for this video is already being made.", "no_project": "not found"}
         return err(msgs.get(r.get("reason"), r.get("reason")), 402 if r.get("reason") == "insufficient_credits" else 409, **r)
     async def hd(req, u):
-        r = acc.start_hd(u, req.path_params["vid"])
+        r = await off(acc.start_hd, u, req.path_params["vid"])
         if r.get("ok"): return JSONResponse(r)
         msgs = {"insufficient_credits": f"HD export costs {r.get('need')} credits and you have {r.get('have')}. Top up to continue.",
                 "source_expired": "The original upload for this video has expired, so HD can no longer be rendered.", "no_source": "This version can't be exported yet."}
         return err(msgs.get(r.get("reason"), r.get("reason")), 402 if r.get("reason") == "insufficient_credits" else 409, **r)
-    async def library(req, u): return JSONResponse({"projects": acc.library(u), "account": acc.me(u)})
+    async def library(req, u): return JSONResponse({"projects": await off(acc.library, u), "account": await off(acc.me, u)})
     async def version(req, u):
-        v = acc.version(u, req.path_params["vid"]); return JSONResponse(v) if v else err("not found", 404)
+        v = await off(acc.version, u, req.path_params["vid"]); return JSONResponse(v) if v else err("not found", 404)
     async def favorite(req, u):
-        b = await body(req); r = acc.db.rpc("eva_update_version", version_id=req.path_params["vid"], user_id=u["id"], favorite=bool(b.get("favorite")))
+        b = await body(req); r = await off(acc.db.rpc, "eva_update_version", version_id=req.path_params["vid"], user_id=u["id"], favorite=bool(b.get("favorite")))
         return JSONResponse(r) if r else err("not found", 404)
-    async def cancel(req, u): return JSONResponse(acc.cancel(u, req.path_params["vid"]))
+    async def cancel(req, u): return JSONResponse(await off(acc.cancel, u, req.path_params["vid"]))
     async def del_version(req, u):
-        r = acc.delete(u, vid=req.path_params["vid"]); return JSONResponse(r) if r["ok"] else err("This video is still rendering.", 409)
+        r = await off(acc.delete, u, vid=req.path_params["vid"]); return JSONResponse(r) if r["ok"] else err("This video is still rendering.", 409)
     async def del_project(req, u):
-        r = acc.delete(u, pid=req.path_params["pid"]); return JSONResponse(r) if r["ok"] else err("A version is still rendering.", 409)
-    async def topup(req, u): return JSONResponse(acc.topup(u, site_of(req), (await body(req)).get("return_to")))
+        r = await off(acc.delete, u, pid=req.path_params["pid"]); return JSONResponse(r) if r["ok"] else err("A version is still rendering.", 409)
+    async def topup(req, u): return JSONResponse(await off(acc.topup, u, site_of(req), (await body(req)).get("return_to")))
 
-    async def gallery(req): return JSONResponse(gallery_payload(acc.s), headers={"Cache-Control": "private, max-age=600"})
+    async def gallery(req): return JSONResponse(await off(gallery_payload, acc.s), headers={"Cache-Control": "private, max-age=600"})
 
     P = "/api/v2"
     return [Route(P + "/me", guarded(me)), Route(P + "/history", guarded(history)), Route(P + "/quote", guarded(quote)), Route(P + "/library", guarded(library)),
