@@ -39,13 +39,26 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with: { persist-credentials: false, ref: 36884b614d011a5826855e869213aea2dd23067c }   # feat/saas-accounts, read-only code
+      - name: psql without apt (inline copy of .github/actions/setup-psql — the checkout above is pinned code)
+        run: |
+          set -e
+          if command -v psql >/dev/null 2>&1; then echo "psql preinstalled: $(psql --version)"; exit 0; fi
+          for d in /usr/lib/postgresql/*/bin; do [ -x "$d/psql" ] && { echo "$d" >> "$GITHUB_PATH"; echo "psql preinstalled: $("$d/psql" --version)"; exit 0; }; done
+          docker pull -q postgres:16 >/dev/null
+          echo "psql via Docker image postgres:16 $(docker image inspect postgres:16 --format '{{index .RepoDigests 0}}')"
+          sudo tee /usr/local/bin/psql >/dev/null <<'SH'
+          #!/usr/bin/env bash
+          # psql from postgres:16; the working directory is mounted so -f / \ir paths work; PG* env vars are passed through
+          exec docker run --rm -i --network host -v "$PWD:$PWD" -w "$PWD" $(env | grep -oE '^PG[A-Z_]+' | sed 's/^/-e /') postgres:16 psql "$@"
+          SH
+          sudo chmod +x /usr/local/bin/psql; psql --version
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
       - name: Supabase (read-only)
         id: supa
         continue-on-error: true
         run: |
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           python3 saas/tests/supabase_staging_check.py
       - name: Stripe TEST · R2 · Vercel · Resend
         id: rest

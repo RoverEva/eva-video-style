@@ -24,9 +24,12 @@ jobs:
       API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run
       RUN_TAG: df3bb315   # run 43030409603: 6 parallel previews, one timed out at 13:51:41 UTC
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-psql
       - name: Database — what run b5b70017 left behind (read-only session)
         run: |
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           Q() { PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -v ON_ERROR_STOP=1 -P pager=off -c "$1"; }
           Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
              select u.who, v.id, v.n, v.kind, v.status, v.charge, to_char(v.created_at at time zone 'utc', 'HH24:MI:SS') created,

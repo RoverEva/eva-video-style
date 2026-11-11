@@ -43,16 +43,17 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-psql
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
       - name: Unit + server-side post-payment tests (signed webhook events, order state, render job, delivery, render failure, retry, refund)
         run: |
           pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1"
           # test_versions_qa makes thumbnails with ffmpeg; the runner image no longer ships it (the ffmpeg package includes ffprobe)
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null && ffmpeg -version | head -1 && ffprobe -version | head -1
+          sudo apt-get -o Acquire::Retries=5 update -qq && sudo apt-get -o Acquire::Retries=5 install -y -qq ffmpeg >/dev/null && ffmpeg -version | head -1 && ffprobe -version | head -1
           python saas/tests/test_planner.py && python saas/tests/test_api.py && python saas/tests/test_versions_qa.py
           # credits / free previews / library SQL on a throwaway Postgres 16 (same functions Supabase runs), incl. concurrency
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           docker run -d --name evapg -e POSTGRES_HOST_AUTH_METHOD=trust -p 54329:5432 postgres:16 >/dev/null
           for i in $(seq 1 30); do pg_isready -h 127.0.0.1 -p 54329 -q && break; sleep 1; done
           psql -h 127.0.0.1 -p 54329 -U postgres -q -c "create role anon; create role authenticated; create role service_role;"
@@ -72,12 +73,12 @@ jobs:
         if: steps.have.outputs.modal == '1'
         env: { SUPABASE_PROJECT_REF: kaojcgfcwjhnrxppwikz, EVA_SITE_URL: "https://eva-video-studio.vercel.app" }
         run: |
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           python3 saas/tests/supabase_staging_check.py
       - name: Database migration (Supabase Postgres, additive + idempotent, one transaction)
         if: steps.have.outputs.modal == '1'
         run: |
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           for f in saas/db/[0-9]*.sql; do echo "applying $f"; psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -v ON_ERROR_STOP=1 -q -1 -f "$f"; done
           psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -At -c "select max(version) from public.eva_schema"
       - name: Modal secrets + deploy
@@ -104,7 +105,7 @@ jobs:
         id: site
         env: { API_URL: "${{ steps.modal.outputs.api }}" }
         run: |
-          sudo apt-get install -y -qq ffmpeg >/dev/null
+          sudo apt-get -o Acquire::Retries=5 install -y -qq ffmpeg >/dev/null
           python saas/music/compose.py /tmp/tracks --mp3 && mkdir -p site/demos/music && cp /tmp/tracks/*.mp3 site/demos/music/
           printf 'window.EVA_API = "%s";\nwindow.EVA_SUPABASE_URL = "%s";\nwindow.EVA_SUPABASE_ANON = "%s";\n' "$API_URL" "$(printf %s "$SUPABASE_URL" | tr -d '[:space:]')" "$(printf %s "$SUPABASE_ANON_KEY" | tr -d '[:space:]')" > site/config.js   # anon key is public by design
           python saas/deploy/vercel_deploy.py site eva-video-studio   # REST API, no CLI; writes site= to GITHUB_OUTPUT
@@ -143,7 +144,7 @@ jobs:
         env: { SITE_URL: "${{ steps.site.outputs.site }}", API_URL: "${{ steps.modal.outputs.api }}" }
         run: |
           set -e
-          sudo apt-get install -y -qq ffmpeg >/dev/null
+          sudo apt-get -o Acquire::Retries=5 install -y -qq ffmpeg >/dev/null
           pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
           python saas/tests/test_checkout_opened.py   # offline: checkout-opened + Stripe session verification logic
           M=saas/tests/media; mkdir -p e2e

@@ -20,6 +20,9 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-psql
       - name: The API's ledger request (status + error only)
         run: |
           python3 - <<'EOF'
@@ -37,7 +40,7 @@ jobs:
           EOF
       - name: Table privileges (read-only session)
         run: |
-          sudo apt-get install -y -qq postgresql-client >/dev/null
+          # psql: provided by .github/actions/setup-psql (no apt)
           PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -At -F ' | ' -c "
             select 'service_role select on ledger', has_table_privilege('service_role', 'public.ledger', 'select')
             union all select 'authenticated select on ledger (must be false)', has_table_privilege('authenticated', 'public.ledger', 'select')

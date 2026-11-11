@@ -57,8 +57,8 @@ jobs:
           }
           for k, v in facts.items(): print(f"{k}: {v}")
           PY
-      - name: psql client
-        run: which psql || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client); psql --version
+      - name: psql client (no apt)
+        uses: ./.github/actions/setup-psql
       - name: Supabase check (database, rolled-back migration + business rules, Auth)
         run: python3 saas/tests/supabase_staging_check.py
       - name: Summary
