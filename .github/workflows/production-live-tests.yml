@@ -16,7 +16,7 @@ jobs:
     environment: production
     timeout-minutes: 60
     env:
-      SITE_URL: https://eva-video-studio.vercel.app                # production site (from deploy run 42964188174)
+      SITE_URL: https://eva-video-studio.vercel.app                # production site
       API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run    # production API (same run)
       R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -36,7 +36,7 @@ jobs:
       - name: Live end-to-end tests (accounts, HD export + download, balance, refunds, gallery, privacy probes)
         run: |
           set -e
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          sudo apt-get -o Acquire::Retries=5 update -qq && sudo apt-get -o Acquire::Retries=5 install -y -qq ffmpeg >/dev/null
           pip install -q "starlette~=0.41" "httpx~=0.27" "requests~=2.32" "numpy~=2.1" "boto3~=1.35" "playwright~=1.48"
           python -m playwright install --with-deps chromium >/dev/null
           curl -fsS "$API_URL/api/health"; echo
