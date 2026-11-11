@@ -2,12 +2,10 @@
 # renders the real demo uploads with real eva-asr (preview + full HD), measures time per stage, and publishes the
 # Before/After demo files for the website (committed to site/demos by the bot).
 name: mvp · worker image render (real eva-asr)
+# Manual only (Actions → Run workflow): it no longer runs on pushes to feat/mvp-launch, because a release push must never
+# re-render or overwrite the approved homepage demos or add a bot commit to the release branch.
 on:
   workflow_dispatch:
-  push:
-    branches: [feat/mvp-launch]
-    paths: [saas/worker/**, saas/Dockerfile, saas/config/**, saas/music/**, saas/tests/media/**, engine/**, scripts/**, .dockerignore,
-            .github/workflows/mvp-worker-render.yml]
 permissions: { contents: write }
 concurrency: { group: mvp-worker-render, cancel-in-progress: true }
 jobs:
