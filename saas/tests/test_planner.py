@@ -11,7 +11,7 @@ with tempfile.TemporaryDirectory() as d:
     for mode, tpl, n in (("single", "T21", 1), ("multi", "T23,T21,T02", 3), ("single", "T02", 1), ("auto", "T17", 4)):
         out = d / mode
         subprocess.run([sys.executable, HERE.parent / "worker/planner.py", d / "job/srt/talk.transcript.js", out, "--duration", str(D),
-                        "--templates", tpl, "--mode", mode, "--no-llm"], check=True)
+                        "--templates", tpl, "--mode", mode, "--legacy-heuristic"], check=True)
         p = json.loads((out / "plan.json").read_text()); secs, cards = p["sections"], p["cards"]
         assert len(secs) == n, (mode, len(secs)); assert secs[0]["t0"] == 0 and secs[-1]["t1"] == D
         assert all(a["t1"] == b["t0"] for a, b in zip(secs, secs[1:]))

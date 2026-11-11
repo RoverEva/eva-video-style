@@ -139,9 +139,11 @@ def prepare(inp, jd, opts):
             J.log.write("plan: reusing the saved version plan\n")
             (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt"); return
         try: sh([PY, HERE / "planner.py", J.d / "srt/talk.transcript.js", J.d, "--duration", J.j["end"],
-            "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json", "--aspect", o.get("aspect", "16:9")], J.log)
+            "--templates", ",".join(o["templates"]), "--mode", o["template_mode"], "--face", J.d / "face.json", "--aspect", o.get("aspect", "16:9"),
+            "--instructions", o.get("instructions", ""), "--style", o.get("style", ""), "--intensity", o.get("intensity", "balanced")], J.log)
         except subprocess.CalledProcessError as e:   # 6 = selected templates do not fit the clip: say so, never drop one silently
             if e.returncode == 6: raise Reject(f"{len(o['templates'])} templates need at least {3 * len(o['templates'])} s of video. Choose fewer templates or a longer clip.")
+            if e.returncode == 7: raise RuntimeError("the AI storyboard could not be created (see pipeline.log); the job fails, nothing is charged")
             raise
         (J.d / "srt/talk.en.srt").exists() or shutil.copy(J.d / "srt/talk.bilingual.srt", J.d / "srt/talk.en.srt")   # music.py speech map
 

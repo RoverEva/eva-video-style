@@ -171,6 +171,60 @@
         const c = EC.IconCard(wrap, s, off + (k % cols) * (sz + gap) + sz / 2, r * (sz + gap) + sz / 2, sz, th, { preset: 'rearrange' }); c.mo = { dx: (R() - .5) * 700, dy: (R() - .3) * 500, dr: (R() - .5) * 40 }; return c; });
       return { at: (t, ts) => cs.forEach((c, k) => c.at(t, ts[k], k, c.mo)) }; },
   };
+  /* ---------- explanatory layouts (2026-11-11, for the AI storyboard; any template theme) ----------
+     process: stages light up in order, data dots flow along the arrows (e.g. Input → Model → Output)
+     compare: two solid panels A | B with points revealed in turn and a VS chip
+     checklist: rows whose check marks stamp on the spoken word
+     stat: a number the speaker said, counting up, with its label (never invented numbers: the validator checks)
+     d.illustrative: small 示意 · ILLUSTRATIVE tag on conceptual visuals */
+  const tag = (L, b, th, on) => on ? el(L, 'div', 'abs', { left: b.x + 'px', top: (b.y + b.h - 30) + 'px', fontFamily: 'monospace', fontSize: '18px', letterSpacing: '.18em',
+    color: th.mute, opacity: 0, zIndex: 18 }, '示意 · ILLUSTRATIVE') : null;
+  Object.assign(EC.LAYOUTS, {
+    'process': (L, d, b, th) => { const it = (d.items || []).slice(0, 5), n = Math.max(2, it.length), vert = b.w < 760, kh = d.kicker ? 110 : 0;
+      const bb = { x: b.x, y: b.y + kh, w: b.w, h: b.h - kh };
+      const sz = vert ? Math.min(230, (bb.h - 70 * (n - 1)) / n) : Math.min(260, (bb.w - 80 * (n - 1)) / n), gap = vert ? Math.min(140, (bb.h - sz * n) / Math.max(1, n - 1)) : (bb.w - sz * n) / Math.max(1, n - 1);
+      const pt = k => vert ? [bb.x + bb.w / 2, bb.y + sz / 2 + k * (sz + gap)] : [bb.x + sz / 2 + k * (sz + gap), bb.y + bb.h * .42];
+      const kick = d.kicker ? title(EC.group(L, b.x, b.y, b.w, kh, 17), d.kicker, 0, 10, 56, th, { width: b.w + 'px', opacity: 0 }) : null;
+      const nodes = it.map((c, k) => { const [x, y] = pt(k); return EC.IconCard(L, c, x, y, sz, th, { preset: 'pop', z: 17 }); });
+      const lines = [], dots = [];
+      for (let k = 0; k < it.length - 1; k++) { const [x1, y1] = pt(k), [x2, y2] = pt(k + 1), o = sz / 2 + 14;
+        const a = vert ? [x1, y1 + o] : [x1 + o, y1], z = vert ? [x2, y2 - o] : [x2 - o, y2];
+        lines.push({ c: EC.connector(L, `M${a[0]} ${a[1]} L${z[0]} ${z[1]}`, th, 6, true, 15), a, z });
+        dots.push([0, 1, 2].map(() => el(L, 'div', 'abs', { left: 0, top: 0, width: '16px', height: '16px', borderRadius: '50%', background: th.acc,
+          boxShadow: `0 0 14px ${th.glow ? `rgba(${th.glow},.9)` : th.acc}`, zIndex: 16, opacity: 0 }))); }
+      const lab = tag(L, b, th, d.illustrative);
+      return { at: (t, ts) => { nodes.forEach((c, k) => { c.at(t, ts[k], k); const on = t >= ts[k] && (k === nodes.length - 1 || t < ts[k + 1] + .3);
+          nodes[k].g.style.filter = on ? `drop-shadow(0 0 22px ${th.glow ? `rgba(${th.glow},.85)` : th.acc})` : 'none';
+          nodes[k].g.style.scale = on ? String(1 + .06 * Math.min(1, (t - ts[k]) * 4)) : '1'; });
+        lines.forEach((l, k) => { const t0 = ts[k] + .25, t1 = ts[k + 1] ?? t0 + .6; l.c.at(P(t, t0, Math.max(.3, t1 - t0)));
+          dots[k].forEach((dot, j) => { const live = t > t0 + .2; dot.style.opacity = live ? '1' : '0'; if (!live) return;
+            const u = ((t - t0) * .9 + j / 3) % 1; dot.style.transform = `translate(${l.a[0] + (l.z[0] - l.a[0]) * u - 8}px, ${l.a[1] + (l.z[1] - l.a[1]) * u - 8}px)`; }); });
+        if (kick) { kick.style.opacity = String(P(t, ts[0] - .5, .35)); kick.style.transform = `translateY(${18 * (1 - ease.outExpo(P(t, ts[0] - .5, .5)))}px)`; }
+        if (lab) lab.style.opacity = String(.8 * P(t, ts[0], .5)); } }; },
+    'compare': (L, d, b, th) => { const A = d.left || {}, B = d.right || {}, gap = 40, w = (b.w - gap) / 2, rows = Math.max((A.points || []).length, (B.points || []).length), h = Math.min(b.h, 150 + 80 * rows);
+      const side = (c, x, k) => { const g = EC.group(L, x, b.y, w, h, 15), sf = EC.surface(g, 0, 0, w, h, th, th.r * 1.2);
+        title(sf, c.title || '', 28, 26, Math.min(64, w * .13), th, { width: (w - 56) + 'px' });
+        const rows = (c.points || []).slice(0, 3).map((p, j) => txt(sf, '• ' + p, 30, 118 + j * 78, Math.min(40, w * .075), th.ink, SANS, 700, { width: (w - 60) + 'px', whiteSpace: 'normal', opacity: 0 }));
+        return { g, rows, k }; };
+      const l = side(A, b.x, 0), r = side(B, b.x + w + gap, 1);
+      const vs = el(L, 'div', 'abs', { left: (b.x + w + gap / 2 - 46) + 'px', top: (b.y + h / 2 - 46) + 'px', width: '92px', height: '92px', borderRadius: '50%', background: th.acc, color: '#fff',
+        fontFamily: th.head, fontWeight: th.headW, fontSize: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 18, opacity: 0 }, 'VS');
+      const lab = tag(L, Object.assign({}, b, { y: b.y + h + 40 }), th, d.illustrative);
+      return { at: (t, ts) => { const tl = ts[0], tr = ts[1] ?? tl + 1.2; EC.move(l.g, t, tl, th, { k: 0 }); EC.move(r.g, t, tr, th, { k: 1 });
+        [l, r].forEach((s, k) => s.rows.forEach((e, j) => { e.style.opacity = String(P(t, (k ? tr : tl) + .35 + j * .35, .3)); }));
+        tf(vs, { s: .6 + .4 * ease.outBack(P(t, tr - .1, .45), 2), o: P(t, tr - .1, .2) }); if (lab) lab.style.opacity = String(.8 * P(t, tl, .5)); } }; },
+    'checklist': (L, d, b, th) => { const it = (d.items || []).slice(0, 5), h = Math.min(120, (b.h - 20 * (it.length - 1)) / Math.max(1, it.length));
+      const rows = it.map((c, k) => { const g = EC.group(L, b.x, b.y + k * (h + 20), b.w, h, 15), sf = EC.surface(g, 0, 0, b.w, h, th);
+        const box = el(sf, 'div', 'abs', { left: h * .22 + 'px', top: h * .22 + 'px', width: h * .56 + 'px', height: h * .56 + 'px', borderRadius: h * .14 + 'px', background: th.acc });
+        const mk = el(box, 'div', 'abs', { left: 0, top: 0, width: '100%', height: '100%', color: '#fff', fontSize: h * .46 + 'px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0 }, '✓');
+        title(sf, c.title || '', h, h * .26, h * .36, th, { width: (b.w - h * 1.2) + 'px' }); return { g, mk }; });
+      return { at: (t, ts) => rows.forEach((r, k) => { EC.move(r.g, t, ts[k] - .25, th, { k }); tf(r.mk, { s: 1.6 - .6 * ease.outBack(P(t, ts[k] + .1, .35), 2), o: P(t, ts[k] + .1, .12) }); }) }; },
+    'stat': (L, d, b, th) => { const v = +d.value || 0, dec = String(d.value).includes('.') ? 1 : 0, size = Math.min(260, b.w / 3.2);
+      const g = EC.group(L, b.x, b.y + b.h * .18, b.w, size * 1.8, 16);
+      const num = EC.word(g, '0', 0, 0, size, th, {}); const lab = txt(g, d.label || '', 6, size * 1.08, size * .2, th.mute, SANS, 700, { width: b.w + 'px', whiteSpace: 'normal' });
+      return { at: (t, ts) => { EC.move(g, t, ts[0] - .2, th, {}); const u = ease.outExpo ? ease.outExpo(P(t, ts[0], 1.1)) : P(t, ts[0], 1.1);
+        num.textContent = (d.prefix || '') + (v * u).toFixed(dec) + (d.suffix || ''); lab.style.opacity = String(P(t, ts[0] + .5, .4)); } }; },
+  });
   EC.layout = (L, name, data, box, th) => { const f = EC.LAYOUTS[name]; if (!f) throw new Error('EVA cards: unknown layout ' + name); return f(L, data, box, th); };
 
   /* ---------- presenter-safe regions: keep cards off the face. win = Eva window rect {x,y,w,h} ---------- */
@@ -183,6 +237,7 @@
   EC.overlapsFace = (box, faceRect) => !(box.x + box.w < faceRect.x || faceRect.x + faceRect.w < box.x || box.y + box.h < faceRect.y || faceRect.y + faceRect.h < box.y);
 
   /* ---------- JSON card specs (see references/cards.md). type: hero | step | icon | flow | feature | layout ---------- */
+  const EXPLAIN = { process: c => (c.items || []).length, checklist: c => (c.items || []).length, compare: () => 2, stat: () => 1 };   // number of timed beats
   const TYPE2LAYOUT = { hero: 'hero', step: 'steps-v', icon: 'grid', flow: 'journey', feature: 'feature' };
   EC.validate = spec => { const e = [], types = ['hero', 'step', 'icon', 'flow', 'feature', 'layout'];
     if (!spec || typeof spec !== 'object') return ['spec must be an object'];
@@ -204,6 +259,7 @@
       const data = { hero: c.words ? c : { words: [c.title], sub: c.subtitle, kicker: c.kicker }, statement: c.words ? c : { script: c.kicker, words: [c.title], sub: c.subtitle },
         steps: c.items || [{ n: c.number, title: c.title, sub: c.subtitle, icon: c.icon }], items: c.items || [{ title: c.title, icon: c.icon }],
         feature: { n: c.number, title: c.title, body: c.body || c.subtitle, icon: c.icon, image: c.image }, n: (c.items || [1]).length, c: p.center, size: p.size };
+      if (EXPLAIN[name]) Object.assign(data, c, { n: EXPLAIN[name](c), illustrative: !!sp.illustrative });
       const o = EC.layout(L, name, data, box, th), n = name === 'hero' || name === 'statement' ? (data.hero.words || []).length + 2 : (name === 'feature' ? 1 : data.n);
       return { id: sp.id, o, times: EC.specTimes(sp, n, opt.toLocal), end: a.end != null ? (opt.toLocal || (s => s))(a.end) : null, L }; }); };
   EC.schemaAt = (list, t) => list.forEach(c => c.o.at(t, c.times));

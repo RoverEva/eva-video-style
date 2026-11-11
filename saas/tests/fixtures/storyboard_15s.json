@@ -1,0 +1,7 @@
+{"beats": [
+ {"start": 0, "end": 3.0, "template": "T23", "component": "hero", "spoken": "Most creators spend hours editing every short video.", "anchor_words": ["hours"], "content": {"title": "HOURS EDITING", "sub": "every short video"}, "illustrative": false, "why": "hook on the pain"},
+ {"start": 3.0, "end": 6.0, "template": "T21", "component": "process", "spoken": "EVA turns your raw phone clip into", "anchor_words": ["raw", "into"], "content": {"kicker": "HOW EVA WORKS", "items": [{"title": "RAW CLIP", "icon": "footage"}, {"title": "FINISHED EDIT", "icon": "film"}]}, "illustrative": false, "why": "explain the transformation"},
+ {"start": 6.0, "end": 9.0, "template": "T17", "component": "statement", "spoken": "a finished edit. You choose a style,", "anchor_words": ["choose"], "content": {"title": "CHOOSE A STYLE", "sub": "you choose a style"}, "illustrative": false, "why": "user agency"},
+ {"start": 9.0, "end": 12.0, "template": "T02", "component": "checklist", "spoken": "we add captions, motion cards and music.", "anchor_words": ["captions", "motion", "music"], "content": {"items": [{"title": "CAPTIONS"}, {"title": "MOTION CARDS"}, {"title": "MUSIC"}]}, "illustrative": false, "why": "what is included"},
+ {"start": 12.0, "end": 15.07, "template": "T01", "component": "compare", "spoken": "Upload once and post everywhere today.", "anchor_words": ["once", "everywhere"], "content": {"left": {"title": "UPLOAD ONCE", "points": ["one clip"]}, "right": {"title": "POST EVERYWHERE", "points": ["every platform"]}}, "illustrative": true, "why": "payoff"}
+]}

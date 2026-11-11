@@ -306,6 +306,9 @@ def main(argv=None):
     ap.add_argument("--face", help="face calibration JSON {x,y,h}"); ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--model", default=os.environ.get("EVA_PLANNER_MODEL", "claude-haiku-5-5"))
     ap.add_argument("--aspect", default="16:9", help="output aspect, for the coverage timeline")
+    ap.add_argument("--instructions", default="", help="optional natural-language editing instructions (AI Creative Director)")
+    ap.add_argument("--style", default="", help="Educational | Fast-paced | Professional"); ap.add_argument("--intensity", default="balanced")
+    ap.add_argument("--legacy-heuristic", action="store_true", help="TESTS ONLY: the old keyword planner (never used by the pipeline)")
     a = ap.parse_args(argv)
     d, words = load_transcript(a.transcript)
     if not words: print("planner: transcript has no words", file=sys.stderr); return 5
@@ -314,22 +317,24 @@ def main(argv=None):
     except TooShort as e: print(f"planner: {e}", file=sys.stderr); return 6   # pipeline turns this into a clear rejection
     secs = sections(words, dur, tpls)
     segs = segments_list(d)
-    source, usage, beats = "heuristic", None, None
-    key = os.environ.get("ANTHROPIC_API_KEY")
-    if key and not a.no_llm:
+    rejected, usage, extra = [], None, {}
+    if a.legacy_heuristic or a.no_llm:   # tests only: the pipeline always plans with Claude Opus 5.5
+        source = "heuristic(test)"
+        cards, rejected = build_cards(heuristic_beats(segs, dur, secs), segs, words, secs)
+        cards = fill_cards(cards, segs, words, secs)
+    else:   # Claude Opus 5.5 storyboard — no fallback: a failure fails the job (credits / free preview released by the worker)
+        import storyboard
         try:
-            beats, usage = llm_beats(segs, dur, a.model, key); source = "llm:" + a.model
-        except Exception as e:  # never fail a paid job because of the planner model
-            print(f"planner: LLM unavailable ({type(e).__name__}: {e}); using the keyword planner", file=sys.stderr)
-    cards, rejected = build_cards(beats, segs, words, secs) if beats else ([], [])
-    if len(cards) < max(1, round(dur / 15)):   # too little survived validation
-        source += "+heuristic" if beats else ""
-        cards, rejected2 = build_cards(heuristic_beats(segs, dur, secs), segs, words, secs); rejected += rejected2
-    cards = fill_cards(cards, segs, words, secs)
+            secs, cards, extra = storyboard.plan(words, segs, dur, tpls if a.mode != "single" else tpls[:1], box_for, a.instructions, a.style, a.intensity,
+                                                 log=lambda m: print("planner: " + m))
+        except storyboard.StoryboardError as e:
+            print(f"planner: AI storyboard failed: {e}", file=sys.stderr); return 7
+        source, usage = extra["source"], extra["usage"]
     face = json.loads(Path(a.face).read_text()) if a.face else None
     for sec in secs: sec["box"] = list(box_for(sec["template"]))   # card block: 9:16 pages scale it into the top zone (auto.js)
     plan = {"version": 1, "end": round(dur, 3), "evaDir": "../media/eva", "face": face, "sections": secs, "cards": cards,
-            "planner": {"source": source, "usage": usage, "rejected": rejected}}
+            "planner": {"source": source, "usage": usage, "rejected": rejected, "attempts": extra.get("attempts")}}
+    if extra.get("storyboard"): plan["storyboard"] = extra["storyboard"]   # the approved storyboard; HD export reuses this plan as is
     import coverage   # editing-coverage timeline with the renderer's layout rules (saas/worker/coverage.py)
     cov = coverage.timeline(plan, a.aspect, a.templates.split(",") if a.mode == "multi" else None)
     plan["coverage"] = {k: cov[k] for k in ("aspect", "meaningful_coverage", "template_coverage", "meaningful_s", "template_static_s", "raw_s",
