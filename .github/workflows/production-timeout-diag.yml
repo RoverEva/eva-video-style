@@ -1,0 +1,64 @@
+# READ-ONLY diagnosis of the 60 s ReadTimeout in run 42971344395 (live e2e run b5b70017, after preview 1).
+# 1. Modal: app state, running containers, recent eva-api / render logs around 06:26–06:40 UTC (no secrets printed).
+# 2. Database (read-only session): what the timed-out request left behind for that run's throwaway users —
+#    versions (status, timestamps), reservations (held/captured/released), ledger rows. No emails or keys printed.
+# 3. Latency probe of public endpoints (health, gallery): 20 timed requests each (cold vs warm).
+# Changes nothing: no deploy, no migration, no writes.
+name: production · API timeout diagnosis (read-only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/production-timeout-diag.yml]
+permissions: { contents: read }
+jobs:
+  diag:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run
+      RUN_TAG: b5b70017
+    steps:
+      - name: Database — what run b5b70017 left behind (read-only session)
+        run: |
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          Q() { PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -v ON_ERROR_STOP=1 -P pager=off -c "$1"; }
+          Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
+             select u.who, v.n, v.kind, v.status, v.charge, to_char(v.created_at at time zone 'utc', 'HH24:MI:SS') created,
+                    to_char(v.finished_at at time zone 'utc', 'HH24:MI:SS') finished, left(coalesce(v.error, ''), 80) error,
+                    (v.deleted_at is not null) deleted, p.title
+               from versions v join u using (user_id) join projects p on p.id = v.project_id order by v.created_at"
+          Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
+             select u.who, r.kind, r.amount, r.state, r.reason, to_char(r.created_at at time zone 'utc', 'HH24:MI:SS') created,
+                    to_char(r.settled_at at time zone 'utc', 'HH24:MI:SS') settled
+               from reservations r join u using (user_id) order by r.created_at"
+          Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
+             select u.who, l.kind, l.credits, l.free, to_char(l.created_at at time zone 'utc', 'HH24:MI:SS') at
+               from ledger l join u using (user_id) order by l.created_at"
+          Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
+             select u.who, a.credits, a.free_used, a.free_held, (select count(*) from reservations r where r.user_id = a.user_id and r.state = 'held') held
+               from accounts a join u using (user_id)"
+          Q "select count(*) as queued_or_running_now from versions where status in ('queued', 'running')"
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Modal — app, containers, recent logs
+        run: |
+          pip install -q "modal~=1.0"
+          modal app list 2>&1 | grep -iE 'eva-video-studio|App ID|state' | head -5 || true
+          modal container list 2>&1 | head -20 || true
+          modal app logs --help 2>&1 | sed -n '1,30p'
+          ( timeout 40 modal app logs eva-video-studio --timestamps 2>&1 || true ) > logs.txt
+          echo "log lines captured: $(wc -l < logs.txt)"
+          grep -nEi 'Traceback|Timeout|timed out|AsyncUsage|blocking|Error|exceeded|/previews|cold|Runner|terminated|preempt' logs.txt | cut -c1-260 | head -80 || true
+          echo "--- last 60 lines"; tail -60 logs.txt | cut -c1-260
+      - name: Latency probe (public endpoints only)
+        run: |
+          for path in /api/health /api/v2/gallery; do
+            for i in $(seq 1 20); do curl -s -o /dev/null -m 90 -w "%{http_code} %{time_starttransfer}\n" "$API_URL$path"; done > t.txt
+            python3 -c "import sys; r=[l.split() for l in open('t.txt')]; t=sorted(float(x[1]) for x in r); print('$path', 'codes', sorted({x[0] for x in r}), 'first %.2fs' % float(r[0][1]), 'p50 %.2fs' % t[len(t)//2], 'max %.2fs' % t[-1])"
+          done
