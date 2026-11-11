@@ -115,12 +115,17 @@ def call_claude(key, system, user, tool, prior=None, timeout=180):
             "tools": [tool], "tool_choice": {"type": "tool", "name": tool["name"]}, "messages": msgs}
     req = urllib.request.Request(API, json.dumps(body).encode(), {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
     t = time.time()
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as r: j = json.loads(r.read())
-    except urllib.error.HTTPError as e:
-        raise StoryboardError(f"Anthropic API HTTP {e.code}: {e.read().decode(errors='replace')[:300]}")
-    except Exception as e:
-        raise StoryboardError(f"Anthropic API unreachable: {type(e).__name__}")
+    for n in range(4):   # transient API states (rate limit, overload, 5xx): back off and retry; anything else fails at once
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r: j = json.loads(r.read()); break
+        except urllib.error.HTTPError as e:
+            body = e.read().decode(errors="replace")[:300]
+            if e.code in (429, 500, 502, 503, 504, 529) and n < 3:
+                time.sleep(min(60, float(e.headers.get("retry-after") or 0) or 5 * 2 ** n)); continue
+            raise StoryboardError(f"Anthropic API HTTP {e.code}: {body}")
+        except Exception as e:
+            if n < 3 and isinstance(e, (TimeoutError, urllib.error.URLError)): time.sleep(5 * 2 ** n); continue
+            raise StoryboardError(f"Anthropic API unreachable: {type(e).__name__}")
     use = next((c for c in j.get("content", []) if c.get("type") == "tool_use"), None)
     if not use: raise StoryboardError("Claude returned no storyboard")
     return use, j.get("usage", {}), round(time.time() - t, 1), j

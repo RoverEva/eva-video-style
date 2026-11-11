@@ -71,6 +71,11 @@ def render(run: str, templates: str, aspects: str = "16:9,9:16", instructions: s
             except SystemExit as e: r["rc"] = e.code
             except Exception as e: r["rc"] = -1; r["error"] = type(e).__name__ + ": " + str(e).split("(")[0].split(":")[0][:90]   # no transcript text
             r["render_wall_s"] = round(time.time() - t, 1)
+            plog = wd / "logs/prepare.log"   # API errors are Anthropic's own text (safe); validation errors may quote speech → counted only
+            for line in (plog.read_text(errors="replace").splitlines() if plog.exists() else []):
+                if "AI storyboard failed:" in line:
+                    m = line.split("AI storyboard failed:", 1)[1].strip()
+                    r["planner_error"] = m[:400] if m.startswith(("Anthropic API", "The AI storyboard is not configured", "only claude", "Claude returned")) else m.split("(")[0][:80] + "(details withheld: may quote speech)"
             plan = json.loads((wd / "plan.json").read_text()) if (wd / "plan.json").exists() else {}
             pl = plan.get("planner") or {}
             r.update(model=pl.get("model") or pl.get("source"), usage=pl.get("usage"), attempts=[{"attempt": a["attempt"], "errors": len(a["errors"]), "seconds": a["seconds"]} for a in pl.get("attempts") or []],
