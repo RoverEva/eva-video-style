@@ -22,6 +22,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import coverage, planner
 
 RAW_SIM = 0.80
+MOTION_MIN = 1.5   # mean grey-level change per frame step (0–255) beyond the footage's own motion = something is animating
+
+
+def content_relevance(plan, transcript):
+    """per card: share of its content words spoken while it is on screen (±3 s before, +1 s after); keyword-only cards
+    (one short headline, no sub/steps) are flagged — they are on-topic but are not storytelling"""
+    if not transcript: return None
+    _, words = planner.load_transcript(transcript)
+    norm = planner.norm; out = []
+    for c in plan.get("cards", []):
+        k = c["spec"]["content"]
+        text = " ".join([*(k.get("words") or []), k.get("sub") or "", *[i.get("title", "") + " " + i.get("sub", "") for i in k.get("items") or []]])
+        kws = [norm(w) for w in planner.keywords(text)]
+        near = {norm(w["w"]) for w in words if c["t_in"] - 3 <= w["start"] <= c["t_out"] + 1}
+        hit = sum(1 for w in kws if w in near) / max(len(kws), 1)
+        keyword_only = c.get("kind") != "steps" and len((k.get("words") or [""])[0].split()) <= 1 and len((k.get("sub") or "").split()) <= 3
+        out.append({"t_in": c["t_in"], "relevance": round(hit, 2), "keyword_only": keyword_only, "kind": c.get("kind")})
+    return {"cards": out, "mean_relevance": round(sum(x["relevance"] for x in out) / max(len(out), 1), 2),
+            "keyword_only_cards": sum(x["keyword_only"] for x in out), "kinds": sorted({x["kind"] for x in out})}
 TW, TH = 48, 27
 
 
@@ -66,6 +85,7 @@ def runs(states, fps):
 def main(argv=None):
     ap = argparse.ArgumentParser(); ap.add_argument("out"); ap.add_argument("source"); ap.add_argument("plan"); ap.add_argument("dir")
     ap.add_argument("--aspect", default="16:9"); ap.add_argument("--selected", default=""); ap.add_argument("--fps", type=float, default=4)
+    ap.add_argument("--transcript", help="srt/talk.transcript.js: for the content-relevance check of the cards")
     a = ap.parse_args(argv); d = Path(a.dir); d.mkdir(parents=True, exist_ok=True)
     plan = json.loads(Path(a.plan).read_text()); sel = [x for x in a.selected.split(",") if x] or None
     pt = coverage.timeline(plan, a.aspect, sel)
@@ -78,6 +98,14 @@ def main(argv=None):
         t = i / a.fps; st = next((r["state"] for r in pt["runs"] if r["t0"] <= t < r["t1"]), "raw"); plan_state.append(st)
     seen = ["raw" if s >= RAW_SIM else ("card" if p == "card" else "template") for s, p in zip(sims, plan_state)]
     unexplained = [i / a.fps for i in range(n) if seen[i] == "raw" and plan_state[i] != "raw"]
+    # motion: movement in the rendered frame beyond the movement already in the footage (animated cards, transitions, backgrounds)
+    added = [0.0] + [float(np.abs(O[i] - O[i - 1]).mean() - np.abs(S[i] - S[i - 1]).mean()) for i in range(1, n)]
+    moving = [x > MOTION_MIN for x in added]
+    edited = [i for i in range(n) if seen[i] != "raw"]
+    motion = {"animated_s": round(sum(moving[i] for i in edited) / a.fps, 2), "motion_coverage": round(sum(moving[i] for i in edited) / max(len(edited), 1), 3),
+              "static_template_s": round(sum(1 for i in edited if seen[i] == "template" and not moving[i]) / a.fps, 2),
+              "longest_static_s": round(max((r["t1"] - r["t0"] for r in runs(["static" if (seen[i] != "raw" and not moving[i]) else "x" for i in range(n)], a.fps) if r["state"] == "static"), default=0), 2)}
+    relevance = content_relevance(plan, a.transcript)
     sec = lambda xs, k: round(xs.count(k) / a.fps, 2)
     tgt = planner.COVERAGE_TARGET; dur = n / a.fps
     raw_runs = [r for r in runs(seen, a.fps) if r["state"] == "raw"]
@@ -91,7 +119,11 @@ def main(argv=None):
     if m["template_coverage"] < tgt["template"]: issues.append(("WARN", f"template coverage {m['template_coverage']:.0%} < target {tgt['template']:.0%}"))
     if m["longest_raw_s"] > tgt["max_raw_s"]: issues.append(("WARN", f"longest raw stretch {m['longest_raw_s']} s > {tgt['max_raw_s']} s"))
     verdict = "FAIL" if any(s == "FAIL" for s, _ in issues) else "WARN" if issues else "PASS"
-    rep = {"schema": "eva-visual-coverage/1", "verdict": verdict, "issues": [{"severity": s, "text": t} for s, t in issues], "visual": m,
+    if motion["longest_static_s"] > 4: issues.append(("WARN", f"{motion['longest_static_s']} s with nothing moving on screen"))
+    if relevance and relevance["mean_relevance"] < .7: issues.append(("WARN", f"card text relevance {relevance['mean_relevance']:.0%} (words not spoken near the card)"))
+    if relevance and relevance["keyword_only_cards"] > len(relevance["cards"]) / 2: issues.append(("WARN", f"{relevance['keyword_only_cards']}/{len(relevance['cards'])} cards are single keywords, not storytelling"))
+    verdict = "FAIL" if any(s == "FAIL" for s, _ in issues) else "WARN" if issues else "PASS"
+    rep = {"schema": "eva-visual-coverage/1", "verdict": verdict, "motion": motion, "content": relevance, "issues": [{"severity": s, "text": t} for s, t in issues], "visual": m,
            "planned": {k: pt[k] for k in ("meaningful_coverage", "template_coverage", "meaningful_s", "template_static_s", "raw_s", "longest_raw_s")},
            "targets": tgt, "templates": {"selected": pt["templates_selected"], "used": pt["templates_used"], "dropped": pt["templates_dropped"]},
            "per_template": pt["per_template"], "planned_segments": pt["runs"], "seen_segments": runs(seen, a.fps),
@@ -103,7 +135,11 @@ def main(argv=None):
          f"| Meaningful editing (card / infographic) | {pt['meaningful_coverage']:.0%} | {m['meaningful_coverage']:.0%} |",
          f"| Template coverage (any template look) | {pt['template_coverage']:.0%} | {m['template_coverage']:.0%} |",
          f"| Raw footage + captions | {pt['raw_s']} s | {m['raw_s']} s |", f"| Longest raw stretch | {pt['longest_raw_s']} s | {m['longest_raw_s']} s |",
-         f"| Unexplained raw (render fell back) | – | {m['unexplained_raw_s']} s |", "",
+         f"| Unexplained raw (render fell back) | – | {m['unexplained_raw_s']} s |",
+         f"| Motion / animation (edited time with something moving) | – | {motion['motion_coverage']:.0%} ({motion['animated_s']} s) |",
+         f"| Longest stretch with nothing moving | – | {motion['longest_static_s']} s |",
+         f"| Card text spoken near the card (content relevance) | {relevance['mean_relevance']:.0%} |  |" if relevance else "| Content relevance | not run (no transcript) | |",
+         f"| Keyword-only cards | {relevance['keyword_only_cards']} of {len(relevance['cards'])} |  |" if relevance else "", "",
          f"Templates selected {pt['templates_selected']} · used {pt['templates_used']} · dropped {pt['templates_dropped'] or 'none'}", "",
          "| Template | seconds | card | template only | raw |", "|---|---|---|---|---|"]
     L += [f"| {t} | {v['seconds']} | {v['card_s']} | {v['template_s']} | {v['raw_s']} |" for t, v in pt["per_template"].items()]
@@ -124,6 +160,8 @@ def main(argv=None):
     for i, t in enumerate(arr[:secs]): img.paste(Image.fromarray(t), (i * tw2, 60))
     g.text((4, 64 + th2 + 8), "violet = card (meaningful) · orange = template look only · grey = raw footage + captions · thumbnails 1/s", fill="black")
     img.save(d / "timeline.png")
+    print(f"motion {motion['motion_coverage']:.0%} of edited time, longest static {motion['longest_static_s']} s; "
+          + (f"relevance {relevance['mean_relevance']:.0%}, keyword-only {relevance['keyword_only_cards']}/{len(relevance['cards'])}" if relevance else "relevance not run"))
     print(f"visual QA {verdict}: meaningful {m['meaningful_coverage']:.0%} (plan {pt['meaningful_coverage']:.0%}), template {m['template_coverage']:.0%}, "
           f"raw {m['raw_s']} s, longest raw {m['longest_raw_s']} s, unexplained raw {m['unexplained_raw_s']} s, dropped {pt['templates_dropped']}")
     return 0

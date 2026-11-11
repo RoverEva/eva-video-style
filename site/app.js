@@ -247,7 +247,23 @@
         : T("This preview costs {cost} credits and you have {credits}. Top up: $9.99 = 100 credits.", qv);
       $("#go").textContent = ME.free_left > 0 ? T("Make my free preview") : T("Make preview · {cost} credits", { cost: q.preview });
     }
-    header().then(costLine); input.addEventListener("change", costLine);
+    // short clip + many styles: say so before anything is charged, and offer to use fewer (nothing is dropped silently)
+    const MIN_STYLE_S = 3;
+    async function styleFit() {
+      const box = $("#styleFit"); if (!box) return true;
+      const auto = $("[name=tplauto]").checked, tpls = [...document.querySelectorAll("[name=tpl]:checked")];
+      const d = file ? await duration(file) : null;
+      const fit = d ? Math.max(1, Math.floor(d / MIN_STYLE_S)) : 99;
+      if (auto || !d || tpls.length <= fit) { box.hidden = true; box.replaceChildren(); return true; }
+      box.hidden = false;
+      const keep = el("button", { type: "button", class: "btn ghost", text: T("Use the first {n}", { n: fit }) });
+      keep.onclick = () => { tpls.slice(fit).forEach(x => x.checked = false); styleFit(); };
+      box.replaceChildren(el("p", { text: T("Your {d}-second clip fits up to {n} styles (about {m} s each). You picked {k}. Choose fewer styles, or upload a longer clip.",
+        { d: Math.round(d), n: fit, m: MIN_STYLE_S, k: tpls.length }) }), keep);
+      return false;
+    }
+    tc.addEventListener("change", styleFit);
+    header().then(costLine); input.addEventListener("change", costLine); input.addEventListener("change", styleFit);
     ["dragover", "dragenter"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
     ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
     drop.addEventListener("drop", e => pick(e.dataTransfer.files[0]));
@@ -267,6 +283,7 @@
       if (d && d > 30.5) return msg(T("This video is {n} seconds long. The limit is 30 seconds.", { n: Math.round(d) }), true);
       const auto = $("[name=tplauto]").checked, tpls = [...document.querySelectorAll("[name=tpl]:checked")].map(x => x.value);
       if (!auto && !tpls.length) return msg("Choose a visual style, or Let us choose.", true);
+      if (!(await styleFit())) return msg(T("Too many styles for this clip. Choose fewer, then try again."), true);
       const music = $("[name=music]:checked").value, tracks = [...document.querySelectorAll("[name=track]:checked")].map(x => x.value);
       if (music === "track" && !tracks.length) return msg("Choose at least one track, or pick AI Auto Mix.", true);
       const opts = { aspect: $("[name=aspect]:checked").value, templates: tpls, template_mode: auto ? "auto" : tpls.length > 1 ? "multi" : "single", music, music_tracks: tracks };
@@ -379,7 +396,7 @@
           sub.textContent = T("{title} · version {n} · {tpl}. Full HD {w}×{h}.{until} Downloading again is free.", { title: v.project_title || "", n: v.n, tpl, w: (v.report || {}).width, h: (v.report || {}).height, until });
         } else {
           h1.textContent = T("Preview {n} is ready", { n: v.n });
-          sub.textContent = T("{title} · {tpl}. First 10 seconds with a watermark.{until}", { title: v.project_title || "", tpl, until });
+          sub.textContent = T("{title} · {tpl}. Full length, 720p, with a watermark.{until}", { title: v.project_title || "", tpl, until });
         }
         show(v.video_url, land, () => setProgress(vid, 100, { playable: true, label: "ready" }));
         setProgress(vid, 99, { playable, label: "ready", note: playable ? "" : "Loading…" }); stageList([]);

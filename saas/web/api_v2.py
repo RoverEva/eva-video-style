@@ -65,6 +65,7 @@ SPAWN_TIMEOUT = float(os.environ.get("EVA_SPAWN_TIMEOUT", "20"))   # seconds to 
 _SPAWNER = ThreadPoolExecutor(4, thread_name_prefix="spawn")
 
 
+PREVIEW_SECONDS = int(os.environ.get("EVA_PREVIEW_SECONDS", "30"))   # full-length watermarked 720p preview (Eva, 2026-11-11; was 10)
 MIN_SECTION_S = float(os.environ.get("EVA_MIN_SECTION_S", "3.0"))   # = planner.MIN_SECTION_S
 
 
@@ -87,7 +88,7 @@ class Accounts:
         if music not in ("none", "track", "mix"): raise ValueError("bad music option")
         if music == "track" and not 1 <= len(tracks) <= 3: raise ValueError("Choose one to three music tracks.")
         return {"aspect": aspect, "templates": (tpls[:1] if mode == "single" else tpls) or ["T17"], "template_mode": mode, "music": music,
-                "music_tracks": tracks[:3], "preview_seconds": 10}
+                "music_tracks": tracks[:3], "preview_seconds": PREVIEW_SECONDS}
 
     def urls(self, v):
         out = {}

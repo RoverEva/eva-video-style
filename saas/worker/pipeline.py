@@ -12,9 +12,9 @@ Stages are separate commands so a cloud runner can fan the render chunks out ove
     pipeline.py run     INPUT.mp4 JOB_DIR [--options o.json] [--preview] [--workers N]   everything, locally
 
 options (JSON): {"aspect": "9:16|16:9", "templates": ["T17","T20"], "template_mode": "single|multi|auto",
-                 "music": "auto|manual|mix|none", "music_tracks": [], "paid": false, "preview_seconds": 10}
+                 "music": "auto|manual|mix|none", "music_tracks": [], "paid": false, "preview_seconds": 30}
 Input: any orientation (portrait phone video or landscape), ≤ 30 s, ≤ 200 MB, with speech.
-Outputs in JOB_DIR/out: final.mp4 (1080x1920 or 1920x1080, 30 fps) or preview.mp4 (watermarked 720p, ≤ 10 s), captions.srt, report.json.
+Outputs in JOB_DIR/out: final.mp4 (1080x1920 or 1920x1080, 30 fps) or preview.mp4 (watermarked 720p, full length ≤ 30 s), captions.srt, report.json.
 Exit codes: 2 input rejected (message in report.json), 3 stage failed (retryable), 0 ok.
 """
 import argparse, json, os, resource, shutil, subprocess, sys, time
@@ -27,7 +27,7 @@ CFG = HERE.parent / "config"
 FPS, CHUNK_S = 30, 10.0
 LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
 TRACKS = Path(os.environ.get("EVA_TRACKS", HERE.parent / "music/tracks"))   # composed by saas/music/compose.py (rights-cleared)
-DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 10}
+DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 30}
 SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}
 PREVIEW = {"9:16": (720, 1280), "16:9": (1280, 720)}
 PY = sys.executable
@@ -327,9 +327,10 @@ def finish(jd, preview=False):
         cov_dir = J.d / "out/coverage"; full = J.d / "out" / ("preview_hd.mp4" if preview else "final.mp4")
         try:
             sh([PY, HERE / "visual_qa.py", full, J.d / "src.mp4", J.d / "plan.json", cov_dir, "--aspect", o.get("aspect", "16:9"),
-                "--selected", ",".join(o["templates"]) if o.get("template_mode") == "multi" else ""], J.log)
+                "--selected", ",".join(o["templates"]) if o.get("template_mode") == "multi" else "", "--transcript", J.d / "srt/talk.transcript.js"], J.log)
             c = json.loads((cov_dir / "coverage.json").read_text())
-            report["coverage"] = {"verdict": c["verdict"], **c["visual"], "templates": c["templates"], "issues": c["issues"]}
+            report["coverage"] = {"verdict": c["verdict"], **c["visual"], "motion": c["motion"], "content": {k: v for k, v in (c["content"] or {}).items() if k != "cards"},
+                                  "templates": c["templates"], "issues": c["issues"]}
             if c["verdict"] != "PASS": report.setdefault("warnings", []).extend(i["text"] for i in c["issues"])
         except Exception as e:   # the coverage check must not lose a finished render; the gap is reported instead
             report["coverage"] = {"verdict": "NOT_RUN", "error": f"{type(e).__name__}: {e}"[:200]}

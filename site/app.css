@@ -513,3 +513,5 @@ footer a { color: var(--ink-2); margin-right: 18px; }
 @media (max-width: 880px) { :lang(zh-CN) .hero h1 { font-size: clamp(30px, 8vw, 44px); } }
 :lang(zh-CN) .how-head h2 { letter-spacing: 0; }
 .wipe-hint .wipe-note { display: inline-block; margin-top: 4px; font-size: 12.5px; color: var(--ink-3, #8a86a3); }
+.style-fit { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: #fff6e5; color: #6b4a00; font-size: 14px; }
+.style-fit p { margin: 0; flex: 1 1 260px; }

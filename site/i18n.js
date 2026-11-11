@@ -53,6 +53,8 @@
     "Listen": "试听", "Stop": "停止", "Full preview": "完整预览", "Close": "关闭", "Template preview": "模板预览",
     "Play the {name} demo": "播放 {name} 示例", "{name} template": "{name} 模板", "{ar} preview coming soon": "{ar} 预览即将上线", "▶ 5 s": "▶ 5 秒",
     "Choose up to three tracks.": "最多选择 3 首曲目。",
+    "Use the first {n}": "只用前 {n} 种", "Too many styles for this clip. Choose fewer, then try again.": "这个视频放不下这么多风格。请少选几种后再试。",
+    "Your {d}-second clip fits up to {n} styles (about {m} s each). You picked {k}. Choose fewer styles, or upload a longer clip.": "你的 {d} 秒视频最多适合 {n} 种风格（每种约 {m} 秒），你选了 {k} 种。请少选几种，或上传更长的视频。",
     "Your first 3 previews are free. Sign in when you're ready.": "前 3 次预览免费。准备好后再登录即可。",
     "This preview is free ({free} of 3 free previews left). Full HD export: {hd} credits.": "本次预览免费（免费预览剩余 {free}/3 次）。全高清导出：{hd} 点。",
     "This preview costs {cost} credits (you have {credits}). Full HD export: {hd} credits.": "本次预览需 {cost} 点（你有 {credits} 点）。全高清导出：{hd} 点。",
@@ -90,7 +92,7 @@
     "Nothing was charged: free previews and credits were returned.": "没有扣费：免费次数和点数均已退回。", "Not available": "不可用", "Back to My Videos": "返回我的视频",
     "Your HD video is ready": "你的高清视频已完成",
     "{title} · version {n} · {tpl}. Full HD {w}×{h}.{until} Downloading again is free.": "{title} · 版本 {n} · {tpl}。全高清 {w}×{h}。{until}再次下载免费。",
-    "Preview {n} is ready": "预览 {n} 已完成", "{title} · {tpl}. First 10 seconds with a watermark.{until}": "{title} · {tpl}。前 10 秒，带水印。{until}",
+    "Preview {n} is ready": "预览 {n} 已完成", "{title} · {tpl}. Full length, 720p, with a watermark.{until}": "{title} · {tpl}。完整长度，720p，带水印。{until}",
     "Loading…": "加载中…", "Download HD": "下载高清版", "Play HD": "播放高清版", "HD export in progress…": "高清导出进行中…",
     "Export this version in full 1080p for {cost} credits? You have {credits}; {left} will be left. If the export fails, the credits come back.": "用 {cost} 点把这个版本导出为全高清 1080p？你有 {credits} 点，导出后剩 {left} 点。如果导出失败，点数会退回。",
     "Exporting costs {cost} credits and you have {credits}.": "导出需要 {cost} 点，你有 {credits} 点。", "Export for {cost} credits": "用 {cost} 点导出", "Top up first": "先充值",
@@ -202,6 +204,7 @@
     [/^This preview costs (\d+) credits and you have (\d+)\. Top up to continue\.$/, "本次预览需 $1 点，你有 $2 点。请充值后继续。"],
     [/^HD export costs (\d+) credits and you have (\d+)\. Top up to continue\.$/, "高清导出需 $1 点，你有 $2 点。请充值后继续。"],
     [/^Request failed \((\d+)\)$/, "请求失败（$1）"],
+    [/^This (\d+)-second video fits up to (\d+) templates? \(about (\d+) s each\)\. Choose up to \d+, or upload a longer clip\.$/, "这个 $1 秒的视频最多适合 $2 个模板（每个约 $3 秒）。请少选几个，或上传更长的视频。"],
   ];
 
   const fill = (s, v) => v ? s.replace(/\{(\w+)\}/g, (m, k) => (v[k] === undefined || v[k] === null) ? "" : String(v[k])) : s;

@@ -1,7 +1,7 @@
 """EVA Video Studio · everything that runs in the cloud, on Modal (no local machine involved).
 
   api            ASGI web API for the website (saas/web/api.py): uploads, previews, Stripe Checkout + webhook, job status
-  render_job     one order render (preview ≤ 10 s watermarked, or the paid full HD): prepare → chunks in parallel → finish
+  render_job     one order render (preview: full length (≤ 30 s), 720p, watermarked, or the paid full HD): prepare → chunks in parallel → finish
   prepare / render_chunk / finish   the stages (saas/worker/pipeline.py), each with retries; finished stages are skipped
   reconcile      every 10 min: paid renders that failed or went silent are retried once, then refunded automatically
   cleanup        daily: job working folders on the volume older than 2 days are removed (R2 lifecycle deletes media)
@@ -154,7 +154,7 @@ def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
         if p["rc"] == 2:
             put(state="rejected", stage="rejected", reason=p["rejected"])
         else:
-            n = len(p["chunks"]); idx = [i for i, (a, b) in enumerate(p["chunks"]) if a < opts.get("preview_seconds", 10)] if preview else list(range(n))
+            n = len(p["chunks"]); idx = [i for i, (a, b) in enumerate(p["chunks"]) if a < opts.get("preview_seconds", 30)] if preview else list(range(n))
             counters[progress.key(job, kind, "meta")] = {"chunks": idx, "t": time.time()}   # render progress denominator
             put(stage="rendering", chunks=len(idx))
             renders = list(render_chunk.starmap([(job, i, kind) for i in idx]))
@@ -187,7 +187,7 @@ def render_version(kind: str, vid: str):
     job = f"{v['project_id']}/v{v['n']}"; retain = int(os.environ.get("EVA_PREVIEW_DAYS" if preview else "EVA_HD_DAYS", 30 if preview else 90))
     canceled = lambda: (D.rpc("eva_version", version_id=vid) or {}).get("status") == "canceled"
     try:
-        opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=10)
+        opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=int(os.environ.get("EVA_PREVIEW_SECONDS", "30")))
         ver = {"vid": vid, "pid": v["project_id"], "upload_key": v["upload_key"], "plan_from": None if preview else v["source_version"]}
         import stripe_lite
         if (v.get("project_title") or "").startswith("e2e-fail") and stripe_lite.mode() == "test":
