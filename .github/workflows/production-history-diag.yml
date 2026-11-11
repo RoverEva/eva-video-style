@@ -1,0 +1,47 @@
+# READ-ONLY diagnosis of GET /api/v2/history (HTTP 500 in run 42966271735). Repeats exactly the request the API makes
+# (PostgREST GET /rest/v1/ledger with the service-role key) and prints only the HTTP status and PostgREST error code /
+# message, never rows, keys or URLs. Then checks table privileges in a read-only database session.
+# Changes nothing: no deploy, no migration, no writes.
+name: production · history endpoint diagnosis (read-only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/production-history-diag.yml]
+permissions: { contents: read }
+jobs:
+  diag:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - name: The API's ledger request (status + error only)
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request, urllib.error
+          u = "".join(os.environ["SUPABASE_URL"].split()).rstrip("/"); k = "".join(os.environ["SUPABASE_SERVICE_ROLE_KEY"].split())
+          h = {"apikey": k, "Authorization": f"Bearer {k}"}
+          for name, path in (("ledger table (what /history uses)", "/rest/v1/ledger?select=kind&limit=0"),):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(u + path, headers=h), timeout=30) as r: print(f"{name}: HTTP {r.status} OK")
+              except urllib.error.HTTPError as e:
+                  b = e.read().decode(errors="replace")
+                  try: j = json.loads(b); b = {x: j.get(x) for x in ("code", "message", "hint", "details")}
+                  except Exception: b = b[:200]
+                  print(f"{name}: HTTP {e.code} {b}")
+          EOF
+      - name: Table privileges (read-only session)
+        run: |
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -At -F ' | ' -c "
+            select 'service_role select on ledger', has_table_privilege('service_role', 'public.ledger', 'select')
+            union all select 'authenticated select on ledger (must be false)', has_table_privilege('authenticated', 'public.ledger', 'select')
+            union all select 'anon select on ledger (must be false)', has_table_privilege('anon', 'public.ledger', 'select')
+            union all select 'service_role execute eva_account', has_function_privilege('service_role', 'public.eva_account(jsonb)', 'execute')
+            union all select 'ledger rls enabled', relrowsecurity from pg_class where oid = 'public.ledger'::regclass
+            union all select 'ledger owner = ' || pg_get_userbyid(relowner), true from pg_class where oid = 'public.ledger'::regclass;"
