@@ -1,0 +1,78 @@
+# READ-ONLY diagnosis of recent multi-template renders (Eva's test: 5 templates, ~2 s of visible template effect).
+# For the latest non-test previews/HD exports with 2+ selected templates it prints: selected options (API), the saved
+# plan (planner source, sections + templates, cards + on-screen times, rejected beats), the render report and QA verdict,
+# and a computed visual-coverage timeline (time with a template card/look vs full-bleed presenter + captions).
+# Reads Supabase (read-only session) and R2 (GET only). No emails, keys or signed URLs are printed. Changes nothing.
+name: production · render quality diagnosis (read-only)
+on:
+  workflow_dispatch:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/production-render-diag.yml]
+permissions: { contents: read }
+jobs:
+  diag:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 15
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET || 'eva-video-studio' }}
+      ANTHROPIC_SET: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-psql
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with: { python-version: "3.12" }
+      - name: Planner configuration
+        run: |
+          echo "ANTHROPIC_API_KEY present in the production environment: $ANTHROPIC_SET (no key means EVA_USE_LLM unset, so the heuristic planner)"
+      - name: Recent multi-template renders (read-only)
+        run: |
+          pip install -q "boto3~=1.35"
+          PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -At -c "
+            select json_agg(x) from (
+              select v.id, v.kind, v.n, v.status, v.source_version, v.options, v.report, v.cost,
+                     v.qa->>'status' qa_status, to_char(v.created_at at time zone 'utc', 'MM-DD HH24:MI') created,
+                     p.id project, p.duration_s, left(md5(v.user_id::text), 6) user_hash
+                from versions v join projects p on p.id = v.project_id join accounts a on a.user_id = v.user_id
+               where a.email not like 'e2e-%' and a.email not like 'staging-%' and v.created_at > now() - interval '7 days'
+                 and v.status = 'done' and jsonb_array_length(coalesce(v.options->'templates', '[]')) >= 2
+               order by v.created_at desc limit 6) x" > versions.json
+          python3 - <<'EOF'
+          import json, os, boto3
+          rows = json.loads(open("versions.json").read() or "null") or []
+          print(f"{len(rows)} recent multi-template renders (not test accounts)")
+          s3 = boto3.client("s3", endpoint_url=f"https://{os.environ['R2_ACCOUNT_ID'].strip()}.r2.cloudflarestorage.com",
+                            aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"].strip(), aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"].strip(), region_name="auto")
+          B = os.environ["R2_BUCKET"].strip()
+          def get(k):
+              try: return json.loads(s3.get_object(Bucket=B, Key=k)["Body"].read())
+              except Exception as e: return None
+          for v in rows:
+              o = v["options"] or {}; rep = v["report"] or {}
+              print(f"\n=== {v['id']} {v['kind']} v{v['n']} {v['created']} UTC user {v['user_hash']} project {v['project']} ({v['duration_s']} s) QA {v['qa_status']}")
+              print(f"  selected (API): templates={o.get('templates')} mode={o.get('template_mode')} aspect={o.get('aspect')} music={o.get('music')}")
+              print(f"  report: duration={rep.get('duration')} {rep.get('width')}x{rep.get('height')} planner={rep.get('planner')} warnings={rep.get('warnings')}")
+              print(f"  cost: ai_calls={(v['cost'] or {}).get('ai_calls')} asr_cached={(v['cost'] or {}).get('asr_cached')}")
+              plan = get(f"versions/{v['source_version'] or v['id']}/plan.json")
+              if not plan: print("  plan.json: not found"); continue
+              secs, cards, pl = plan.get("sections", []), plan.get("cards", []), plan.get("planner", {})
+              dur = plan.get("end") or rep.get("duration") or v["duration_s"] or 0
+              print(f"  planner: source={pl.get('source')} rejected={len(pl.get('rejected') or [])} usage={pl.get('usage')}")
+              print(f"  sections ({len(secs)}): " + ", ".join(f"{s['template']} {s['t0']:.1f}-{s['t1']:.1f}" for s in secs))
+              used = sorted({s['template'] for s in secs}); dropped = [t for t in (o.get('templates') or []) if t not in used]
+              print(f"  templates used {used}; selected but NOT used: {dropped}")
+              on = 0.0
+              for c in cards:
+                  on += c["t_out"] - c["t_in"]
+                  print(f"    card {c['spec'].get('id')} {c.get('kind')} section {c['section']} ({secs[c['section']]['template']}) {c['t_in']:.2f}-{c['t_out']:.2f} s")
+              for r in (pl.get("rejected") or [])[:8]: print(f"    rejected: {r.get('why')}")
+              print(f"  VISUAL COVERAGE: cards on screen {on:.1f} s of {float(dur):.1f} s = {100 * on / max(float(dur), .1):.0f}% "
+                    f"({'9:16: presenter full-bleed + captions the rest of the time' if o.get('aspect') == '9:16' else '16:9: template window/background the rest of the time'})")
+          EOF
