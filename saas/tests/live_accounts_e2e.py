@@ -119,10 +119,18 @@ def main():
     check("My Account history: grant, charges and refunds listed", hist.status_code == 200 and any(i["type"] == "purchase" for i in items)
           and any(i["status"] == "refunded" for i in items) and call(O, "GET", "/history").status_code == 401, {"status": hist.status_code, "n": len(items)})
     C, _ = signin("c"); projs =[upload(C, f"c{i}")["project"] for i in range(6)]
-    with ThreadPoolExecutor(6) as ex: res = list(ex.map(lambda pid: call(C, "POST", f"/projects/{pid}/previews", json=OPTS), projs))
-    started = [x.json()["version"] for x in res if x.status_code == 200]
+    def start(pid):   # a response lost in transit (seen once: server 200 in 0.5 s, client ReadTimeout) is reconciled below
+        try: return call(C, "POST", f"/projects/{pid}/previews", json=OPTS)
+        except requests.RequestException as e: return e
+    with ThreadPoolExecutor(6) as ex: res = list(ex.map(start, projs))
+    codes = [x.status_code if hasattr(x, "status_code") else type(x).__name__ for x in res]
+    lib = call(C, "GET", "/library").json()["projects"]   # server truth: which of the 6 projects actually started a preview
+    started = [v["id"] for pr in lib if pr["id"] in projs for v in pr.get("versions", [])]
+    E["parallel_6"] = {"codes": codes, "server_started": len(started), "lost_responses": sum(not isinstance(c, int) for c in codes)}
     for vid in started: call(C, "POST", f"/versions/{vid}/cancel")
-    time.sleep(5); check("6 parallel previews → exactly 3 free starts; cancels release them", len(started) == 3 and call(C, "GET", "/me").json()["free_left"] == 3, [x.status_code for x in res])
+    time.sleep(5)
+    check("6 parallel previews → exactly 3 free starts (server state); cancels release them",
+          len(started) == 3 and codes.count(200) + codes.count(402) + E["parallel_6"]["lost_responses"] == 6 and call(C, "GET", "/me").json()["free_left"] == 3, E["parallel_6"])
     d = call(A, "POST", f"/versions/{v2}/delete").json(); check("delete removes files", d["ok"] and requests.get(u).status_code in (403, 404), d)
     E["ok"] = True
 
