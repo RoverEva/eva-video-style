@@ -100,13 +100,15 @@
   function wipe(box, demo, opts = {}) {
     box.innerHTML = ""; box.classList.toggle("landscape", !!opts.landscape);
     if (!demo || !demo.ready) { box.append(el("div", { class: "soon", text: demo ? T("{title} example coming soon", { title: demo.title }) : "" })); return; }
-    const a = el("video", { src: demo.before, muted: "", playsinline: "", loop: "", preload: "auto", "aria-label": "Raw upload" });
-    const b = el("video", { src: demo.after, playsinline: "", loop: "", preload: "auto", class: "after", "aria-label": "Edited video" });
+    const sc = opts.showcase;   // style-showcase montage on the right: own clip, loops independently, always muted
+    const a = el("video", { src: demo.before, muted: "", playsinline: "", loop: "", preload: "auto", "aria-label": T("Raw upload") });
+    const b = el("video", { src: sc || demo.after, muted: "", playsinline: "", loop: "", preload: "auto", class: "after", "aria-label": T(sc ? "Montage of EVA editing styles" : "Edited video") });
     a.muted = true; b.muted = true;
     const knob = el("button", { class: "knob", type: "button", "aria-label": "Move the comparison divider", text: "⇆" });
     const bar = el("div", { class: "bar" }, [knob]);
     const sound = el("button", { class: "tag l", type: "button", text: "Sound off", "aria-pressed": "false" });
-    box.append(a, b, bar, sound, el("span", { class: "tag raw", text: "Raw" }), el("span", { class: "tag r", text: "Edited" }));
+    box.append(a, b, bar, ...(sc ? [] : [sound]), el("span", { class: "tag raw", text: "Raw" }), el("span", { class: "tag r", text: sc ? "Style Showcase" : "Edited" }));
+    if (sc) box.classList.add("showcase");
     const mute = () => { b.muted = true; sound.textContent = "Sound off"; sound.setAttribute("aria-pressed", "false"); };
     box._mute = mute; WIPES.add(box);
     let split = 50; const set = v => { split = Math.max(0, Math.min(100, v)); box.style.setProperty("--split", split + "%"); }; set(50);
@@ -118,8 +120,7 @@
       if (!b.muted) return mute();
       WIPES.forEach(x => x !== box && (x.isConnected ? x._mute() : WIPES.delete(x)));   // one comparison with sound at a time
       b.muted = false; sound.textContent = "Sound on"; sound.setAttribute("aria-pressed", "true"); b.play().catch(() => {}); });
-    const sync = () => { if (Math.abs(a.currentTime - b.currentTime) > .12) a.currentTime = b.currentTime; };
-    b.addEventListener("timeupdate", sync);
+    if (!sc) b.addEventListener("timeupdate", () => { if (Math.abs(a.currentTime - b.currentTime) > .12) a.currentTime = b.currentTime; });
     const start = () => { a.play().catch(() => {}); b.play().catch(() => {}); };
     new IntersectionObserver(es => es.forEach(x => x.isIntersecting ? start() : (a.pause(), b.pause()))).observe(box);
   }
@@ -151,8 +152,10 @@
     let demos = cfg.demos || [];
     const byId = id => demos.find(d => d.id === id), hero = cfg.hero || {};
     // hero: both formats at once, each Raw upload next to the edit rendered from that same upload
-    if ($("#heroV")) wipe($("#heroV"), byId(hero.vertical) || demos.find(d => d.ready && !d.hero_only));
-    if ($("#heroH")) wipe($("#heroH"), byId(hero.horizontal), { landscape: true });
+    // right side = the approved style-showcase montage when demos.json lists one (else the single-template edit)
+    const shc = hero.showcase || {};
+    if ($("#heroV")) wipe($("#heroV"), byId(hero.vertical) || demos.find(d => d.ready && !d.hero_only), { showcase: shc.vertical });
+    if ($("#heroH")) wipe($("#heroH"), byId(hero.horizontal), { landscape: true, showcase: shc.horizontal });
     howGallery();
 
     // template chips (multi-select) + "let us choose"

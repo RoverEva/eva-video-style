@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Homepage hero + brand in a real browser: both Before/After comparisons at once (9:16 phone frame, 16:9 landscape frame),
-frame aspect == video aspect (no stretch/crop), each pair is Raw→Edit of the same upload (demos.json), both play,
-slider moves, one comparison has sound at a time; header logo keeps its proportions; /favicon.ico is the tab icon;
+frame aspect == video aspect (no stretch/crop), Raw upload left, Eva's style-showcase montage right (demos.json
+hero.showcase), both play muted and loop independently, slider moves, Preview Only note; header logo keeps its proportions; /favicon.ico is the tab icon;
 desktop side by side, phone stacked, no horizontal overflow.   python3 saas/tests/browser_hero.py SITE OUT_DIR
 """
 import sys
@@ -25,8 +25,12 @@ with sync_playwright() as p:
                  return {{ box: r.width / r.height, vids: v.map(x => [x.videoWidth, x.videoHeight, x.currentTime, x.getAttribute('src')]) }} }}""")
             ok = len(r["vids"]) == 2 and all(w and abs(w / h - want) < .01 for w, h, _, _ in r["vids"]) and abs(r["box"] - want) < .01
             check(ok, f"{name} {fid}: frame {r['box']:.4f} = video aspect {want:.4f}, Raw + Edit {[(w, h) for w, h, _, _ in r['vids']]}")
-            srcs = [s for *_, s in r["vids"]]
-            check(len(srcs) == 2 and srcs[0].rsplit("/", 1)[0] == srcs[1].rsplit("/", 1)[0], f"{name} {fid}: Raw and Edit from the same upload ({srcs})")
+            srcs = [s for *_, s in r["vids"]]   # right side = Eva's approved style-showcase montage (demos/showcase/), Raw unchanged
+            check(len(srcs) == 2 and srcs[0].endswith("/before.mp4") and srcs[1] == ("demos/showcase/styles-9x16.mp4" if fid == "heroV" else "demos/showcase/styles-16x9.mp4"),
+                  f"{name} {fid}: Raw upload left, Style Showcase montage right ({srcs})")
+            tags = pg.eval_on_selector_all(f"#{fid} .tag", "x => x.map(t => t.textContent)")
+            check(tags == ["Raw", "Style Showcase"], f"{name} {fid}: labels {tags}, no sound button")
+            check(pg.evaluate(f"[...document.querySelectorAll('#{fid} video')].every(v => v.muted && v.loop)"), f"{name} {fid}: both muted and looping")
             check(all(t > .1 for _, _, t, _ in r["vids"]), f"{name} {fid}: both play ({[round(t, 2) for _, _, t, _ in r['vids']]})")
         if name == "desktop":
             v, h = pg.locator("#heroV").bounding_box(), pg.locator("#heroH").bounding_box()
@@ -34,9 +38,10 @@ with sync_playwright() as p:
             box = h; pg.mouse.move(box["x"] + box["width"] * .5, box["y"] + box["height"] * .5); pg.mouse.down()
             pg.mouse.move(box["x"] + box["width"] * .25, box["y"] + box["height"] * .5); pg.mouse.up()
             check(pg.evaluate("getComputedStyle(document.getElementById('heroH')).getPropertyValue('--split').trim()").startswith("2"), "16:9 slider drags")
-            pg.click("#heroV .tag.l"); pg.click("#heroH .tag.l"); pg.wait_for_timeout(300)
-            m = pg.evaluate("() => ['heroV', 'heroH'].map(i => document.querySelector('#' + i + ' video.after').muted)")
-            check(m == [True, False], f"sound on one comparison mutes the other (muted V,H = {m})")
+            t0 = pg.evaluate("[...document.querySelectorAll('#heroH video')].map(v => v.currentTime)"); pg.wait_for_timeout(5600)
+            t1 = pg.evaluate("[...document.querySelectorAll('#heroH video')].map(v => v.currentTime)")
+            check(t1[0] != t1[1], f"Raw (5.06 s) and Style Showcase (8.3 s) loop independently ({[round(x, 2) for x in t0]} → {[round(x, 2) for x in t1]})")
+            check("Preview Only" in pg.text_content(".wipe-hint"), "hint explains the montage and that some styles are Preview Only")
             logo = pg.evaluate("() => { const i = document.querySelector('.logo img'); return [i.naturalWidth / i.naturalHeight, i.clientWidth / i.clientHeight, i.currentSrc.split('/').pop()] }")
             check(abs(logo[0] - logo[1]) < .02, f"header logo keeps its proportions ({logo[1]:.3f} vs {logo[0]:.3f}, {logo[2]})")
             ico = pg.evaluate("() => [...document.querySelectorAll('link[rel~=icon]')].map(l => l.getAttribute('href'))")

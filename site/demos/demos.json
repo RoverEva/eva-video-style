@@ -35,6 +35,11 @@
  ],
  "hero": {
   "vertical": "education",
-  "horizontal": "horizontal"
+  "horizontal": "horizontal",
+  "showcase": {
+   "vertical": "demos/showcase/styles-9x16.mp4",
+   "horizontal": "demos/showcase/styles-16x9.mp4",
+   "_note": "Right side of the hero = Eva's approved style-showcase montages (2026-11-11). Remove this block to roll back to the single-template edits (demos/<id>/after.mp4, kept unchanged)."
+  }
  }
 }

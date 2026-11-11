@@ -28,7 +28,9 @@
     "Upload a video": "上传视频", "Vertical · 9:16": "竖屏 · 9:16", "Horizontal · 16:9": "横屏 · 16:9",
     "Drag a handle to compare each raw upload with its edit.": "拖动中间的滑块，对比原始视频和剪辑后的效果。",
     "Raw": "原片", "Edited": "成片", "Sound off": "声音关", "Sound on": "声音开", "Raw upload": "原始视频", "Edited video": "剪辑后的视频",
-    "Move the comparison divider": "移动对比分割线", "{title} example coming soon": "{title} 示例即将上线",
+    "Move the comparison divider": "移动对比分割线", "Style Showcase": "风格展示", "Montage of EVA editing styles": "EVA 多种剪辑风格混剪",
+    "Left: a raw phone clip. Right: a montage of different EVA editing styles. Drag the handle to compare.": "左侧：手机拍摄的原片。右侧：EVA 多种剪辑风格的混剪。拖动滑块进行对比。",
+    "Some styles shown are Preview Only and not yet available for online rendering.": "部分展示的风格为“仅预览”，暂不支持在线生成。", "{title} example coming soon": "{title} 示例即将上线",
     // How EVA works
     "How EVA works": "EVA 如何工作", "Three steps from your phone video to a finished, edited short.": "三步，把手机视频变成剪辑好的短视频成片。",
     "Upload a video": "上传视频", "MP4 or MOV, up to 30 seconds, with you speaking.": "MP4 或 MOV，最长 30 秒，画面中是你在讲话。",
