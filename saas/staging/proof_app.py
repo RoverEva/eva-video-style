@@ -69,7 +69,7 @@ def render(run: str, templates: str, aspects: str = "16:9,9:16", instructions: s
             of = base / tag / "opts.json"; of.write_text(json.dumps(opts)); t = time.time(); r = {}
             try: r["rc"] = pipeline.main(["run", str(src), str(wd), "--options", str(of), "--workers", "4"])
             except SystemExit as e: r["rc"] = e.code
-            except Exception as e: r["rc"] = -1; r["error"] = type(e).__name__
+            except Exception as e: r["rc"] = -1; r["error"] = type(e).__name__ + ": " + str(e).split("(")[0].split(":")[0][:90]   # no transcript text
             r["render_wall_s"] = round(time.time() - t, 1)
             plan = json.loads((wd / "plan.json").read_text()) if (wd / "plan.json").exists() else {}
             pl = plan.get("planner") or {}
