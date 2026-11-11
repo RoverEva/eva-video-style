@@ -22,14 +22,14 @@ jobs:
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       API_URL: https://eva-cyber-ai--eva-api.us-east.modal.run
-      RUN_TAG: b5b70017
+      RUN_TAG: df3bb315   # run 43030409603: 6 parallel previews, one timed out at 13:51:41 UTC
     steps:
       - name: Database — what run b5b70017 left behind (read-only session)
         run: |
           sudo apt-get install -y -qq postgresql-client >/dev/null
           Q() { PGOPTIONS="-c default_transaction_read_only=on" psql "$(printf %s "$SUPABASE_DB_URL" | tr -d '[:space:]')" -v ON_ERROR_STOP=1 -P pager=off -c "$1"; }
           Q "with u as (select user_id, right(split_part(email, '@', 1), 1) as who from accounts where email like 'e2e-${RUN_TAG}-%')
-             select u.who, v.n, v.kind, v.status, v.charge, to_char(v.created_at at time zone 'utc', 'HH24:MI:SS') created,
+             select u.who, v.id, v.n, v.kind, v.status, v.charge, to_char(v.created_at at time zone 'utc', 'HH24:MI:SS') created,
                     to_char(v.finished_at at time zone 'utc', 'HH24:MI:SS') finished, left(coalesce(v.error, ''), 80) error,
                     (v.deleted_at is not null) deleted, p.title
                from versions v join u using (user_id) join projects p on p.id = v.project_id order by v.created_at"
@@ -52,9 +52,10 @@ jobs:
           modal app list 2>&1 | grep -iE 'eva-video-studio|App ID|state' | head -5 || true
           modal container list 2>&1 | head -20 || true
           modal app logs --help 2>&1 | sed -n '1,30p'
-          ( timeout 40 modal app logs eva-video-studio --timestamps 2>&1 || true ) > logs.txt
+          ( timeout 90 modal app logs eva-video-studio --timestamps --since 4h --tail 20000 2>&1 || true ) > logs.txt
           echo "log lines captured: $(wc -l < logs.txt)"
-          grep -nEi 'Traceback|Timeout|timed out|AsyncUsage|blocking|Error|exceeded|/previews|cold|Runner|terminated|preempt' logs.txt | cut -c1-260 | head -80 || true
+          grep -nEi 'Traceback|Timeout|timed out|Error|exceeded|/previews|render start|api (GET|POST)|history unavailable|terminated|preempt|Exception|File "' logs.txt | grep -v AsyncUsage | cut -c1-300 | head -150 || true
+          echo '--- 13:51–13:53 UTC'; grep -E '13:5[0-3]:' logs.txt | grep -v -E 'AsyncUsage|modal.com/docs|Suggested rewrite|Original line|await \.\.\.|try: return|^\S+ \S+ *$|performance issues' | cut -c1-300 | head -150 || true
           echo "--- last 60 lines"; tail -60 logs.txt | cut -c1-260
       - name: Latency probe (public endpoints only)
         run: |
