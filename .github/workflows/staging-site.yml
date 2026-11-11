@@ -7,15 +7,15 @@ name: staging · site (Vercel staging project)
 on:
   workflow_dispatch: {}
   push:
-    branches: [feat/gallery-pricing]
+    branches: [release/v1-launch]
     paths: [site/**, saas/tests/browser_templates.py, saas/tests/staging_shots.py, saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
 permissions: { contents: write }   # only to push review screenshots to the staging-previews branch
 jobs:
   site:
-    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/gallery-pricing'
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/release/v1-launch'
     runs-on: ubuntu-latest
     environment: staging
-    timeout-minutes: 10
+    timeout-minutes: 25
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_SCOPE: ${{ secrets.VERCEL_SCOPE }}
@@ -46,14 +46,20 @@ jobs:
         run: |
           pip install -q "playwright~=1.48" && python -m playwright install --with-deps chromium >/dev/null
           python saas/tests/browser_staging_login.py
-      - name: Gallery + Plans on staging (browser checks)
+      - name: Homepage on staging — logo, favicon, 9:16 + 16:9 demos, phone layout (browser checks)
+        if: always()
+        env: { SITE: "${{ steps.deploy.outputs.site }}" }
+        run: python saas/tests/browser_hero.py "$SITE" /tmp/hero
+      - name: Gallery + Pricing on staging (browser checks)
+        if: always()
         env: { SITE: "${{ steps.deploy.outputs.site }}" }
         run: python saas/tests/browser_templates.py "$SITE"
       - name: Review screenshots → branch staging-previews (PNG only, no code)
         if: always()
         env: { SITE: "${{ steps.deploy.outputs.site }}", GH_TOKEN: "${{ github.token }}" }
         run: |
-          python saas/tests/staging_shots.py "$SITE" /tmp/shots || exit 0
+          python saas/tests/staging_shots.py "$SITE" /tmp/shots || true
+          ls /tmp/shots/*.png >/dev/null 2>&1 || exit 0
           cd /tmp/shots && git init -q && git checkout -q -b staging-previews && git add *.png
           git -c user.name=eva-staging-bot -c user.email=eva-staging-bot@users.noreply.github.com commit -qm "Staging previews of ${GITHUB_SHA::7} (run ${{ github.run_id }})"
           git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" staging-previews
