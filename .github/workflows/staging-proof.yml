@@ -4,6 +4,7 @@
 # aggregate numbers (model id, tokens, cost, coverage, verdicts, file names). The production app is not touched.
 # Containers: fetch + publish get only R2 access; render (Opus planning + rendering) gets only the staging Anthropic key.
 # Needs: Modal secret `eva-anthropic-staging` in the Modal environment `staging` (verified by run 43106311583).
+# First attempt 43108986887: Opus ping OK, stopped in fetch (wrong source key; fixed in the dev code).
 name: staging · Opus 5.5 proof render (Modal, private outputs)
 on:
   push:
@@ -17,18 +18,32 @@ jobs:
     environment: production   # holds the Modal token; the render itself only gets eva-r2 + eva-anthropic-staging
     timeout-minutes: 75
     env:
+      # PUBLIC key only: the 48 h download links are encrypted with it, so this public log carries ciphertext; the private
+      # key exists only in Claude's session and is never committed or printed.
+      EVA_LINKS_PUBKEY: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEApFeMUBy6cgHuZyNd8cLU
+        JAZr1wXogQXxnnSWV1Tgk/svVNJkgGzmdehvOqmldKlst3axaXzl+zGz1hN/pA4u
+        sBS5Gfe+9ltklvQrdptUIKqBLKV3aYLL42Fi3zZM54chJzQvAwfJOcA2uib3KVeo
+        bT9MVYvbog0Caxd7hLbRO1MRrqUNWL9dxzBle6bRZ1bVy/9cOW4pXEOZu4Ede7/i
+        kkcgib1u+CZtADaMplYpeyYqRZmycZWeYo3fTr9m3IM+ZIYDBzOitb3fxtQi7MVW
+        yjDg90tVgTTv4F+npdb1Marc0/AYoSn7EqdQlnW7XUb3AHX/saqhKAX1cI0Yj/Vg
+        AKXHXlBkbvFQDVWbdeqGtcMMJev0Aoomtwr4lLYskdwIeC+V29Tve3DThqOIznOE
+        4/9XC0DYazdxToKA4URWbVjqaIywKS6EoMML8NUko1FGVX9+bEzVdoSBFzCxXC3G
+        /wosYkvwxLxYRsYiWXlSrA0f9QrsxAC/8CrZB+Ve1KLhAgMBAAE=
+        -----END PUBLIC KEY-----
       MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with: { persist-credentials: false, ref: 22625a009cea74e73b6393efb841eeb9d1235b0d }   # pinned dev commit on feat/render-coverage (not the production branch)
+        with: { persist-credentials: false, ref: a3fb1fcfd4d84028a56f5203edd80135a18304d6 }   # pinned dev commit on feat/render-coverage (not the production branch)
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
       - name: Proof render (aggregate results only)
         run: |
-          pip install -q "modal~=1.0"
+          pip install -q "modal~=1.0" "boto3~=1.35"   # boto3 only so remote storage errors can be decoded
           git log -1 --format='dev code: %h %s'
           # Modal environment `staging` (ephemeral app, nothing deployed); the R2 secret is read from `main`, as the secret check showed
           EVA_ANTHROPIC_SECRET_ENV=staging EVA_R2_SECRET_ENV=main modal run -q --env staging saas/staging/proof_app.py > out.txt 2>&1 || true
-          grep -E '^(PING|FETCH|PUBLISH|PROOF) ' out.txt | tee result.txt || true
+          grep -E '^(PING|FETCH|PUBLISH|PROOF|LINKS) ' out.txt | tee result.txt || true
           grep -q '^PROOF ' result.txt || { grep -oE '^[A-Za-z_.]*(Error|Exception)\b' out.txt | sort | uniq -c | sed 's/^/error type: /'; echo "::error::proof run failed before producing a summary (details in Modal, app eva-video-studio-staging)"; exit 1; }
