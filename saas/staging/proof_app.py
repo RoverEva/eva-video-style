@@ -43,12 +43,14 @@ _paths = lambda: [sys.path.insert(0, p) for p in ("/app/saas/worker", "/app/saas
 def fetch(run: str, pid: str, old_vid: str):
     """R2 → private staging volume: ONLY this project's upload, its transcript/face cache and the old preview."""
     _paths(); import store; S = store.from_env(); base = Path(f"/jobs/{run}/in"); (base / "cache/srt").mkdir(parents=True)
-    S.download(f"uploads/{pid}/input.mp4", base / "input.mp4"); got = []
+    src = next((k for k in (f"projects/{pid}/source.mp4", f"uploads/{pid}/input.mp4") if S.size(k)), None)   # v2 projects keep the source at projects/<pid>/source.mp4
+    if not src: return {"error": "source video not found in R2 (expired or wrong project id)"}
+    S.download(src, base / "input.mp4"); got = []
     for f in CACHE:
         if S.size(f"projects/{pid}/cache/{f}"): S.download(f"projects/{pid}/cache/{f}", base / "cache" / f); got.append(f)
     try: S.download(f"versions/{old_vid}/video.mp4", base / "old_preview.mp4")
     except Exception: pass
-    vol.commit(); return {"cache": got, "old_preview": (base / "old_preview.mp4").exists()}
+    vol.commit(); return {"source": src.split("/")[-1], "cache": got, "old_preview": (base / "old_preview.mp4").exists()}
 
 
 @app.function(image=image, volumes={"/jobs": vol}, secrets=[ANTHROPIC_SECRET], **LIMITS)
@@ -129,6 +131,29 @@ def ping():   # smallest real Claude Opus 5.5 call: proves the key, the model id
                                     "reply_ok": "ready" in json.dumps(j.get("content")).lower()}
 
 
+LINK_IMAGE = modal.Image.debian_slim(python_version="3.12").pip_install("boto3==1.35.90", "cryptography==44.0.0")
+
+
+@app.function(image=LINK_IMAGE, secrets=[R2_SECRET], timeout=120)
+def links(run: str, pubkey_pem: str, hours: int = 48):
+    """Private, temporary download links: presigned GET URLs (expire after `hours`) for every file of the run, ENCRYPTED with
+    a public key (RSA-OAEP + AES-256-GCM). Only the holder of the private key (Claude's session, never the repo or the log)
+    can read them; the public log shows ciphertext only."""
+    import base64, boto3
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    c = boto3.client("s3", endpoint_url=f"https://{os.environ['R2_ACCOUNT_ID'].strip()}.r2.cloudflarestorage.com", region_name="auto",
+                     aws_access_key_id=os.environ["R2_ACCESS_KEY_ID"].strip(), aws_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"].strip())
+    b = (os.environ.get("R2_BUCKET") or "eva-video-studio").strip(); pre = f"staging/proofs/{run}/"
+    keys = [o["Key"] for o in c.list_objects_v2(Bucket=b, Prefix=pre).get("Contents", [])]
+    urls = {k[len(pre):]: c.generate_presigned_url("get_object", Params={"Bucket": b, "Key": k, "ResponseContentDisposition": "inline"}, ExpiresIn=hours * 3600) for k in keys}
+    data = json.dumps({"run": run, "expires_h": hours, "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "urls": urls}).encode()
+    k, n = AESGCM.generate_key(256), os.urandom(12)
+    ek = serialization.load_pem_public_key(pubkey_pem.encode()).encrypt(k, padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
+    return {"files": len(urls), "ek": base64.b64encode(ek).decode(), "nonce": base64.b64encode(n).decode(), "ct": base64.b64encode(AESGCM(k).encrypt(n, data, None)).decode()}
+
+
 @app.function(image=modal.Image.debian_slim(), secrets=[ANTHROPIC_SECRET], timeout=60)
 def check_anthropic():   # configuration check only: no API call, the key is never returned or printed
     k = os.environ.get("ANTHROPIC_API_KEY", ""); other = sorted(n for n in os.environ if any(w in n.upper() for w in ("STRIPE", "SUPABASE", "R2_", "RESEND", "SMTP", "DATABASE")))
@@ -142,12 +167,17 @@ def check_r2():
 
 
 @app.local_entrypoint()
-def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False):
+def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False, links_only: str = ""):
+    if links_only:   # new temporary links for an existing run (old ones expired)
+        print("LINKS", json.dumps(links.remote(links_only, os.environ["EVA_LINKS_PUBKEY"]))); return
     if check_only:
         print("CHECK", json.dumps({"render_secrets": ["eva-anthropic-staging"], "fetch_publish_secrets": ["eva-r2"], "anthropic": check_anthropic.remote(), "r2": check_r2.remote()})); return
     if not skip_ping: print("PING", json.dumps(ping.remote()))
     run = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
-    print("FETCH", json.dumps(fetch.remote(run, pid, old_vid)))
+    f = fetch.remote(run, pid, old_vid); print("FETCH", json.dumps(f))
+    if f.get("error"): return
     res = render.remote(run, templates, aspects)
     print("PUBLISH", json.dumps(publish.remote(run)))
     print("PROOF", json.dumps(res))
+    pk = os.environ.get("EVA_LINKS_PUBKEY", "")
+    if pk: print("LINKS", json.dumps(links.remote(run, pk)))
