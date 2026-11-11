@@ -6,6 +6,44 @@
 >
 > Includes `EVA-Core.zip`, 23 individual template ZIPs, [`SHA256SUMS`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/SHA256SUMS) and [`download-manifest.json`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/download-manifest.json).
 
+![Eva Video Style: 21 templates in 8 seconds](docs/montage.gif)
+
+## Demos
+
+Every demo is the same 15-second self-introduction by an AI-generated presenter, edited in a different template, so you can compare styles line by line.
+
+- **Demo reel** (a different template on every line): [English](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Demo_Reel_EN.mp4) · [Chinese + English](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Demo_Reel_CN-EN.mp4)
+- **Music montages**: [all 21 templates](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Montage.mp4) · [10-template cut](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Video_Style_Montage_2.mp4)
+
+[![The 22 templates](docs/templates.jpg)](references/templates.md)
+
+| ID | Template | Demo | Demo |
+|---|---|---|---|
+| T01 | Acid Lime Kinetic | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T01_AcidLimeKinetic_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T01_AcidLimeKinetic_CN-EN.mp4) |
+| T02 | Electric Blue Console | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T02_ElectricBlueConsole_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T02_ElectricBlueConsole_CN-EN.mp4) |
+| T03 | Dark 3D Stage | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T03_Dark3DStage_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T03_Dark3DStage_CN-EN.mp4) |
+| T04 | Paper | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T04_Paper_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T04_Paper_CN-EN.mp4) |
+| T05 | Red Sunburst | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T05_RedSunburst_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T05_RedSunburst_CN-EN.mp4) |
+| T06 | Brand Purple | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T06_BrandPurple_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T06_BrandPurple_CN-EN.mp4) |
+| T07 | Cartoon Eva | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T07_CartoonEva_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T07_CartoonEva_CN-EN.mp4) |
+| T08 | Neon Explainer | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T08_NeonExplainer_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T08_NeonExplainer_CN-EN.mp4) |
+| T09 | Showcase Wall Opener | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T09_ShowcaseWall_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T09_ShowcaseWall_CN-EN.mp4) |
+| T10 | HUD Keynote | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T10_HUDKeynote_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T10_HUDKeynote_CN-EN.mp4) |
+| T11 | HUD Dashboard | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T11_HUDDashboard_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T11_HUDDashboard_CN-EN.mp4) |
+| T12 | Old Newspaper | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T12_OldNewspaper_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T12_OldNewspaper_CN-EN.mp4) |
+| T13 | Tech Blue | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T13_TechBlue_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T13_TechBlue_CN-EN.mp4) |
+| T14 | Future Style | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T14_FutureStyle_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T14_FutureStyle_CN-EN.mp4) |
+| T15 | Learning Style | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T15_LearningStyle_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T15_LearningStyle_CN-EN.mp4) |
+| T16 | Comic Pop | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T16_ComicPop_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T16_ComicPop_CN-EN.mp4) |
+| T17 | Science Network | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T17_ScienceNetwork_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T17_ScienceNetwork_CN-EN.mp4) |
+| T19 | Footage Intro | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T19_FootageIntro_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T19_FootageIntro_CN-EN.mp4) |
+| T20 | Fast-Paced Social Media | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T20_FastPacedSocial_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T20_FastPacedSocial_CN-EN.mp4) |
+| T21 | Clean & Minimal | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T21_CleanMinimal_CN-EN.mp4) |
+| T23 | Creative Pop | [EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_EN.mp4) | [CN + EN](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T23_CreativePop_CN-EN.mp4) |
+| T24 | Luxury Nude Motion | 5-second sample: [video](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/Eva_Template_T24_LuxuryNude.mp4) | [frames](references/templates.md#t24--luxury-nude-motion) |
+
+> The Demo section above is the original showcase and is preserved unchanged, including its historical template counts and presentation. The official v1.0.0 installable package inventory contains the 23 templates listed below.
+
 ```text
 Install EVA Core once
         ↓
@@ -29,9 +67,9 @@ The v1.0.0 workflow is local and source-only. It does not require an EVA Video S
 
 The release scope is T01–T07, T09–T17, T19–T21, T23–T24 and T26–T27. T08, T25 and T28 are excluded; T18 and T22 are retired and their IDs are not reused.
 
-## Released templates
+## v1.0.0 installable templates
 
-Existing public frame previews are linked where they are available. The source-only v1.0.0 Release does not contain demo MP4 assets; no original demo video or image was regenerated, deleted or overwritten for this README update.
+This table is the current modular package inventory. The original showcase above remains unchanged, and no demo video or image was regenerated, deleted or overwritten.
 
 | ID | Template | Formats | Existing preview | Package |
 |---|---|---|---|---|
