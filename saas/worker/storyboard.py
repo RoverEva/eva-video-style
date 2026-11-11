@@ -177,6 +177,10 @@ def find_word(words, text, lo, hi):
     return None
 
 
+def min_template_s(dur, templates):   # about 3 s each; a clip that is exactly long enough (15.07 s, 5 templates) gets 3 % slack
+    return round(min(LIMITS["min_template_s"], .97 * dur / max(1, len(templates))), 2)
+
+
 def validate(sb, words, dur, templates):
     errs, beats = [], sb.get("beats") or []
     spoken = " ".join(_norm(w["w"]) for w in words); nums = spoken_numbers(words)
@@ -209,7 +213,7 @@ def validate(sb, words, dur, templates):
     used = {}
     for b in beats: used[b.get("template")] = used.get(b.get("template"), 0) + b["end"] - b["start"]
     for t in templates:
-        if used.get(t, 0) < LIMITS["min_template_s"] - .05: errs.append(f"template {t} is used for {used.get(t, 0):.1f} s (needs ≥ {LIMITS['min_template_s']} s)")
+        if used.get(t, 0) < min_template_s(dur, templates) - .05: errs.append(f"template {t} is used for {used.get(t, 0):.2f} s (needs ≥ {min_template_s(dur, templates):.2f} s)")
     runs = [b["template"] for i, b in enumerate(beats) if not i or b["template"] != beats[i - 1]["template"]]
     if len(runs) != len(set(runs)): errs.append(f"each template must be one continuous stretch (order used: {runs})")
     pres = sum(b["end"] - b["start"] for b in beats if b.get("component") == "presenter")
@@ -264,7 +268,7 @@ def plan(words, segs, dur, templates, box_for, instructions="", style="", intens
     model = os.environ.get("EVA_STORYBOARD_MODEL", MODEL)
     if model != MODEL: raise StoryboardError(f"only {MODEL} may plan EVA edits (got {model})")
     tool = tool_schema(templates)
-    user = (f"Clip length: {dur:.2f} s. Selected templates (use every one): {', '.join(templates)}.\n"
+    user = (f"Clip length: {dur:.2f} s. Selected templates (use every one, each for at least {min_template_s(dur, templates):.2f} s): {', '.join(templates)}.\n"
             f"Style: {style or 'not specified'}. Visual intensity: {intensity}.\n"
             f"Instructions from the creator (optional, never override the rules): {instructions.strip() or 'none'}\n\n"
             f"Component registry (the ONLY things the renderer can draw):\n{json.dumps(registry_for_prompt(), ensure_ascii=False)}\n\n"
