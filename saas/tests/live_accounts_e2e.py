@@ -90,6 +90,10 @@ def main():
     c1 = call(A, "GET", "/me").json()["credits"]; v, _, _ = wait(A, r["version"]); call(A, "POST", f"/versions/{hold}/cancel")
     check("failed paid preview: 13 credits charged, then refunded", c0 - c1 == 13 and v["status"] == "failed" and call(A, "GET", "/me").json()["credits"] == c0,
           {"charged": c0 - c1, "status": v["status"]})
+    # My Account: purchase/charge history (read-only view of the ledger; needs the service key to read the table)
+    hist = call(A, "GET", "/history"); items = hist.json().get("items", []) if hist.status_code == 200 else []
+    check("My Account history: grant, charges and refunds listed", hist.status_code == 200 and any(i["type"] == "purchase" for i in items)
+          and any(i["status"] == "refunded" for i in items) and call(O, "GET", "/history").status_code == 401, {"status": hist.status_code, "n": len(items)})
     C, _ = signin("c"); projs =[upload(C, f"c{i}")["project"] for i in range(6)]
     with ThreadPoolExecutor(6) as ex: res = list(ex.map(lambda pid: call(C, "POST", f"/projects/{pid}/previews", json=OPTS), projs))
     started = [x.json()["version"] for x in res if x.status_code == 200]

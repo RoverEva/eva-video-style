@@ -1,7 +1,16 @@
 # Consolidated release: accounts, credits, My Videos, QA, launch templates (branch `feat/saas-accounts`)
 
 Status: **staging-verified (real Modal runtime, isolated `staging` environment); NOT deployed to production.** Live site
-unchanged (last approved deploy = commit `7428bb0` on `feat/mvp-launch`). Production deploy only after Eva's explicit approval.
+unchanged. **Correction (2026-11-10 audit): production runs commit `194f956`** — the last successful `mvp-deploy` run (Nov 7); the runs for `4c0af1d` (cancelled) and `7428bb0` never deployed. Production deploy only after Eva's explicit approval.
+
+
+## v1 launch release (2026-11-10) — branch `release/v1-launch`
+Scope: accounts + credits release, plus the approved site refresh (logo, favicon, dual-format hero, account menu, My Account,
+My Videos grid), Template Gallery (25 shown, only T01/T02/T17/T21/T23 renderable) and the public one-time $9.99 Pricing page.
+Left out: subscriptions (internal plans concept removed from this build), 31–60 s videos (`feat/long-video`), modular Core,
+live Stripe. Release = fast-forward `feat/mvp-launch` to this branch → `mvp-deploy` waits for Eva's approval.
+Rollback: Vercel → Deployments → promote the previous production deployment (instant) + `modal app rollback eva-video-studio`
+(or reset `feat/mvp-launch` to `194f956` and re-run the deploy). Migration 001 is additive; the old site ignores its tables.
 
 ## 2026-11-08 additions (this consolidation)
 - **QA face fixes — 40/40 QA tests under OpenCV Haar (the image's detector; was 37/40) and under scikit-image LBP.**
@@ -145,7 +154,7 @@ changes if one is wrong.
 6. Approval to release = fast-forward `feat/mvp-launch` to `feat/saas-accounts`; the deploy then waits for your approval
    in the `production` environment and runs: tests → Supabase preflight → migration 001 (permanent, additive) → Modal →
    Vercel → Stripe webhook → R2 checks → live account test (sign-in, 3 free previews, credits, HD, My Videos, Stripe TEST
-   Checkout session). Rollback: re-point `feat/mvp-launch` to 7428bb0 and re-run the deploy (migration 001 is additive).
+   Checkout session). Rollback: re-point `feat/mvp-launch` to 194f956 and re-run the deploy (migration 001 is additive).
 
 ## What's in it
 - Progress page (real 0–100 %, waveform, stages, regenerate) — commit 4c0af1d, never deployed.
@@ -208,6 +217,6 @@ changes if one is wrong.
 
 ## Rollback
 - Site: Vercel → Deployments → previous production deployment → Promote (instant).
-- API/workers: `modal app rollback eva-video-studio` (previous version), or re-deploy commit `7428bb0` (reset `feat/mvp-launch` to it and approve the deploy).
+- API/workers: `modal app rollback eva-video-studio` (previous version), or re-deploy commit `194f956` (reset `feat/mvp-launch` to it and approve the deploy).
 - Database: nothing to undo (additive; old code ignores it). `saas/db/rollback_001.sql` only if no real data exists.
 - Data: no existing accounts or balances (none existed); anonymous orders and their files are untouched.
