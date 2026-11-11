@@ -4,7 +4,7 @@
 #    versions (status, timestamps), reservations (held/captured/released), ledger rows. No emails or keys printed.
 # 3. Latency probe of public endpoints (health, gallery): 20 timed requests each (cold vs warm).
 # Changes nothing: no deploy, no migration, no writes.
-name: production · API timeout diagnosis (read-only)
+name: production · API timeout diagnosis (read-only)   # psql via setup-psql (no apt)
 on:
   workflow_dispatch:
   push:
@@ -55,7 +55,7 @@ jobs:
           modal app list 2>&1 | grep -iE 'eva-video-studio|App ID|state' | head -5 || true
           modal container list 2>&1 | head -20 || true
           modal app logs --help 2>&1 | sed -n '1,30p'
-          ( timeout 90 modal app logs eva-video-studio --timestamps --since 4h --tail 20000 2>&1 || true ) > logs.txt
+          ( timeout 90 modal app logs eva-video-studio --timestamps --since 6h --tail 50000 2>&1 || true ) > logs.txt
           echo "log lines captured: $(wc -l < logs.txt)"
           grep -nEi 'Traceback|Timeout|timed out|Error|exceeded|/previews|render start|api (GET|POST)|history unavailable|terminated|preempt|Exception|File "' logs.txt | grep -v AsyncUsage | cut -c1-300 | head -150 || true
           echo '--- 13:51–13:53 UTC'; grep -E '13:5[0-3]:' logs.txt | grep -v -E 'AsyncUsage|modal.com/docs|Suggested rewrite|Original line|await \.\.\.|try: return|^\S+ \S+ *$|performance issues' | cut -c1-300 | head -150 || true
