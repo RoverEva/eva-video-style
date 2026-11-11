@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
   push:
     branches: [release/v1-launch]
-    paths: [site/**, saas/tests/browser_templates.py, saas/tests/browser_hero.py, saas/tests/browser_i18n.py, saas/tests/staging_shots.py, saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
+    paths: [site/**, saas/tests/browser_templates.py, saas/tests/browser_hero.py, saas/tests/browser_i18n.py, saas/tests/browser_cjk_glyphs.py, saas/tools/build_cjk_font.py, saas/tests/staging_shots.py, saas/tests/browser_staging_login.py, .github/workflows/staging-site.yml]
 permissions: { contents: write }   # only to push review screenshots to the staging-previews branch
 jobs:
   site:
@@ -60,6 +60,12 @@ jobs:
         if: always()
         env: { SITE: "${{ steps.deploy.outputs.site }}" }
         run: python saas/tests/browser_i18n.py "$SITE"
+      - name: Chinese glyphs on staging — no □ boxes, even without system Chinese fonts (canvas glyph check)
+        if: always()
+        env: { SITE: "${{ steps.deploy.outputs.site }}" }
+        run: |
+          pip install -q "fonttools~=4.55" && python saas/tools/build_cjk_font.py --check
+          python saas/tests/browser_cjk_glyphs.py "$SITE" --shots cjk-shots
       - name: Review screenshots → branch staging-previews (PNG only, no code)
         if: always()
         env: { SITE: "${{ steps.deploy.outputs.site }}", GH_TOKEN: "${{ github.token }}" }

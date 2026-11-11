@@ -263,6 +263,11 @@
     const a = nav.querySelector(".acct"); a ? nav.insertBefore(box, a) : nav.append(box);
   }
   document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+  if (lang === "zh") {   // Chinese fonts: preload the site subset (EVA SC, app.css) and add Google's sliced Noto Sans SC as the last
+    const add = (rel, href, extra) => { const l = document.createElement("link"); l.rel = rel; l.href = href; Object.assign(l, extra || {}); document.head.append(l); };
+    add("preload", "fonts/eva-sc-400.woff", { as: "font", type: "font/woff", crossOrigin: "anonymous" });   // web fallback for any other character
+    add("stylesheet", "https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap");
+  }
   window.I18N = { lang, t, msg, apply, set, locale: lang === "zh" ? "zh-CN" : undefined };
   const boot = () => { switcher(); apply(); watch(); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();

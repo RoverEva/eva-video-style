@@ -1,9 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap");
+@font-face { font-family: "EVA SC"; font-style: normal; font-weight: 100 550; font-display: swap; src: url("fonts/eva-sc-400.woff") format("woff");
+  unicode-range: U+3000-303F, U+3400-9FFF, U+FF00-FFEF; }
+@font-face { font-family: "EVA SC"; font-style: normal; font-weight: 551 900; font-display: swap; src: url("fonts/eva-sc-700.woff") format("woff");
+  unicode-range: U+3000-303F, U+3400-9FFF, U+FF00-FFEF; }
 
 :root {
   --cobalt: #1f4fe0; --cobalt-deep: #173cb0; --ink: #101a3d; --ink-2: #44506f; --paper: #f4f6fb; --white: #ffffff;
   --lilac: #ece7fb; --mint: #2fd9ae; --line: #d9deeb; --warn: #b4232c;
-  --display: "Bricolage Grotesque", system-ui, sans-serif; --body: "Figtree", system-ui, sans-serif;
+  /* Chinese: EVA SC (self-hosted Noto Sans SC subset, CJK-only unicode-range, so English pages never download it), then the
+     device's Chinese fonts, then Google's Noto Sans SC (loaded by i18n.js in 简体中文 only). Latin text keeps Bricolage / Figtree. */
+  --cjk: "EVA SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei";
+  --display: "Bricolage Grotesque", var(--cjk), system-ui, sans-serif; --body: "Figtree", var(--cjk), system-ui, sans-serif;
   --r-phone: 34px; --r-ctl: 12px;
 }
 * { box-sizing: border-box; }
