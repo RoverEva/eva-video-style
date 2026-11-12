@@ -1,0 +1,81 @@
+# Publish the open-source EVA Video Style v1.0.1 Release (Eva approved 2026-11-11). Runs only after approval.
+# Builds EVA-Core.zip from the merged release-source commit (codex/v1.0-source-only-rc @ 4e7a4db, PR #3),
+# verifies it byte-for-byte against the committed SHA256SUMS, copies the 23 unchanged template ZIPs from v1.0.0,
+# verifies all 24 checksums, smoke-installs Core + T03, creates tag v1.0.1 + the Release, then re-downloads and
+# re-verifies every asset. v1.0.0 (tag and assets) is never modified. No secrets other than GITHUB_TOKEN are used.
+name: open source · publish EVA Video Style v1.0.1
+on:
+  push:
+    branches: [feat/mvp-launch]
+    paths: [.github/workflows/publish-eva-style-v1.0.1.yml]
+permissions: { contents: write }
+jobs:
+  publish:
+    if: github.repository == 'RoverEva/eva-video-style' && github.ref == 'refs/heads/feat/mvp-launch'
+    runs-on: ubuntu-24.04
+    environment: production   # approval gate only; no environment secret is read
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SRC: 4e7a4db2039a098608642b98a56186397dd12fc7
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with: { persist-credentials: false, ref: 4e7a4db2039a098608642b98a56186397dd12fc7, path: src }
+      - name: Verify the release source
+        working-directory: src
+        run: |
+          test "$(git rev-parse HEAD)" = "$SRC"
+          sha256sum -c --quiet SOURCE_MANIFEST.sha256 && sha256sum -c --quiet EVA-Core/checksums.sha256
+          grep -q '"version": "1.0.1"' EVA-Core/core.json
+          grep -q 'LIMITS = {"min_seconds": 3.0}' EVA-Core/core/pipeline.py
+          if grep -rIliE 'anthropic|claude-opus|ANTHROPIC_API_KEY' EVA-Core README.md templates; then echo "::error::model/API dependency found"; exit 1; fi
+          echo "source OK: Core 1.0.1, no fixed duration cap, no Anthropic dependency"
+      - name: Build and verify all 24 assets
+        run: |
+          mkdir assets && cd src && python3 -B - <<'PY'
+          import sys; from pathlib import Path
+          sys.path.insert(0, "EVA-Core/tools/packages"); import package_common as P
+          files = {str(p): p.read_bytes() for p in sorted(Path("EVA-Core").rglob("*")) if p.is_file() and "__pycache__" not in p.parts}
+          P.write_zip(Path("../assets/EVA-Core.zip"), files); print(P.verify_checksums(Path("../assets/EVA-Core.zip")))
+          PY
+          cp SHA256SUMS download-manifest.json ../assets/ && cd ../assets
+          gh release download v1.0.0 -R "$GITHUB_REPOSITORY" -p 'T??-1.0.0.zip'
+          sha256sum -c SHA256SUMS
+          test "$(grep -c . SHA256SUMS)" = 24 && test "$(ls *.zip | wc -l)" = 24
+          python3 -c "import json,hashlib; m=json.load(open('download-manifest.json')); assert m['core']['version']=='1.0.1' and m['core']['sha256']==hashlib.sha256(open('EVA-Core.zip','rb').read()).hexdigest(); print('manifest OK')"
+      - name: Smoke install (Core 1.0.1 + T03 1.0.0)
+        run: |
+          python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" install-core assets/EVA-Core.zip > /dev/null
+          python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" install-template assets/T03-1.0.0.zip --id T03 --version 1.0.0 > /dev/null
+          python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" list | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['core']['version']=='1.0.1' and d['templates'][0]['id']=='T03'; print('install OK')"
+      - name: Create tag v1.0.1 and the Release
+        run: |
+          cat > notes.md <<'MD'
+          ## EVA Core 1.0.1: no fixed duration limit
+
+          Use **EVA Core + one or more templates + your own video** to produce a complete edited video, locally.
+
+          - **Whole input:** EVA Core edits the complete video (minimum 3 seconds), with no fixed duration or file-size cap. Transcription (or your SRT), planning, the 10-second chunked render with global timestamps, continuous audio and captions, and QA all cover the source through to its ending. Core 1.0.0 wrongly enforced the hosted EVA Video Studio launch limits (30.5 s, 200 MB).
+          - **No model requirement:** the basic workflow needs no Anthropic API key and no specific Claude model. The Content Planner runs locally.
+          - **Optional host policy:** `--max-seconds` / `--max-bytes`, default no limit. An over-limit input is rejected before any work; nothing is cropped, sped up or summarised.
+          - **Preview:** `--preview-seconds` is no longer capped at 30. The final render is always full length.
+          - **New regression test:** `EVA-Core/core/tests/test_duration.py`, using synthetic media only. A 45 s input renders to 45.00 s, with audio and captions to the ending.
+
+          ### Assets
+          - **`EVA-Core.zip` 1.0.1:** built deterministically from `codex/v1.0-source-only-rc` @ 4e7a4db. sha256 `5c8bd576edd85b49d074feae9c82cb5b1669ba895d629075363977d210b7be53`.
+          - **The 23 template ZIPs:** unchanged from v1.0.0 and compatible (`core >=1.0.0 <2.0.0`).
+          - **Checksums:** `SHA256SUMS` and `download-manifest.json` updated.
+
+          The historical **v1.0.0** tag and its assets are unchanged.
+          MD
+          if gh release view v1.0.1 -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "::error::v1.0.1 already exists; not overwriting"; exit 1; fi
+          gh release create v1.0.1 assets/* -R "$GITHUB_REPOSITORY" --target "$SRC" --latest \
+            --title "EVA Video Style v1.0.1 — EVA Core 1.0.1 (no fixed duration limit)" --notes-file notes.md
+      - name: Re-download and verify the published assets
+        run: |
+          mkdir check && cd check && gh release download v1.0.1 -R "$GITHUB_REPOSITORY"
+          sha256sum -c SHA256SUMS && cmp download-manifest.json ../assets/download-manifest.json
+          git ls-remote --tags "https://github.com/$GITHUB_REPOSITORY" 'refs/tags/v1.0.1*' | grep -q "^$SRC" && echo "tag v1.0.1 → $SRC"
+          gh release view v1.0.0 -R "$GITHUB_REPOSITORY" --json assets -q '.assets[]|select(.name=="EVA-Core.zip")|.size' | grep -q . && echo "v1.0.0 untouched"
+          gh release view v1.0.1 -R "$GITHUB_REPOSITORY" --json url -q .url
