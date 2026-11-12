@@ -141,7 +141,7 @@ Download Core, the checksum file and your selected template ZIPs. This minimal e
 先下载 Core、校验文件和所需模板 ZIP。以下最小示例安装 T01：
 
 ```sh
-RELEASE_BASE="https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0"
+RELEASE_BASE="https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1"
 curl -LO "$RELEASE_BASE/EVA-Core.zip"
 curl -LO "$RELEASE_BASE/T01-1.0.0.zip"
 curl -LO "$RELEASE_BASE/SHA256SUMS"
@@ -157,9 +157,9 @@ python3 eva-video-style/EVA-Core/tools/packages/install.py \
 
 Linux users may use `sha256sum -c` instead of `shasum -a 256 -c`. Use the verified [`SHA256SUMS`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/SHA256SUMS) and [`download-manifest.json`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/download-manifest.json) for selective downloads.
 
-For virtual environments, locked `eva-asr` setup, dependencies, template removal and editing commands, follow the [complete v1.0.0 installation guide](https://github.com/RoverEva/eva-video-style/blob/v1.0.0/EVA-Core/docs/independent-core.md).
+For virtual environments, locked `eva-asr` setup, dependencies, template removal and editing commands, follow the [complete installation guide](https://github.com/RoverEva/eva-video-style/blob/v1.0.1/EVA-Core/docs/independent-core.md).
 
-完整的虚拟环境、锁定版 ASR、依赖、模板卸载和剪辑命令，请查看 v1.0.0 安装文档。
+完整的虚拟环境、锁定版 ASR、依赖、模板卸载和剪辑命令，请查看安装文档。
 
 ## Architecture | 模块化架构
 
@@ -169,7 +169,7 @@ For virtual environments, locked `eva-asr` setup, dependencies, template removal
 
 Core 负责公共剪辑能力；模板 ZIP 只包含单个风格；Registry 负责模板发现、版本及兼容性检查。模板不会重复打包公共引擎。
 
-See the [Core architecture and usage guide](https://github.com/RoverEva/eva-video-style/blob/v1.0.0/EVA-Core/docs/independent-core.md) for details.
+See the [Core architecture and usage guide](https://github.com/RoverEva/eva-video-style/blob/v1.0.1/EVA-Core/docs/independent-core.md) for details.
 
 ## EVA Video Studio | 在线云端版本
 
