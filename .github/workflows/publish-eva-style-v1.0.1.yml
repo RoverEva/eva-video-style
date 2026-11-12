@@ -1,9 +1,9 @@
-# Publish the open-source EVA Video Style v1.0.1 Release (Eva approved 2026-11-11). Runs only after approval.
-# Takes the verified EVA-Core.zip (branch release-assets/v1.0.1 @ c3e4b7d), proves every member is byte-identical to the
-# merged release source (codex/v1.0-source-only-rc @ 4e7a4db, PR #3) and that its sha256 matches the committed SHA256SUMS, copies the 23 unchanged template ZIPs from v1.0.0,
-# verifies all 24 checksums, smoke-installs Core + T03, creates tag v1.0.1 + the Release, then re-downloads and
-# re-verifies every asset. Also checks that the basic Core + template workflow runs with NO model/provider key
-# (optional AI-assisted workflows, e.g. Opus 5.5 or Codex, stay documented and allowed). v1.0.0 is never modified. No secrets other than GITHUB_TOKEN are used.
+# Publishes the open-source EVA Video Style v1.0.1 Release (Eva approved 2026-11-11). Runs only after approval.
+# Builds EVA-Core.zip reproducibly from the merged release source (codex/v1.0-source-only-rc @ 3755ead, PRs #3 + #5)
+# with build_core.py and requires it to equal the committed SHA256SUMS byte for byte; copies the 23 unchanged
+# template ZIPs from v1.0.0 and verifies all 24 checksums; smoke-installs Core + T03; checks the basic workflow runs
+# with no model/provider key (optional AI-assisted workflows such as Opus 5.5 or Codex stay allowed); creates tag
+# v1.0.1 + the Release; re-downloads and re-verifies every asset. v1.0.0 is never modified. Only GITHUB_TOKEN is used.
 name: open source · publish EVA Video Style v1.0.1
 on:
   push:
@@ -18,13 +18,11 @@ jobs:
     timeout-minutes: 15
     env:
       GH_TOKEN: ${{ github.token }}
-      SRC: 4e7a4db2039a098608642b98a56186397dd12fc7
+      SRC: 3755eade416e4617224109a9febd51afa9ab97b3
       PYTHONDONTWRITEBYTECODE: "1"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with: { persist-credentials: false, ref: 4e7a4db2039a098608642b98a56186397dd12fc7, path: src }
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2  (the verified EVA-Core.zip bytes)
-        with: { persist-credentials: false, ref: c3e4b7dace486ce1a243a60f800ffe2bce4abcde, path: verified }
+        with: { persist-credentials: false, ref: 3755eade416e4617224109a9febd51afa9ab97b3, path: src }
       - name: Verify the release source
         working-directory: src
         run: |
@@ -35,18 +33,8 @@ jobs:
           echo "source OK: Core 1.0.1, no fixed duration cap"
       - name: Build and verify all 24 assets
         run: |
-          # Use the verified bytes (built with zlib-ng like v1.0.0; stock zlib here compresses identical files differently)
-          # and prove they are exactly the release source: same member list, every member byte-identical.
-          mkdir assets && cp verified/EVA-Core.zip assets/ && cd src && python3 -B - <<'PY'
-          import sys, zipfile; from pathlib import Path
-          sys.path.insert(0, "EVA-Core/tools/packages"); import package_common as P
-          z = zipfile.ZipFile("../assets/EVA-Core.zip")
-          src = {str(p): p.read_bytes() for p in sorted(Path("EVA-Core").rglob("*")) if p.is_file() and "__pycache__" not in p.parts}
-          assert sorted(z.namelist()) == sorted(src), "member list differs from the release source"
-          bad = [n for n in src if z.read(n) != src[n]]
-          assert not bad, f"members differ from the release source: {bad[:5]}"
-          print(P.verify_checksums(Path("../assets/EVA-Core.zip")), f"— all {len(src)} members identical to the release source")
-          PY
+          # Canonical, host-independent build (stored members); must equal the committed SHA256SUMS byte for byte
+          mkdir assets && cd src && python3 -B EVA-Core/tools/packages/build_core.py ../assets --check SHA256SUMS
           cp SHA256SUMS download-manifest.json ../assets/ && cd ../assets
           gh release download v1.0.0 -R "$GITHUB_REPOSITORY" -p 'T??-1.0.0.zip'
           sha256sum -c SHA256SUMS
@@ -98,7 +86,7 @@ jobs:
           - **New regression test:** `EVA-Core/core/tests/test_duration.py`, using synthetic media only. A 45 s input renders to 45.00 s, with audio and captions to the ending.
 
           ### Assets
-          - **`EVA-Core.zip` 1.0.1:** built deterministically from `codex/v1.0-source-only-rc` @ 4e7a4db. sha256 `5c8bd576edd85b49d074feae9c82cb5b1669ba895d629075363977d210b7be53`.
+          - **`EVA-Core.zip` 1.0.1:** built deterministically from `codex/v1.0-source-only-rc` @ 3755ead. sha256 `cc801a0656d9ae5fedd49ed2a2d549db50747241f5ef7b789405f9f2e72723b8`, reproducible on any host (stored members; `EVA-Core/tools/packages/build_core.py`).
           - **The 23 template ZIPs:** unchanged from v1.0.0 and compatible (`core >=1.0.0 <2.0.0`).
           - **Checksums:** `SHA256SUMS` and `download-manifest.json` updated.
 
