@@ -2,7 +2,8 @@
 # Builds EVA-Core.zip from the merged release-source commit (codex/v1.0-source-only-rc @ 4e7a4db, PR #3),
 # verifies it byte-for-byte against the committed SHA256SUMS, copies the 23 unchanged template ZIPs from v1.0.0,
 # verifies all 24 checksums, smoke-installs Core + T03, creates tag v1.0.1 + the Release, then re-downloads and
-# re-verifies every asset. v1.0.0 (tag and assets) is never modified. No secrets other than GITHUB_TOKEN are used.
+# re-verifies every asset. Also checks that the basic Core + template workflow runs with NO model/provider key
+# (optional AI-assisted workflows, e.g. Opus 5.5 or Codex, stay documented and allowed). v1.0.0 is never modified. No secrets other than GITHUB_TOKEN are used.
 name: open source · publish EVA Video Style v1.0.1
 on:
   push:
@@ -29,8 +30,7 @@ jobs:
           sha256sum -c --quiet SOURCE_MANIFEST.sha256 && sha256sum -c --quiet EVA-Core/checksums.sha256
           grep -q '"version": "1.0.1"' EVA-Core/core.json
           grep -q 'LIMITS = {"min_seconds": 3.0}' EVA-Core/core/pipeline.py
-          if grep -rIliE 'anthropic|claude-opus|ANTHROPIC_API_KEY' EVA-Core README.md templates; then echo "::error::model/API dependency found"; exit 1; fi
-          echo "source OK: Core 1.0.1, no fixed duration cap, no Anthropic dependency"
+          echo "source OK: Core 1.0.1, no fixed duration cap"
       - name: Build and verify all 24 assets
         run: |
           mkdir assets && cd src && python3 -B - <<'PY'
@@ -49,6 +49,33 @@ jobs:
           python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" install-core assets/EVA-Core.zip > /dev/null
           python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" install-template assets/T03-1.0.0.zip --id T03 --version 1.0.0 > /dev/null
           python3 -B src/EVA-Core/tools/packages/install.py --root "$RUNNER_TEMP/eva/root" list | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['core']['version']=='1.0.1' and d['templates'][0]['id']=='T03'; print('install OK')"
+      - name: Basic workflow needs no model or provider key (installed Core 1.0.1 + T03, empty environment)
+        run: |
+          # Functional check: the basic Core + template workflow (SRT → transcript → local Content Planner) runs with NO
+          # model/provider key and no network-capable env; Core code reads no provider key.
+          set -e
+          ROOT="$RUNNER_TEMP/eva/root"; W="$(mktemp -d)"
+          python3 - "$W" <<'PY'
+          import sys
+          from pathlib import Path
+          d = Path(sys.argv[1]); cues = []
+          for n in range(15):   # 45 s of sentence-sized cues
+              t = .5 + 3 * n; f = lambda x: f"00:00:{int(x):02},{int(round((x % 1) * 1000)):03}"
+              cues.append(f"{n + 1}\n{f(t)} --> {f(t + 2.4)}\nThis is part {n + 1} of a complete talk about editing videos.\n")
+          (d / "talk.srt").write_text("\n".join(cues))
+          PY
+          env -i PATH="$PATH" HOME="$W" PYTHONDONTWRITEBYTECODE=1 python3 -c "import sys; sys.path.insert(0, '$ROOT/EVA-Core/core'); from srt_input import write_outputs; write_outputs('$W/talk.srt', '$W/talk')"
+          env -i PATH="$PATH" HOME="$W" PYTHONDONTWRITEBYTECODE=1 python3 "$ROOT/EVA-Core/core/planner.py" "$W/talk.transcript.js" "$W/job" \
+            --duration 45.5 --install-root "$ROOT" --templates T03 --aspect 9:16 > "$W/planner.log" 2>&1
+          python3 - "$W/job/plan.json" <<'PY'
+          import json, sys
+          p = json.load(open(sys.argv[1])); end = p["sections"][-1]["t1"]
+          assert abs(end - 45.5) < .01, end
+          print(f"planner OK without any API key: source={p['planner']['source']}, {len(p['sections'])} section(s) to {end} s, {len(p.get('cards', []))} cards")
+          PY
+          if grep -rnE 'os\.environ(\.get)?\(?\[?"(ANTHROPIC|OPENAI|GEMINI|GOOGLE_API|CLAUDE)[A-Z_]*' "$ROOT/EVA-Core/core" "$ROOT/EVA-Core/scripts" "$ROOT/EVA-Core/qa"; then
+            echo "::error::Core code reads a model-provider key"; exit 1; fi
+          echo "no provider key is read by Core code (optional AI-assisted workflows in docs are unaffected)"
       - name: Create tag v1.0.1 and the Release
         run: |
           cat > notes.md <<'MD'
