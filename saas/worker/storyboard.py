@@ -20,7 +20,9 @@ API = "https://api.anthropic.com/v1/messages"
 PRICE = {"in": 4.00, "out": 20.00, "cache_read": 0.20, "cache_write": 5.00}   # USD per 1M tokens (Opus 5.5, Nov 2026 — confirm on Anthropic's price page)
 
 
-class StoryboardError(RuntimeError): pass
+class StoryboardError(RuntimeError):
+    """info: machine-readable details for logs/diagnosis — HTTP status, Anthropic error type/message, usage, attempts."""
+    def __init__(self, msg, **info): super().__init__(msg); self.info = info
 
 
 # ───────────────────────── what the renderer can draw (single source of truth) ─────────────────────────
@@ -122,10 +124,13 @@ def call_claude(key, system, user, tool, prior=None, timeout=180):
             body = e.read().decode(errors="replace")[:300]
             if e.code in (429, 500, 502, 503, 504, 529) and n < 3:
                 time.sleep(min(60, float(e.headers.get("retry-after") or 0) or 5 * 2 ** n)); continue
-            raise StoryboardError(f"Anthropic API HTTP {e.code}: {body}")
+            try: err = json.loads(body).get("error") or {}
+            except Exception: err = {}
+            raise StoryboardError(f"Anthropic API HTTP {e.code}: {body}", http_status=e.code, api_error_type=err.get("type"),
+                                  api_error_message=err.get("message") or body[:200], request_id=e.headers.get("request-id"))
         except Exception as e:
             if n < 3 and isinstance(e, (TimeoutError, urllib.error.URLError)): time.sleep(5 * 2 ** n); continue
-            raise StoryboardError(f"Anthropic API unreachable: {type(e).__name__}")
+            raise StoryboardError(f"Anthropic API unreachable: {type(e).__name__}", http_status=None, api_error_type=type(e).__name__)
     use = next((c for c in j.get("content", []) if c.get("type") == "tool_use"), None)
     if not use: raise StoryboardError("Claude returned no storyboard")
     return use, j.get("usage", {}), round(time.time() - t, 1), j
@@ -280,7 +285,8 @@ def plan(words, segs, dur, templates, box_for, instructions="", style="", intens
             f"{transcript_text(words, segs)}")
     usages, prior, attempts = [], None, []
     for attempt in (1, 2):
-        use, usage, secs_taken, raw = call_claude(key, SYSTEM, user, tool, prior)
+        try: use, usage, secs_taken, raw = call_claude(key, SYSTEM, user, tool, prior)
+        except StoryboardError as e: e.info.update(attempts=attempts, usage=cost(usages) if usages else None); raise
         usages.append(usage); sb = use["input"]
         sb["beats"] = sorted(sb.get("beats") or [], key=lambda b: b.get("start", 0))
         errs = validate(sb, words, dur, templates); attempts.append({"attempt": attempt, "seconds": secs_taken, "errors": errs[:30]})
@@ -292,4 +298,5 @@ def plan(words, segs, dur, templates, box_for, instructions="", style="", intens
         prior = [{"role": "assistant", "content": raw["content"]},
                  {"role": "user", "content": [{"type": "tool_result", "tool_use_id": use["id"], "is_error": True,
                                                "content": "The storyboard is not executable. Fix exactly these problems and submit the whole storyboard again:\n- " + "\n- ".join(errs[:30])}]}]
-    raise StoryboardError(f"the AI storyboard failed validation twice ({len(errs)} problems, first: {errs[0]})")
+    raise StoryboardError(f"the AI storyboard failed validation twice ({len(errs)} problems, first: {errs[0]})",
+                          http_status=200, api_error_type="validation", attempts=attempts, usage=cost(usages), model=raw.get("model"))

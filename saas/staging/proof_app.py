@@ -136,6 +136,47 @@ def ping():   # smallest real Claude Opus 5.5 call: proves the key, the model id
                                     "reply_ok": "ready" in json.dumps(j.get("content")).lower()}
 
 
+def _clean(m):   # public-log-safe text: no ids, no quoted speech
+    import re
+    m = re.sub(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "<id>", str(m or ""))
+    m = re.sub(r"\b(org|req|msg|toolu|wrkspc|apikey)_[A-Za-z0-9]+", r"\1_<id>", m); m = re.sub(r"'[^']{1,80}'", "'…'", m)
+    return m[:300]
+
+
+@app.function(image=image, volumes={"/jobs": vol}, secrets=[ANTHROPIC_SECRET], cpu=1.0, memory=2048, timeout=900)
+def storyboard_test(run: str, templates: str, aspect: str = "16:9", instructions: str = ""):
+    """ONE real Opus 5.5 storyboard request (no render): valid JSON?, validation, tokens, cost, template/component breakdown.
+    The storyboard itself (it quotes the speech) is written only to the private run folder."""
+    import collections, subprocess as sp
+    vol.reload(); base = Path(f"/jobs/{run}"); wd = base / "sb"; out = base / "out"; out.mkdir(exist_ok=True)
+    shutil.copytree(base / "in/cache", wd)
+    dur = float(sp.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(base / "in/input.mp4")], capture_output=True, text=True).stdout.strip())
+    t = time.time()
+    with open(out / "storyboard_test_planner.log", "w") as lg:
+        rc = sp.run([sys.executable, str(Path(os.environ.get("EVA_ENGINE", "/app")) / "saas/worker/planner.py"), str(wd / "srt/talk.transcript.js"), str(wd), "--duration", str(dur), "--templates", templates,
+                     "--mode", "multi", "--face", str(wd / "face.json"), "--aspect", aspect, "--instructions", instructions], stdout=lg, stderr=sp.STDOUT).returncode
+    r = {"rc": rc, "seconds": round(time.time() - t, 1), "duration_s": round(dur, 2), "aspect": aspect}
+    err = wd / "storyboard_error.json"; plan = wd / "plan.json"
+    if err.exists():
+        e = json.loads(err.read_text()); shutil.copy(err, out / "storyboard_error.json")
+        r.update(ok=False, http_status=e.get("http_status"), api_error_type=e.get("api_error_type"), api_error_message=_clean(e.get("api_error_message")),
+                 request_id=bool(e.get("request_id")), model=e.get("model"), usage=e.get("usage"),
+                 attempts=[{"attempt": a["attempt"], "seconds": a["seconds"], "validation_errors": len(a["errors"]),
+                            "kinds": sorted(collections.Counter(_clean(x).split(":")[-1].strip()[:60] for x in a["errors"]))[:8]} for a in e.get("attempts") or []])
+    elif plan.exists():
+        p = json.loads(plan.read_text()); pl = p.get("planner") or {}; sb = p.get("storyboard") or {}; beats = sb.get("beats") or []
+        shutil.copy(plan, out / "storyboard_test_plan.json"); (out / "storyboard_test_storyboard.json").write_text(json.dumps(sb, indent=1, ensure_ascii=False))
+        secs = collections.OrderedDict()
+        for b in beats: secs[b["template"]] = round(secs.get(b["template"], 0) + b["end"] - b["start"], 2)
+        r.update(ok=True, valid_json=isinstance(sb, dict) and bool(beats), model=pl.get("model"), usage=pl.get("usage"),
+                 attempts=[{"attempt": a["attempt"], "seconds": a["seconds"], "validation_errors": len(a["errors"])} for a in pl.get("attempts") or []],
+                 beats=len(beats), components=dict(collections.Counter(b["component"] for b in beats)), template_seconds=secs,
+                 timeline=[f'{b["start"]:.1f}-{b["end"]:.1f} {b["template"]} {b["component"]}' for b in beats],
+                 illustrative_beats=sum(1 for b in beats if b.get("illustrative")), coverage={k: (p.get("coverage") or {}).get(k) for k in ("meaningful_coverage", "template_coverage", "templates_dropped")})
+    else: r.update(ok=False, api_error_type="planner crashed (see private planner log)")
+    vol.commit(); return r
+
+
 LINK_IMAGE = modal.Image.debian_slim(python_version="3.12").pip_install("boto3==1.35.90", "cryptography==44.0.0")
 
 
@@ -172,15 +213,20 @@ def check_r2():
 
 
 @app.local_entrypoint()
-def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False, links_only: str = ""):
+def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False, links_only: str = "", storyboard_only: bool = False):
     if links_only:   # new temporary links for an existing run (old ones expired)
         print("LINKS", json.dumps(links.remote(links_only, os.environ["EVA_LINKS_PUBKEY"]))); return
     if check_only:
         print("CHECK", json.dumps({"render_secrets": ["eva-anthropic-staging"], "fetch_publish_secrets": ["eva-r2"], "anthropic": check_anthropic.remote(), "r2": check_r2.remote()})); return
-    if not skip_ping: print("PING", json.dumps(ping.remote()))
+    if not skip_ping and not storyboard_only: print("PING", json.dumps(ping.remote()))
     run = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
     f = fetch.remote(run, pid, old_vid); print("FETCH", json.dumps(f))
     if f.get("error"): return
+    if storyboard_only:   # ONE Opus request, no render
+        res = storyboard_test.remote(run, templates, aspects.split(",")[0]); print("PUBLISH", json.dumps(publish.remote(run)))
+        print("STORYBOARD", json.dumps(res)); pk = os.environ.get("EVA_LINKS_PUBKEY", "")
+        if pk: print("LINKS", json.dumps(links.remote(run, pk)))
+        return
     res = render.remote(run, templates, aspects)
     print("PUBLISH", json.dumps(publish.remote(run)))
     print("PROOF", json.dumps(res))

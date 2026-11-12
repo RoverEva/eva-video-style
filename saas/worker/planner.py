@@ -328,12 +328,15 @@ def main(argv=None):
             secs, cards, extra = storyboard.plan(words, segs, dur, tpls if a.mode != "single" else tpls[:1], box_for, a.instructions, a.style, a.intensity,
                                                  log=lambda m: print("planner: " + m))
         except storyboard.StoryboardError as e:
-            print(f"planner: AI storyboard failed: {e}", file=sys.stderr); return 7
+            print(f"planner: AI storyboard failed: {e}", file=sys.stderr)
+            Path(a.out_dir).mkdir(parents=True, exist_ok=True)
+            (Path(a.out_dir) / "storyboard_error.json").write_text(json.dumps({"message": str(e)[:600], **e.info}, indent=1, ensure_ascii=False, default=str))
+            return 7
         source, usage = extra["source"], extra["usage"]
     face = json.loads(Path(a.face).read_text()) if a.face else None
     for sec in secs: sec["box"] = list(box_for(sec["template"]))   # card block: 9:16 pages scale it into the top zone (auto.js)
     plan = {"version": 1, "end": round(dur, 3), "evaDir": "../media/eva", "face": face, "sections": secs, "cards": cards,
-            "planner": {"source": source, "usage": usage, "rejected": rejected, "attempts": extra.get("attempts")}}
+            "planner": {"source": source, "model": extra.get("model"), "usage": usage, "rejected": rejected, "attempts": extra.get("attempts")}}
     if extra.get("storyboard"): plan["storyboard"] = extra["storyboard"]   # the approved storyboard; HD export reuses this plan as is
     import coverage   # editing-coverage timeline with the renderer's layout rules (saas/worker/coverage.py)
     cov = coverage.timeline(plan, a.aspect, a.templates.split(",") if a.mode == "multi" else None)
