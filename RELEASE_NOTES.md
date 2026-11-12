@@ -1,3 +1,13 @@
+# EVA Video Style · release notes
+
+## Core 1.0.1 (corrective, prepared — not yet published)
+
+- **No fixed duration limit.** Core 1.0.0 rejected inputs longer than 30.5 seconds and files over 200 MB. Those were the hosted EVA Video Studio launch limits and never belonged in the open-source Core. 1.0.1 edits the complete input (minimum 3 seconds): transcription, planning, rendering in 10-second chunks with global timestamps, continuous audio and captions, and QA all cover the whole source, including the ending.
+- Optional host policy: `--max-seconds` / `--max-bytes` (default: no limit). An over-limit input is rejected before any work; nothing is cropped, sped up or summarised.
+- `--preview-seconds` may exceed 30; it only sets the quick preview, the final render is always full length.
+- New regression test `EVA-Core/core/tests/test_duration.py` (synthetic media, no network, no paid API).
+- Template packages are unchanged (they never contained the limit); only `EVA-Core.zip`, `SHA256SUMS` and `download-manifest.json` change. The published v1.0.0 assets are not replaced.
+
 # EVA Video Style v1.0.0 · draft release notes
 
 Status: rights-cleared local source-only release candidate; not yet published.
@@ -23,7 +33,7 @@ Status: rights-cleared local source-only release candidate; not yet published.
 
 ## Known limits
 
-- Core accepts 3–30.5 seconds; 60-second editing is not a v1.0 claim.
+- Core 1.0.0 rejected inputs longer than 30.5 seconds. That limit belonged to the hosted EVA Video Studio launch, not to this open-source project; Core 1.0.1 removes it (see below).
 - `eva-asr` must use commit `91ff24122f1cfed6c166372a597bff83ea3ab405` and its locked environment. Core and ASR environments remain separate because mismatched Torch/TorchAudio/TorchCodec/FFmpeg ABIs previously failed.
 - FFmpeg is host-installed and must include libass and the required H.264/AAC encoders.
 - T17 requires host-installed Inter for intended typography. Inter and Noto Sans CJK SC are not bundled.

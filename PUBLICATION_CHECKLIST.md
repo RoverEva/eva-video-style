@@ -38,7 +38,7 @@ Technical, rights and source-isolation gates are complete locally. Section E rem
 
 - [x] README, installation guide, release notes, clearance summary and third-party notices are present.
 - [x] Technical source commit and outer package hashes are recorded.
-- [x] T01 contrast review, 30.5-second limit, T17 Inter dependency and ASR/FFmpeg ABI constraints are disclosed.
+- [x] T01 contrast review, no fixed duration limit (corrected in 1.0.1), T17 Inter dependency and ASR/FFmpeg ABI constraints are disclosed.
 - [x] Package and rendered evidence remain local/private and ignored.
 
 ## E. Publication — separate explicit approval required

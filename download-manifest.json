@@ -4,9 +4,9 @@
     "distribution": "public",
     "license": "MIT",
     "public_download": true,
-    "sha256": "294e2326ea694d1a3bf471538d98c6d077882f99a2553d019a09c38220b70040",
+    "sha256": "5c8bd576edd85b49d074feae9c82cb5b1669ba895d629075363977d210b7be53",
     "tier": "free",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "distribution": "public",
   "excluded": [

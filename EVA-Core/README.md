@@ -1,4 +1,4 @@
-# EVA Core 1.0.0 release candidate
+# EVA Core 1.0.1
 
 Install this archive once, then install independently selected template ZIPs. This candidate runs the account-free MP4 → ASR/SRT → Planner → Registry → Renderer → QA pipeline. EVA Core and the 23 release templates are cleared for MIT/Free public distribution, but this local candidate has not been published. A separate owner approval is required before any push, tag or GitHub Release.
 

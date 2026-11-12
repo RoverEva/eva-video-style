@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-CORE_VERSION = "1.0.0"
+CORE_VERSION = "1.0.1"
 ENGINE_API = "legacy-1"
 PLAN_SCHEMA = "legacy-v1"
 TEMPLATE_ID = re.compile(r"^T\d{2}$")
