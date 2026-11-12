@@ -7,6 +7,7 @@
 - `--preview-seconds` may exceed 30; it only sets the quick preview, the final render is always full length.
 - New regression test `EVA-Core/core/tests/test_duration.py` (synthetic media, no network, no paid API).
 - Template packages are unchanged (they never contained the limit); only `EVA-Core.zip`, `SHA256SUMS` and `download-manifest.json` change. The published v1.0.0 assets are not replaced.
+- Reproducible packaging: `EVA-Core.zip` is now built with `EVA-Core/tools/packages/build_core.py` using stored (uncompressed) members, so every OS, Python version and compression library produces the identical archive (sha256 `cc801a0656d9ae5fedd49ed2a2d549db50747241f5ef7b789405f9f2e72723b8`, about 1.8 MB). Deflate output differs between zlib, zlib-ng and distribution-patched zlib, which made the 1.0.0-style archive impossible to reproduce on a different build host. Archive contents and their internal checksums are unaffected.
 
 # EVA Video Style v1.0.0 · draft release notes
 
