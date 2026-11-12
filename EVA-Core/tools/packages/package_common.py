@@ -28,13 +28,17 @@ def checksum_manifest(files: dict[str, bytes]) -> bytes:
 
 
 def write_zip(path: Path, files: dict[str, bytes]) -> None:
+    """Byte-reproducible on every machine: members are STORED (no compression), sorted, with a fixed timestamp and mode.
+    Deflate output depends on the compression library build (zlib, zlib-ng and distribution-patched zlib produce
+    different bytes for identical input), so compressed archives cannot be reproduced across build hosts. Packages up
+    to 1.0.0 (Core 1.0.0 and the 1.0.0 template ZIPs) used deflate; they stay valid and are not rebuilt."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_STORED) as zf:
         for name in sorted(files):
             info = zipfile.ZipInfo(name, FIXED_TIME)
             info.create_system = 3
             info.external_attr = (stat.S_IFREG | 0o644) << 16
-            info.compress_type = zipfile.ZIP_DEFLATED
+            info.compress_type = zipfile.ZIP_STORED
             zf.writestr(info, files[name])
 
 
