@@ -111,12 +111,8 @@ def transcript_text(words, segs):
     return "Sentences:\n" + "\n".join(lines) + "\n\nWord times (word@seconds):\n" + wl
 
 
-def call_claude(key, system, user, tool, prior=None, timeout=180):
-    msgs = [{"role": "user", "content": user}] + (prior or [])
-    body = {"model": MODEL, "max_tokens": 8000, "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-            "tools": [tool], "tool_choice": {"type": "tool", "name": tool["name"]}, "messages": msgs}
+def _post(key, body, timeout):
     req = urllib.request.Request(API, json.dumps(body).encode(), {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
-    t = time.time()
     for n in range(4):   # transient API states (rate limit, overload, 5xx): back off and retry; anything else fails at once
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r: j = json.loads(r.read()); break
@@ -131,9 +127,25 @@ def call_claude(key, system, user, tool, prior=None, timeout=180):
         except Exception as e:
             if n < 3 and isinstance(e, (TimeoutError, urllib.error.URLError)): time.sleep(5 * 2 ** n); continue
             raise StoryboardError(f"Anthropic API unreachable: {type(e).__name__}", http_status=None, api_error_type=type(e).__name__)
-    use = next((c for c in j.get("content", []) if c.get("type") == "tool_use"), None)
-    if not use: raise StoryboardError("Claude returned no storyboard")
-    return use, j.get("usage", {}), round(time.time() - t, 1), j
+    return j
+
+
+def call_claude(key, system, user, tool, prior=None, timeout=180):
+    """Opus 5.5 does not accept a forced tool_choice ("tool"/"any" → HTTP 400), so the tool is offered with "auto" and the
+    system prompt requires it. If a reply has no tool call, Claude is asked once more to submit through the tool."""
+    msgs = [{"role": "user", "content": user}] + (prior or []); t = time.time(); usages = []
+    for nudge in (0, 1):
+        body = {"model": MODEL, "max_tokens": 8000, "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+                "tools": [tool], "tool_choice": {"type": "auto"}, "messages": msgs}
+        j = _post(key, body, timeout); usages.append(j.get("usage", {}))
+        use = next((c for c in j.get("content", []) if c.get("type") == "tool_use" and c.get("name") == tool["name"]), None)
+        if use: break
+        msgs = msgs + [{"role": "assistant", "content": j.get("content") or [{"type": "text", "text": "(no output)"}]},
+                       {"role": "user", "content": f"Submit the complete storyboard now by calling the {tool['name']} tool. No other text."}]
+    if not use: raise StoryboardError("Claude returned no storyboard (no tool call after a reminder)", http_status=200, api_error_type="no_tool_call", model=j.get("model"))
+    usage = {k: sum((u.get(k) or 0) for u in usages) for k in ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")}
+    if nudge: j = dict(j, content=j["content"])   # the retry history (prior) continues from the final reply
+    return use, usage, round(time.time() - t, 1), j
 
 
 def cost(usages):

@@ -4,7 +4,7 @@
 - a valid storyboard → sections + cards for the renderer; every template used; anchor times from the transcript
 - an invalid one → Claude gets ONE retry with the exact errors (tool_result is_error); fixed → plan
 - invalid twice / API down / no key / another model → StoryboardError (the job fails; no heuristic, no raw footage)
-- request: model claude-opus-5-5, forced submit_storyboard tool, system prompt cached, only transcript text sent"""
+- request: model claude-opus-5-5, submit_storyboard tool (tool_choice auto: Opus 5.5 refuses forced tool use), system prompt cached, only transcript text sent"""
 import copy, json, os, subprocess, sys, tempfile
 from pathlib import Path
 HERE = Path(__file__).resolve().parent; sys.path.insert(0, str(HERE.parent / "worker"))
