@@ -285,6 +285,15 @@ def plan(words, segs, dur, templates, box_for, instructions="", style="", intens
         if errs: raise StoryboardError("fixture storyboard invalid: " + "; ".join(errs[:5]))
         secs, cards = to_plan(sb, words, dur, box_for)
         return secs, cards, {"source": "fixture(test)", "model": None, "attempts": [], "usage": None, "storyboard": sb}
+    ap = os.environ.get("EVA_STORYBOARD_APPROVED")   # a storyboard Opus already made and the creator approved: reuse it, no new call
+    if ap:
+        saved = json.loads(Path(ap).read_text()); sb = saved["storyboard"]; pl = saved.get("planner") or {}
+        if not str(pl.get("model") or "").startswith(MODEL): raise StoryboardError("the approved storyboard was not made by " + MODEL)
+        errs = validate(sb, words, dur, templates)
+        if errs: raise StoryboardError(f"the approved storyboard does not fit this clip ({len(errs)} problems)", api_error_type="validation")
+        secs, cards = to_plan(sb, words, dur, box_for)
+        return secs, cards, {"source": f"llm:{MODEL} (approved storyboard, reused)", "model": pl.get("model"), "attempts": pl.get("attempts"),
+                             "usage": pl.get("usage"), "reused": True, "storyboard": sb}
     key = key or os.environ.get("ANTHROPIC_API_KEY")
     if not key: raise StoryboardError("The AI storyboard is not configured (ANTHROPIC_API_KEY missing).")
     model = os.environ.get("EVA_STORYBOARD_MODEL", MODEL)

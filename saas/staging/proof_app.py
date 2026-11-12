@@ -40,7 +40,7 @@ _paths = lambda: [sys.path.insert(0, p) for p in ("/app/saas/worker", "/app/saas
 
 
 @app.function(image=image, volumes={"/jobs": vol}, secrets=[R2_SECRET], timeout=600)
-def fetch(run: str, pid: str, old_vid: str):
+def fetch(run: str, pid: str, old_vid: str, storyboard_run: str = ""):
     """R2 → private staging volume: ONLY this project's upload, its transcript/face cache and the old preview."""
     _paths(); import store; S = store.from_env(); base = Path(f"/jobs/{run}/in"); (base / "cache/srt").mkdir(parents=True)
     src = next((k for k in (f"projects/{pid}/source.mp4", f"uploads/{pid}/input.mp4") if S.size(k)), None)   # v2 projects keep the source at projects/<pid>/source.mp4
@@ -50,7 +50,19 @@ def fetch(run: str, pid: str, old_vid: str):
         if S.size(f"projects/{pid}/cache/{f}"): S.download(f"projects/{pid}/cache/{f}", base / "cache" / f); got.append(f)
     try: S.download(f"versions/{old_vid}/video.mp4", base / "old_preview.mp4")
     except Exception: pass
-    vol.commit(); return {"source": src.split("/")[-1], "cache": got, "old_preview": (base / "old_preview.mp4").exists()}
+    if storyboard_run:   # the storyboard Eva approved (from a storyboard-only run): rendered as is, no new Opus call
+        k = f"staging/proofs/{storyboard_run}/storyboard_test_plan.json"
+        if not S.size(k): return {"error": f"approved storyboard of run {storyboard_run} not found"}
+        S.download(k, base / "approved_plan.json")
+    vol.commit(); return {"source": src.split("/")[-1], "cache": got, "old_preview": (base / "old_preview.mp4").exists(),
+                          "approved_storyboard": (base / "approved_plan.json").exists()}
+
+
+@app.function(image=image, volumes={"/jobs": vol}, secrets=[], **LIMITS)
+def render_approved(run: str, templates: str, aspects: str = "16:9,9:16", instructions: str = ""):
+    """Render an APPROVED storyboard: this container holds no secrets at all (no Anthropic key, no storage access)."""
+    os.environ["EVA_STORYBOARD_APPROVED"] = f"/jobs/{run}/in/approved_plan.json"; os.environ.pop("ANTHROPIC_API_KEY", None)
+    return render.local(run, templates, aspects, instructions)
 
 
 @app.function(image=image, volumes={"/jobs": vol}, secrets=[ANTHROPIC_SECRET], **LIMITS)
@@ -78,7 +90,7 @@ def render(run: str, templates: str, aspects: str = "16:9,9:16", instructions: s
                     r["planner_error"] = m[:400] if m.startswith(("Anthropic API", "The AI storyboard is not configured", "only claude", "Claude returned")) else m.split("(")[0][:80] + "(details withheld: may quote speech)"
             plan = json.loads((wd / "plan.json").read_text()) if (wd / "plan.json").exists() else {}
             pl = plan.get("planner") or {}
-            r.update(model=pl.get("model") or pl.get("source"), usage=pl.get("usage"), attempts=[{"attempt": a["attempt"], "errors": len(a["errors"]), "seconds": a["seconds"]} for a in pl.get("attempts") or []],
+            r.update(model=pl.get("model") or pl.get("source"), planner_source=pl.get("source"), usage=pl.get("usage"), attempts=[{"attempt": a["attempt"], "errors": len(a["errors"]), "seconds": a["seconds"]} for a in pl.get("attempts") or []],
                      beats=len((plan.get("storyboard") or {}).get("beats") or []), components=sorted({c["kind"] for c in plan.get("cards", [])}))
             fin = wd / "out/final.mp4"
             if fin.exists():
@@ -213,21 +225,21 @@ def check_r2():
 
 
 @app.local_entrypoint()
-def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False, links_only: str = "", storyboard_only: bool = False):
+def main(pid: str = "pa04f1da3d9d", old_vid: str = "v7f5b675a309", templates: str = "T23,T21,T17,T02,T01", aspects: str = "16:9,9:16", skip_ping: bool = False, check_only: bool = False, links_only: str = "", storyboard_only: bool = False, storyboard_run: str = ""):
     if links_only:   # new temporary links for an existing run (old ones expired)
         print("LINKS", json.dumps(links.remote(links_only, os.environ["EVA_LINKS_PUBKEY"]))); return
     if check_only:
         print("CHECK", json.dumps({"render_secrets": ["eva-anthropic-staging"], "fetch_publish_secrets": ["eva-r2"], "anthropic": check_anthropic.remote(), "r2": check_r2.remote()})); return
-    if not skip_ping and not storyboard_only: print("PING", json.dumps(ping.remote()))
+    if not skip_ping and not storyboard_only and not storyboard_run: print("PING", json.dumps(ping.remote()))
     run = time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:6]
-    f = fetch.remote(run, pid, old_vid); print("FETCH", json.dumps(f))
+    f = fetch.remote(run, pid, old_vid, storyboard_run); print("FETCH", json.dumps(f))
     if f.get("error"): return
     if storyboard_only:   # ONE Opus request, no render
         res = storyboard_test.remote(run, templates, aspects.split(",")[0]); print("PUBLISH", json.dumps(publish.remote(run)))
         print("STORYBOARD", json.dumps(res)); pk = os.environ.get("EVA_LINKS_PUBKEY", "")
         if pk: print("LINKS", json.dumps(links.remote(run, pk)))
         return
-    res = render.remote(run, templates, aspects)
+    res = (render_approved if storyboard_run else render).remote(run, templates, aspects)
     print("PUBLISH", json.dumps(publish.remote(run)))
     print("PROOF", json.dumps(res))
     pk = os.environ.get("EVA_LINKS_PUBKEY", "")
