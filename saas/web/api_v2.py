@@ -17,10 +17,10 @@ from starlette.routing import Route
 from starlette.concurrency import run_in_threadpool as off   # blocking work (Supabase, R2, Modal) runs off the event loop
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
-try: from . import progress, stripe_lite
-except ImportError: import progress, stripe_lite
+try: from . import progress, stripe_lite, studio_policy as POLICY
+except ImportError: import progress, stripe_lite, studio_policy as POLICY
 
-MAX_BYTES, MAX_SECONDS = 200 * 1024 * 1024, 30
+MAX_BYTES, MAX_SECONDS = POLICY.MAX_BYTES, 30   # MAX_SECONDS here = pricing scale (unchanged); the launch limit is POLICY
 TOPUP = {"cents": 999, "credits": 100}
 PREVIEW_DAYS = int(os.environ.get("EVA_PREVIEW_DAYS", 30))
 HD_DAYS = int(os.environ.get("EVA_HD_DAYS", 90))
@@ -65,7 +65,7 @@ SPAWN_TIMEOUT = float(os.environ.get("EVA_SPAWN_TIMEOUT", "20"))   # seconds to 
 _SPAWNER = ThreadPoolExecutor(4, thread_name_prefix="spawn")
 
 
-PREVIEW_SECONDS = int(os.environ.get("EVA_PREVIEW_SECONDS", "30"))   # full-length watermarked 720p preview (Eva, 2026-11-11; was 10)
+PREVIEW_SECONDS = POLICY.PREVIEW_SECONDS   # full-length watermarked 720p preview (Eva, 2026-11-11; was 10)
 MIN_SECTION_S = float(os.environ.get("EVA_MIN_SECTION_S", "3.0"))   # = planner.MIN_SECTION_S
 
 
@@ -88,7 +88,7 @@ class Accounts:
         if music not in ("none", "track", "mix"): raise ValueError("bad music option")
         if music == "track" and not 1 <= len(tracks) <= 3: raise ValueError("Choose one to three music tracks.")
         return {"aspect": aspect, "templates": (tpls[:1] if mode == "single" else tpls) or ["T17"], "template_mode": mode, "music": music,
-                "music_tracks": tracks[:3], "preview_seconds": PREVIEW_SECONDS}
+                "music_tracks": tracks[:3], "preview_seconds": PREVIEW_SECONDS}   # Studio limits are added per job by modal_app
 
     def urls(self, v):
         out = {}
@@ -144,7 +144,7 @@ class Accounts:
         if not isinstance(size, int) or size <= 0: raise ValueError("missing file size")
         if size > MAX_BYTES: raise ValueError("The video is larger than 200 MB.")
         if ctype not in ("video/mp4", "video/quicktime"): raise ValueError("Please upload an MP4 (or MOV) video.")
-        if dur is not None and float(dur) > MAX_SECONDS + .5: raise ValueError(f"This video is {round(float(dur))} seconds long. The limit is 30 seconds.")
+        if POLICY.too_long(dur): raise ValueError(POLICY.message(dur))   # Studio launch limit; the worker re-checks the real file
         k = f"up:{time.strftime('%Y-%m-%d', time.gmtime())}:{u['id']}"
         n = (self.kv.get(k) or 0) + 1
         if n > 30: raise PermissionError("Upload limit reached for today.")

@@ -12,7 +12,8 @@ Stages are separate commands so a cloud runner can fan the render chunks out ove
     pipeline.py run     INPUT.mp4 JOB_DIR [--options o.json] [--preview] [--workers N]   everything, locally
 
 options (JSON): {"aspect": "9:16|16:9", "templates": ["T17","T20"], "template_mode": "single|multi|auto",
-                 "music": "auto|manual|mix|none", "music_tracks": [], "paid": false, "preview_seconds": 30}
+                 "music": "auto|manual|mix|none", "music_tracks": [], "paid": false, "preview_seconds": null,
+                 "max_seconds": null, "max_bytes": null}   (null = whole video / no cap; the hosted Studio sets its own limits)
 Input: any orientation (portrait phone video or landscape), ≤ 30 s, ≤ 200 MB, with speech.
 Outputs in JOB_DIR/out: final.mp4 (1080x1920 or 1920x1080, 30 fps) or preview.mp4 (watermarked 720p, full length ≤ 30 s), captions.srt, report.json.
 Exit codes: 2 input rejected (message in report.json), 3 stage failed (retryable), 0 ok.
@@ -25,9 +26,13 @@ HERE = Path(__file__).resolve().parent
 ENGINE_REPO = Path(os.environ.get("EVA_ENGINE", HERE.parents[1])).resolve()   # eva-video-style checkout
 CFG = HERE.parent / "config"
 FPS, CHUNK_S = 30, 10.0
-LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
+# Shared engine: NO fixed duration or size cap — the whole input is edited (10 s render chunks, global timestamps).
+# A host (the hosted Studio: saas/web/studio_policy.py) imposes its own limits explicitly via the max_seconds /
+# max_bytes options; both default to None = unrestricted. No environment variable can impose a cap here.
+LIMITS = {"min_seconds": 3.0}
 TRACKS = Path(os.environ.get("EVA_TRACKS", HERE.parent / "music/tracks"))   # composed by saas/music/compose.py (rights-cleared)
-DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": 30}
+DEFAULT_OPTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "music": "none", "music_tracks": [], "paid": False, "preview_seconds": None,
+                "max_seconds": None, "max_bytes": None}   # preview_seconds None = the whole video
 SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}
 PREVIEW = {"9:16": (720, 1280), "16:9": (1280, 720)}
 PY = sys.executable
@@ -98,12 +103,14 @@ def prepare(inp, jd, opts):
     inp = Path(inp).resolve()
 
     def validate():
-        if inp.stat().st_size > LIMITS["max_bytes"]: raise Reject("video is larger than 200 MB")
+        mb = o.get("max_bytes")   # host policy only (Studio); None = no size cap
+        if mb is not None and inp.stat().st_size > float(mb): raise Reject(f"video is larger than {float(mb) / 1048576:.0f} MB")
         pr = probe(inp); st = {s["codec_type"]: s for s in pr["streams"]}
         dur = float(pr["format"]["duration"])
         if "video" not in st: raise Reject("no video stream")
         if "audio" not in st: raise Reject("no audio track: talking-head videos need the spoken audio")
-        if dur > LIMITS["max_seconds"]: raise Reject(f"video is {dur:.1f} s; the limit is 30 s")
+        ms = o.get("max_seconds")   # host policy only (Studio launch limit); None = the whole input, however long
+        if ms is not None and dur > float(ms): raise Reject(f"video is {dur:.1f} s; this service accepts up to {float(ms) - .5:g} s (nothing was cut)")
         if dur < LIMITS["min_seconds"]: raise Reject("video is too short")
         w, h = int(st["video"]["width"]), int(st["video"]["height"])
         for sd in st["video"].get("side_data_list") or []:   # phone videos stored landscape with a rotation flag
@@ -201,7 +208,7 @@ def page_args(J):
 
 
 def preview_chunks(J):
-    ps = J.j["options"]["preview_seconds"]
+    ps = J.j["options"].get("preview_seconds") or float("inf")   # None = the whole video
     return [i for i, (a, b) in enumerate(J.j["chunks"]) if a < ps]
 
 
@@ -309,7 +316,7 @@ def finish(jd, preview=False):
     def deliver():
         final = J.d / "out" / ("preview_hd.mp4" if preview else "final.mp4")
         if preview:
-            ps = o["preview_seconds"]; out = J.d / "out/preview.mp4"
+            ps = o.get("preview_seconds") or J.j["end"] + 1; out = J.d / "out/preview.mp4"
             if out.exists(): out.unlink()
             font = ENGINE_REPO / "engine/fonts/Anton-Regular.ttf"
             pw, ph = PREVIEW[o.get("aspect", "16:9")]; fs = round(pw / 20)

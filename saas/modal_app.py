@@ -150,6 +150,7 @@ def render_job(kind: str, job: str, opts: dict, attempt: int = 0):
     try:
         import stripe_lite
         if not preview and opts.get("_fail_final") and stripe_lite.mode() == "test": raise RuntimeError("injected test failure (e2e-fail-final, test mode only)")
+        import studio_policy as POLICY; opts = dict(opts, **POLICY.worker_limits())   # Studio launch limits (legacy API path)
         p = prepare.remote(job, opts, kind)
         if p["rc"] == 2:
             put(state="rejected", stage="rejected", reason=p["rejected"])
@@ -187,7 +188,8 @@ def render_version(kind: str, vid: str):
     job = f"{v['project_id']}/v{v['n']}"; retain = int(os.environ.get("EVA_PREVIEW_DAYS" if preview else "EVA_HD_DAYS", 30 if preview else 90))
     canceled = lambda: (D.rpc("eva_version", version_id=vid) or {}).get("status") == "canceled"
     try:
-        opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=int(os.environ.get("EVA_PREVIEW_SECONDS", "30")))
+        import studio_policy as POLICY   # Studio launch limits, re-checked by the worker on the real file (the engine has none)
+        opts = dict(v["options"], paid=not preview, reuse_plan=not preview, preview_seconds=POLICY.PREVIEW_SECONDS, **POLICY.worker_limits())
         ver = {"vid": vid, "pid": v["project_id"], "upload_key": v["upload_key"], "plan_from": None if preview else v["source_version"]}
         import stripe_lite
         if (v.get("project_title") or "").startswith("e2e-fail") and stripe_lite.mode() == "test":
