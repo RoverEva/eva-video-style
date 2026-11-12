@@ -8,7 +8,7 @@ Turn raw talking-head videos into professionally edited content with motion grap
 
 **23 Modular Templates · AI-Powered Editing · MIT Licensed**
 
-> **[Download EVA Video Style v1.0.0 | 下载正式版](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.0)**
+> **[Download EVA Video Style v1.0.1 | 下载正式版](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)**
 
 ## Get Started | 快速开始
 
@@ -17,7 +17,7 @@ Turn raw talking-head videos into professionally edited content with motion grap
 | **`EVA-Core.zip`** · download once / 只需下载一次 | **`TNN-1.0.0.zip`** · choose the styles you need / 按需选择 |
 | ASR, AI Content Planner, Template Registry, Renderer, captions and QA | Template-owned animations, layouts, configuration and distributable assets |
 | 语音识别、AI 内容规划、模板注册表、渲染、字幕与质量检测 | 每套模板独立包含视觉布局、动画、配置及可分发素材 |
-| **[Download EVA-Core.zip](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/EVA-Core.zip)** | **[Browse all 23 template ZIPs](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.0)** |
+| **[Download EVA-Core.zip](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/EVA-Core.zip)** | **[Browse all 23 template ZIPs](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)** |
 
 **Install Core once → Download selected templates → Add a raw MP4 → AI automatic editing**
 
@@ -100,29 +100,29 @@ All 23 templates are MIT-licensed, Free and independently installable. Download 
 
 | ID | Template / 模板 | Supported formats | ZIP |
 |---|---|---|---|
-| T01 | Acid Lime Kinetic | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T01-1.0.0.zip) |
-| T02 | Electric Blue Console | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T02-1.0.0.zip) |
-| T03 | Dark 3D Stage | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T03-1.0.0.zip) |
-| T04 | Paper | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T04-1.0.0.zip) |
-| T05 | Red Sunburst | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T05-1.0.0.zip) |
-| T06 | Brand Purple | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T06-1.0.0.zip) |
-| T07 | Cartoon Eva | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T07-1.0.0.zip) |
-| T09 | Showcase Wall Opener | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T09-1.0.0.zip) |
-| T10 | HUD Keynote | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T10-1.0.0.zip) |
-| T11 | HUD Dashboard | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T11-1.0.0.zip) |
-| T12 | Old Newspaper | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T12-1.0.0.zip) |
-| T13 | Tech Blue | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T13-1.0.0.zip) |
-| T14 | Future Style | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T14-1.0.0.zip) |
-| T15 | Learning Style | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T15-1.0.0.zip) |
-| T16 | Comic Pop | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T16-1.0.0.zip) |
-| T17 | Science Network | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T17-1.0.0.zip) |
-| T19 | Footage Intro | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T19-1.0.0.zip) |
-| T20 | Fast-Paced Social Media | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T20-1.0.0.zip) |
-| T21 | Clean & Minimal | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T21-1.0.0.zip) |
-| T23 | Creative Pop | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T23-1.0.0.zip) |
-| T24 | Luxury Nude Motion | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T24-1.0.0.zip) |
-| T26 | Vintage Story / 复古拼贴故事 | **9:16 only** | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T26-1.0.0.zip) |
-| T27 | Video Wall Kinetic Typography | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/T27-1.0.0.zip) |
+| T01 | Acid Lime Kinetic | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T01-1.0.0.zip) |
+| T02 | Electric Blue Console | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T02-1.0.0.zip) |
+| T03 | Dark 3D Stage | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T03-1.0.0.zip) |
+| T04 | Paper | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T04-1.0.0.zip) |
+| T05 | Red Sunburst | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T05-1.0.0.zip) |
+| T06 | Brand Purple | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T06-1.0.0.zip) |
+| T07 | Cartoon Eva | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T07-1.0.0.zip) |
+| T09 | Showcase Wall Opener | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T09-1.0.0.zip) |
+| T10 | HUD Keynote | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T10-1.0.0.zip) |
+| T11 | HUD Dashboard | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T11-1.0.0.zip) |
+| T12 | Old Newspaper | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T12-1.0.0.zip) |
+| T13 | Tech Blue | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T13-1.0.0.zip) |
+| T14 | Future Style | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T14-1.0.0.zip) |
+| T15 | Learning Style | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T15-1.0.0.zip) |
+| T16 | Comic Pop | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T16-1.0.0.zip) |
+| T17 | Science Network | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T17-1.0.0.zip) |
+| T19 | Footage Intro | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T19-1.0.0.zip) |
+| T20 | Fast-Paced Social Media | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T20-1.0.0.zip) |
+| T21 | Clean & Minimal | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T21-1.0.0.zip) |
+| T23 | Creative Pop | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T23-1.0.0.zip) |
+| T24 | Luxury Nude Motion | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T24-1.0.0.zip) |
+| T26 | Vintage Story / 复古拼贴故事 | **9:16 only** | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T26-1.0.0.zip) |
+| T27 | Video Wall Kinetic Typography | 16:9 / 9:16 | [Download](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/T27-1.0.0.zip) |
 
 T08, T25 and T28 are excluded. T18 and T22 are retired and their IDs are not reused.
 
@@ -155,7 +155,7 @@ python3 eva-video-style/EVA-Core/tools/packages/install.py \
   --id T01 --version 1.0.0
 ```
 
-Linux users may use `sha256sum -c` instead of `shasum -a 256 -c`. Use the verified [`SHA256SUMS`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/SHA256SUMS) and [`download-manifest.json`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.0/download-manifest.json) for selective downloads.
+Linux users may use `sha256sum -c` instead of `shasum -a 256 -c`. Use the verified [`SHA256SUMS`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/SHA256SUMS) and [`download-manifest.json`](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/download-manifest.json) for selective downloads.
 
 For virtual environments, locked `eva-asr` setup, dependencies, template removal and editing commands, follow the [complete v1.0.0 installation guide](https://github.com/RoverEva/eva-video-style/blob/v1.0.0/EVA-Core/docs/independent-core.md).
 
