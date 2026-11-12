@@ -37,15 +37,15 @@ Select one or more compatible installed templates. EVA Core transcribes the vide
 
 选择一个或多个兼容且已安装的模板。EVA Core 会识别语音（或读取已有 SRT）、根据真实时间轴规划分镜、生成预览和最终视频，并完成质量检测。
 
-v1.0.0 supports:
+EVA Core supports:
 
-- 3–30.5-second input videos; 60-second editing is not included yet
+- complete input videos of any length (minimum 3 seconds) — no fixed duration limit; long videos render in 10-second chunks with continuous audio and captions (Core 1.0.1 removes the 30.5-second limit that v1.0.0 wrongly inherited from the hosted Studio)
 - 16:9 and 9:16 where declared by the template; T26 is 9:16 only
 - automatic ASR or an existing SRT
 - compatible multi-template editing
 - local rendering with no Studio account, billing service or private cloud API
 
-当前 v1.0.0 支持 3–30.5 秒视频、自动语音识别或已有字幕、兼容模板组合及本地渲染。60 秒功能尚未包含在本版本中。
+EVA Core 支持完整长度的视频（至少 3 秒，无固定时长上限）、自动语音识别或已有字幕、兼容模板组合及本地渲染。Core 1.0.1 移除了 v1.0.0 误用的 30.5 秒限制（该限制仅属于托管版 EVA Video Studio 的首发策略）。
 
 ## Demo Showcase | 视频效果展示
 
