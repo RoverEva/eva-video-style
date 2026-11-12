@@ -48,3 +48,4 @@ jobs:
           EVA_ANTHROPIC_SECRET_ENV=staging EVA_R2_SECRET_ENV=main modal run -q --env staging saas/staging/proof_app.py > out.txt 2>&1 || true
           grep -E '^(PING|FETCH|PUBLISH|PROOF|LINKS) ' out.txt | tee result.txt || true
           grep -q '^PROOF ' result.txt || { grep -oE '^[A-Za-z_.]*(Error|Exception)\b' out.txt | sort | uniq -c | sed 's/^/error type: /'; echo "::error::proof run failed before producing a summary (details in Modal, app eva-video-studio-staging)"; exit 1; }
+          python3 -c "import json,sys; r=json.loads(open('result.txt').read().split('PROOF ',1)[1].splitlines()[0])['results']; bad=[a for a,v in r.items() if v.get('rc') != 0 or not v.get('files')]; print('render failed for', bad) if bad else print('all renders OK'); sys.exit(1 if bad else 0)"
