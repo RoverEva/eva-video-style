@@ -37,7 +37,7 @@ python eva-video-style/EVA-Core/core/pipeline.py edit talk.mp4 jobs/t01 \
   --asr-python /path/to/eva-asr/.venv/bin/python
 ```
 
-You may add `--srt talk.srt` instead of running ASR. The v1.0 Core accepts 3–30.5-second inputs and intentionally rejects 60-second inputs. No Studio account, billing system or cloud service is included.
+You may add `--srt talk.srt` instead of running ASR. EVA Core has no fixed duration limit: it edits the complete input (minimum 3 seconds), rendering long videos in 10-second chunks with continuous audio and captions. Only your machine's time, disk and memory set practical limits. No Studio account, billing system or cloud service is included.
 
 ## Deliberate exclusions
 

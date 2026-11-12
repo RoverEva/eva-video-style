@@ -98,7 +98,7 @@ For best results, use sentence-sized cues rather than one cue covering the entir
 ## Outputs and failure handling
 
 - `JOB/out/preview.mp4`: 720×1280 or 1280×720, watermarked, limited to the requested preview duration.
-- `JOB/out/final.mp4`: 1080×1920 or 1920×1080, H.264/AAC, captions burned, original voice plus procedural SFX.
+- `JOB/out/final.mp4`: 1080×1920 or 1920×1080, the complete input length, H.264/AAC, captions burned, original voice plus procedural SFX.
 - `JOB/out/captions.srt`: editable delivered captions.
 - `JOB/out/report_preview.json` and `report_final.json`: dimensions, duration, template versions and QA verdict.
 - `JOB/qa/pre` and `JOB/qa/post*`: machine-readable report, summary and evidence.
@@ -107,7 +107,7 @@ For best results, use sentence-sized cues rather than one cue covering the entir
 
 QA FAIL blocks output acceptance. WARN does not silently disappear: inspect its evidence and record the decision. Rerunning the identical command resumes completed stages; changing input, install root or options requires a new job directory.
 
-The current Core accepts 3–30.5 second inputs. A 60-second job is intentionally rejected rather than silently truncated; extending chunking/resource limits needs a separate Core acceptance cycle. Inter and Noto Sans CJK SC are host font dependencies. The ZIP includes Anton, Archivo Black, Playfair Display and Space Mono plus their OFL texts.
+EVA Core has no fixed duration or file-size cap: the final render always covers the complete input (minimum 3 seconds), split into 10-second render chunks with global timestamps, one continuous audio track and one caption file. `--preview-seconds` only sets the length of the quick watermarked preview. A host application may impose its own policy with `--max-seconds` / `--max-bytes` (or the `max_seconds` / `max_bytes` options); both default to no limit, and an over-limit input is rejected before any work, never cut. Practical limits are your machine's render time, disk space and memory. Inter and Noto Sans CJK SC are host font dependencies. The ZIP includes Anton, Archivo Black, Playfair Display and Space Mono plus their OFL texts.
 
 ## Current package boundary
 

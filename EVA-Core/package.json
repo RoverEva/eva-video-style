@@ -1,6 +1,6 @@
 {
   "name": "eva-video-style",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Eva Video Style: deterministic motion-graphics toolkit and Claude skill for bilingual talking-head videos",
   "license": "MIT",
   "type": "module",

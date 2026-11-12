@@ -31,10 +31,13 @@ from template_registry import RegistryError, resolve
 CORE_DIR = Path(__file__).resolve().parent
 CORE_ROOT = CORE_DIR.parent
 FPS, CHUNK_SECONDS = 30, 10.0
-LIMITS = {"max_seconds": 30.5, "max_bytes": 200 * 1024 * 1024, "min_seconds": 3.0}
+# The open-source Core has NO fixed duration or size cap: the whole input is edited (long inputs are rendered in
+# CHUNK_SECONDS chunks with global timestamps). A host application may impose its own policy explicitly through the
+# max_seconds / max_bytes options (e.g. a hosted service's launch limit); both default to None = unrestricted.
+LIMITS = {"min_seconds": 3.0}
 SIZES = {"9:16": (1080, 1920), "16:9": (1920, 1080)}
 PREVIEW_SIZES = {"9:16": (720, 1280), "16:9": (1280, 720)}
-DEFAULTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "preview_seconds": 10}
+DEFAULTS = {"aspect": "9:16", "templates": ["T17"], "template_mode": "single", "preview_seconds": 10, "max_seconds": None, "max_bytes": None}
 PYTHON = sys.executable
 
 
@@ -128,8 +131,11 @@ def validate_options(options):
         raise Reject("single mode requires exactly one template")
     if options["template_mode"] in ("multi", "auto") and len(options["templates"]) < 2:
         raise Reject(f"{options['template_mode']} mode requires at least two installed templates")
-    if not 1 <= int(options["preview_seconds"]) <= 30:
-        raise Reject("preview_seconds must be between 1 and 30")
+    if int(options["preview_seconds"]) < 1:
+        raise Reject("preview_seconds must be at least 1 (the final render always covers the whole input)")
+    for key in ("max_seconds", "max_bytes"):
+        if options.get(key) is not None and float(options[key]) <= 0:
+            raise Reject(f"{key} must be a positive number when set")
     filters = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True)
     if filters.returncode or not re.search(r"\b(?:ass|subtitles)\s+V->V", filters.stdout):
         raise Reject("FFmpeg lacks the libass caption filter; install a libass-enabled build or pass --ffmpeg-dir")
@@ -157,16 +163,20 @@ def prepare(input_video, job_dir, install_root, options, supplied_srt=None, asr_
     def validate():
         if not input_video.is_file():
             raise Reject(f"input video not found: {input_video}")
-        if input_video.stat().st_size > LIMITS["max_bytes"]:
-            raise Reject("video is larger than 200 MB")
+        max_bytes = opts.get("max_bytes")   # optional host policy; None = no size cap
+        if max_bytes is not None and input_video.stat().st_size > float(max_bytes):
+            raise Reject(f"video is larger than the {float(max_bytes) / 1024 / 1024:.0f} MB limit set for this job")
         info = probe(input_video); streams = {stream["codec_type"]: stream for stream in info["streams"]}
         duration = float(info["format"]["duration"])
         if "video" not in streams:
             raise Reject("input has no video stream")
         if "audio" not in streams:
             raise Reject("input has no audio stream")
-        if duration > LIMITS["max_seconds"] or duration < LIMITS["min_seconds"]:
-            raise Reject(f"video duration {duration:.2f}s is outside the supported 3-30s range")
+        if duration < LIMITS["min_seconds"]:
+            raise Reject(f"video duration {duration:.2f}s is shorter than the {LIMITS['min_seconds']:.0f} s minimum")
+        max_seconds = opts.get("max_seconds")   # optional host policy; None = the whole input, however long
+        if max_seconds is not None and duration > float(max_seconds):
+            raise Reject(f"video duration {duration:.2f}s exceeds the {float(max_seconds):g} s limit set for this job (nothing was cut)")
         width, height = int(streams["video"]["width"]), int(streams["video"]["height"])
         job.data["input"] = {"path": str(input_video), "duration": duration, "width": width, "height": height,
                              "bytes": input_video.stat().st_size, "fps": streams["video"]["r_frame_rate"]}
@@ -420,6 +430,7 @@ def edit(args):
         os.environ["PATH"] = str(ffmpeg_dir) + os.pathsep + os.environ.get("PATH", "")
     options = {"aspect": args.aspect, "templates": [value.strip() for value in args.templates.split(",") if value.strip()],
                "template_mode": args.mode, "preview_seconds": args.preview_seconds, "browser": args.browser,
+               "max_seconds": args.max_seconds, "max_bytes": args.max_bytes,
                "asr_python": str(args.asr_python.expanduser().absolute()) if args.asr_python else None,
                "ffmpeg_dir": str(args.ffmpeg_dir.resolve()) if args.ffmpeg_dir else None}
     job = prepare(args.input, args.job, args.install_root, options, args.srt, args.asr_config)
@@ -456,7 +467,9 @@ def main(argv=None):
     edit_parser.add_argument("--srt", type=Path)
     edit_parser.add_argument("--asr-config", type=Path)
     edit_parser.add_argument("--asr-python", type=Path, help="Python executable from the locked eva-asr environment")
-    edit_parser.add_argument("--preview-seconds", type=int, default=10)
+    edit_parser.add_argument("--preview-seconds", type=int, default=10, help="length of the quick preview; the final render is always the full input")
+    edit_parser.add_argument("--max-seconds", type=float, default=None, help="optional duration policy for host apps; default: no limit")
+    edit_parser.add_argument("--max-bytes", type=float, default=None, help="optional size policy for host apps; default: no limit")
     edit_parser.add_argument("--browser", help="Chromium/Chrome executable path")
     edit_parser.add_argument("--ffmpeg-dir", type=Path, help="directory containing a libass-enabled ffmpeg and ffprobe")
     edit_parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) // 2))

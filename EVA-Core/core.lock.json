@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "core_version": "1.0.0",
+  "core_version": "1.0.1",
   "eva_asr": {
     "repository": "https://github.com/RoverEva/eva-asr.git",
     "commit": "91ff24122f1cfed6c166372a597bff83ea3ab405",
