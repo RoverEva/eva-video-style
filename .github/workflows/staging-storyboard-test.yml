@@ -1,5 +1,6 @@
 # STAGING: ONE real Claude Opus 5.5 storyboard request for Eva's project (no video render). Fails unless the API answers and the
 # storyboard is valid. Storyboard + planner log go only to the private R2 run folder (encrypted 48 h links); this log shows numbers only.
+# Run 43128236101: HTTP 400 (forced tool_choice not supported by Opus 5.5); fixed in 911db80.
 # Video, transcript and storyboard stay inside Modal and R2 (private prefix staging/proofs/<run>/); this log shows only
 # aggregate numbers (model id, tokens, cost, coverage, verdicts, file names). The production app is not touched.
 # Containers: fetch + publish get only R2 access; render (Opus planning + rendering) gets only the staging Anthropic key.
@@ -35,7 +36,7 @@ jobs:
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with: { persist-credentials: false, ref: 04fe430f900e923cf88d4c7d956624cc4b69ab19 }   # pinned dev commit on feat/render-coverage (not the production branch)
+        with: { persist-credentials: false, ref: 911db80c4c056f766c722e55ea58f969c73259e5 }   # pinned dev commit on feat/render-coverage (not the production branch)
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with: { python-version: "3.12" }
       - name: One Opus storyboard request (aggregate results only)
