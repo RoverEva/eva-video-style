@@ -50,10 +50,10 @@
     o.plate = T.dgPlate(R); const F = o.fx = el(R, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 10 }); o.cut = T.dgCut(R);
     const W = C.W, H = C.H;
     if (n === 1) { /* headline: glowing title above / beside the head */
-      const s = w.a || '资料很少', sz = fit(s, pk(150, 132), pk(820, 900));
-      o.k = chip(F, pk(140, (W - 260) / 2), pk(180, 120), w.k || 'NEW', { size: 26 }); o.k.style.borderColor = DG.GOLD; o.k.style.boxShadow = `0 0 22px rgba(255,207,58,.5)`;
-      o.t = title(F, pk(140, W / 2), pk(250, 200), s, sz, { al: pk('left', 'center') });
-      o.u = el(F, 'div', 'abs', { left: pk(140, W / 2 - 300) + 'px', top: pk(250, 200) + sz * 1.14 + 'px', width: pk(len(s) * sz, 600) + 'px', height: '6px', borderRadius: '3px',
+      const s = w.a || '资料很少', sz = fit(s, pk(150, 132), pk(460, 900));
+      o.k = chip(F, pk(70, (W - 260) / 2), pk(180, 120), w.k || 'NEW', { size: 26 }); o.k.style.borderColor = DG.GOLD; o.k.style.boxShadow = `0 0 22px rgba(255,207,58,.5)`;
+      o.t = title(F, pk(70, W / 2), pk(250, 200), s, sz, { al: pk('left', 'center') });
+      o.u = el(F, 'div', 'abs', { left: pk(70, W / 2 - 300) + 'px', top: pk(250, 200) + sz * 1.14 + 'px', width: pk(len(s) * sz, 600) + 'px', height: '6px', borderRadius: '3px',
         background: `linear-gradient(90deg, rgba(95,211,255,0), ${DG.CYAN}, rgba(95,211,255,0))`, boxShadow: `0 0 18px ${DG.CYAN}`, transformOrigin: '0 50%' });
       o.upd = u => { tf(o.k, { o: o3(u / .25), s: ob(u / .35) }); o.t.style.filter = `blur(${(1 - o3(u / .45)) * 18}px)`; tf(o.t, { o: o3(u / .35), s: 1.12 - .12 * o3(u / .5), y: 30 * (1 - o3(u / .5)) });
         tf(o.u, { o: o3((u - .3) / .3), s: o3((u - .3) / .5) }); };
@@ -69,8 +69,8 @@
       o.dot = el(F, 'div', 'abs', { left: '-14px', top: '-14px', width: '28px', height: '28px', borderRadius: '50%', background: DG.WHITE, boxShadow: `0 0 0 8px rgba(255,207,58,.35), 0 0 30px ${DG.GOLD}` });
       o.rip = el(F, 'div', 'abs', { left: x1 - 40 + 'px', top: y1 - 40 + 'px', width: '80px', height: '80px', borderRadius: '50%', border: `3px solid ${DG.GOLD}` });
       const s = w.a || 'AI VIDEO';
-      o.k = chip(F, pk(x1 - 520, 90), pk(y1 - 40, 120), w.k || 'TRENDING', { size: 26 }); o.k.style.borderColor = DG.GOLD;
-      o.t = title(F, pk(x1 - 520, 90), pk(y1 + 40, 200), s, fit(s, pk(84, 78), pk(560, 700)), { cn: false, ls: '0' });
+      o.k = chip(F, pk(70, 90), pk(200, 120), w.k || 'TRENDING', { size: 26 }); o.k.style.borderColor = DG.GOLD;
+      o.t = title(F, pk(70, 90), pk(280, 200), s, fit(s, pk(84, 78), pk(440, 700)), { cn: false, ls: '0' });
       o.upd = u => { const q = o3(u / 1.1), L2 = o.p.getTotalLength(); o.p.setAttribute('stroke-dashoffset', 1 - q); o.ar.style.opacity = q * .9;
         const pt = o.p.getPointAtLength(L2 * q); tf(o.dot, { x: pt.x, y: pt.y, o: u > .02 ? 1 : 0 });
         const r = ((u - 1.1) % 1.2 + 1.2) % 1.2; tf(o.rip, { s: u < 1.1 ? 0 : .4 + r * 1.6, o: u < 1.1 ? 0 : 1 - r / 1.2 });
@@ -100,12 +100,12 @@
         o.rg.style.opacity = o3((u - .45) / .4) * .85; o.rg.style.transform = `rotate(${-u * 28}deg) scaleY(.42)`; };
     }
     if (n === 5) { /* glowing search box, typing */
-      const bw = pk(980, 900), x = pk(W * .5 - bw / 2 - 200, (W - bw) / 2), y = pk(H * .14, 300);
-      o.ic = spark(F, x + bw / 2, y - 150, 62); o.ic.style.opacity = .55;
-      o.b = el(F, 'div', 'abs', { left: x + 'px', top: y + 'px', width: bw + 'px', height: '104px', borderRadius: '52px', background: 'rgba(10,20,46,.86)', border: `3px solid ${DG.CYAN}`,
+      const bw = pk(500, 900), x = pk(50, (W - bw) / 2), y = pk(H * .3, 300), bh = pk(170, 104);
+      o.ic = spark(F, x + bw / 2, y - pk(110, 150), 62); o.ic.style.opacity = .55;
+      o.b = el(F, 'div', 'abs', { left: x + 'px', top: y + 'px', width: bw + 'px', height: bh + 'px', borderRadius: pk('40px', '52px'), background: 'rgba(10,20,46,.86)', border: `3px solid ${DG.CYAN}`,
         boxShadow: `0 0 26px rgba(95,211,255,.7), inset 0 0 22px rgba(47,123,255,.35)`, transformOrigin: '50% 50%' });
-      o.tx = el(o.b, 'div', 'abs', { left: '44px', top: '26px', font: `500 44px ${DG.UI}`, color: DG.WHITE, whiteSpace: 'nowrap' });
-      o.go = el(o.b, 'div', 'abs', { right: '18px', top: '16px', width: '72px', height: '72px', borderRadius: '50%', background: DG.ICE, boxShadow: `0 0 18px ${DG.CYAN}` });
+      o.tx = el(o.b, 'div', 'abs', { left: pk('36px', '44px'), top: pk('24px', '26px'), width: pk((bw - 150) + 'px', ''), font: `500 ${pk(40, 44)}px ${DG.UI}`, lineHeight: pk(1.3, 'normal'), color: DG.WHITE, whiteSpace: pk('normal', 'nowrap') });
+      o.go = el(o.b, 'div', 'abs', { right: '18px', top: (bh - 72) / 2 + 'px', width: '72px', height: '72px', borderRadius: '50%', background: DG.ICE, boxShadow: `0 0 18px ${DG.CYAN}` });
       svg(o.go, 18, 16, 36, 40, `<path d="M18 36 V6 M5 18 L18 5 L31 18" stroke="${DG.NIGHT}" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`);
       o.q = w.a || 'best way to make an AI video?';
       o.upd = u => { tf(o.b, { o: o3(u / .25), s: .9 + .1 * ob(u / .4) }); const k = Math.floor(clamp((u - .35) / 1.4) * [...o.q].length);
@@ -117,7 +117,7 @@
         background: 'rgba(60,120,230,.16)', border: '1px solid rgba(110,180,255,.22)' }), ph: R2() * 6.28, sp: .6 + R2() * 1.6 });
       const tc = pk(cols - 4, 7), tr = pk(2, 2); o.tg = o.tiles[tr * cols + tc]; o.tgx = tc * gw + gw / 2; o.tgy = tr * gh + gh / 2; o.gw = gw; o.gh = gh;
       o.br = [0, 1, 2, 3].map(i => el(F, 'div', 'abs', { width: '46px', height: '46px', borderColor: DG.GOLD, borderStyle: 'solid', borderWidth: `${i < 2 ? 5 : 0}px ${i % 2 ? 5 : 0}px ${i > 1 ? 5 : 0}px ${i % 2 ? 0 : 5}px`, filter: `drop-shadow(0 0 8px ${DG.GOLD})` }));
-      const s = w.a || 'INDEXED'; o.t = title(F, pk(120, W / 2), pk(H * .8, 90), s, fit(s, pk(96, 88), pk(900, 900)), { cn: !/^[\x00-\x7f]*$/.test(s), al: pk('left', 'center') });
+      const s = w.a || 'INDEXED'; o.t = title(F, pk(60, W / 2), pk(H * .5, 90), s, fit(s, pk(96, 88), pk(440, 900)), { cn: !/^[\x00-\x7f]*$/.test(s), al: pk('left', 'center') });
       o.upd = u => { o.tiles.forEach((q, i) => { const on = o3((u - (i % 7) * .03) / .4); q.e.style.opacity = on * (.45 + .4 * Math.sin(u * q.sp * 3 + q.ph)); });
         const lk = o3((u - .4) / .7), sx = W * .5, sy = H * .25, bx = sx + (o.tgx - sx) * lk, by = sy + (o.tgy - sy) * lk, hw = (pk(380, 300) * (1 - lk) + o.gw * .62) , hh = (pk(260, 300) * (1 - lk) + o.gh * .62);
         o.br.forEach((b, i) => tf(b, { x: bx + (i % 2 ? hw - 46 : -hw), y: by + (i > 1 ? hh - 46 : -hh), o: o3((u - .3) / .2) }));
@@ -139,13 +139,13 @@
         g.shadowBlur = 0; };
     }
     if (n === 8) { /* checklist card: items tick one by one */
-      const it = (w.items || ['How do I make it?', 'How long does it take?', 'What do I need?']).slice(0, 4), cw = pk(760, 860), x = pk(W - cw - 110, (W - cw) / 2), y = pk(H * .12, 40), rh = pk(92, 80);
+      const it = (w.items || ['How do I make it?', 'How long does it take?', 'What do I need?']).slice(0, 4), cw = pk(470, 860), x = pk(W - cw - 50, (W - cw) / 2), y = pk(H * .12, 40), rh = pk(92, 80);
       o.c = el(F, 'div', 'abs', { left: x + 'px', top: y + 'px', width: cw + 'px', height: 100 + it.length * rh + 'px', borderRadius: '26px', background: 'rgba(10,18,40,.88)', border: `3px solid ${DG.GOLD}`,
         boxShadow: `0 0 30px rgba(255,207,58,.5)`, transformOrigin: '50% 0' });
       const s = w.a || 'FAQ'; el(o.c, 'div', 'abs', { left: '40px', top: '26px', font: `900 ${fit(s, 50, cw - 80)}px ${DG.CN}`, color: DG.GOLD, textShadow: `0 0 14px rgba(255,207,58,.7)` }, s);
-      o.rows = it.map((q, i) => { const r = el(o.c, 'div', 'abs', { left: '40px', top: 100 + i * rh + 'px', width: cw - 80 + 'px', height: rh - 16 + 'px', borderRadius: '14px', background: 'rgba(60,120,230,.16)', display: 'flex', alignItems: 'center', gap: '22px', padding: '0 22px', boxSizing: 'border-box' });
+      const fs = Math.min(...it.map(q => fit(q, 36, cw - 190))); o.rows = it.map((q, i) => { const r = el(o.c, 'div', 'abs', { left: '40px', top: 100 + i * rh + 'px', width: cw - 80 + 'px', height: rh - 16 + 'px', borderRadius: '14px', background: 'rgba(60,120,230,.16)', display: 'flex', alignItems: 'center', gap: '22px', padding: '0 22px', boxSizing: 'border-box' });
         r.bx = el(r, 'div', '', { position: 'relative', width: '40px', height: '40px', flex: 'none', borderRadius: '50%', border: `3px solid ${DG.ICE}` });
-        r.ck = svg(r.bx, 4, 7, 26, 20, `<path d="M2 10 L10 18 L24 2" stroke="${DG.NIGHT}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`); el(r, 'span', '', { font: `500 ${fit(q, 36, cw - 190)}px ${DG.UI}`, color: DG.WHITE, whiteSpace: 'nowrap' }, q); return r; });
+        r.ck = svg(r.bx, 4, 7, 26, 20, `<path d="M2 10 L10 18 L24 2" stroke="${DG.NIGHT}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`); el(r, 'span', '', { font: `500 ${fs}px ${DG.UI}`, color: DG.WHITE, whiteSpace: 'nowrap' }, q); return r; });
       o.upd = u => { tf(o.c, { o: o3(u / .25), s: .85 + .15 * ob(u / .45) }); o.rows.forEach((r, i) => { tf(r, { o: o3((u - .15 - i * .08) / .2), x: 40 * (1 - o3((u - .15 - i * .08) / .3)) });
         const on = u > .55 + i * .22; r.bx.style.background = on ? DG.GOLD : 'transparent'; r.bx.style.borderColor = on ? DG.GOLD : DG.ICE; r.bx.style.boxShadow = on ? `0 0 16px ${DG.GOLD}` : 'none'; r.ck.style.opacity = on ? 1 : 0; }); };
     }
@@ -155,7 +155,7 @@
       el(o.c, 'div', 'abs', { left: '-60px', width: '260px', top: '-112px', textAlign: 'center', font: `900 ${fit(s, 44, 250)}px ${DG.CN}`, color: DG.GOLD, textShadow: `0 0 14px rgba(255,207,58,.8)` }, s);
       el(o.c, 'div', 'abs', { left: '24px', right: '24px', top: '112px', height: '12px', borderRadius: '6px', background: 'rgba(5,10,24,.45)' });
       o.rg = svg(F, cx - rr - 20, cy - rr - 20, 2 * rr + 40, 2 * rr + 40, `<circle cx="${rr + 20}" cy="${rr + 20}" r="${rr}" fill="none" stroke="${DG.GOLD}" stroke-width="7" pathLength="1" stroke-dasharray="1 1" transform="rotate(-90 ${rr + 20} ${rr + 20})"/>`, { filter: `drop-shadow(0 0 12px ${DG.GOLD})`, transformOrigin: '50% 50%' });
-      const t2 = w.b || '一键直达', t2s = fit(t2, pk(110, 120), pk(760, 620)); o.t = title(F, pk(120, 70), pk(H * .78, 200), t2, t2s);
+      const t2 = w.b || '一键直达', t2s = fit(t2, pk(110, 120), pk(440, 620)); o.t = title(F, pk(70, 70), pk(250, 200), t2, t2s);
       o.upd = u => { tf(o.c, { s: ob(u / .4), o: o3(u / .2), r: -4 * (1 - o3(u / .5)) }); o.rg.querySelector('circle').setAttribute('stroke-dashoffset', 1 - o3((u - .25) / .55));
         tf(o.rg, { s: 1 + .05 * Math.sin(Math.max(0, u - .8) * 6) }); tf(o.t, { o: o3((u - .7) / .3), y: 24 * (1 - o3((u - .7) / .4)) }); };
     }
