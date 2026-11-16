@@ -62,6 +62,16 @@ The house style approved on the CasualTalk project (Oct 2026). Use it for every 
 - Every on-screen word comes straight from the .srt, unchanged. Rooms, size, price appear only if Eva supplies them.
 - Sound from the content: a pop per point, a light impact on the red word, a ding at the end. No music, original voice.
 
+## Template T29 · Depth Glow (景深光效)
+- Added Nov 16 2026 (owner-approved look). Engine `engine/t29.js` (branch `t29-depth-glow`), 5 s samples `template/sample5/t29/` (9:16) and `t29w/` (16:9), 9-layout sheets `t29-layouts/`, `t29w-layouts/`.
+- Look learned from a reference talking-head clip: tech motion graphics render **behind** the presenter. Rebuilt as original graphics: no third-party logos, footage or copy; the AI mark is our own spark icon.
+- Three depth layers, fixed: the real room, graded dark and cool (brightness ≈ .34, desaturated, navy multiply + vignette) → glowing graphics → Eva on top = HD frame masked by the AI cut-out (`scripts/matte.py`), natural colour, soft blue rim, same scale as the footage (never zoomed), whole head visible.
+- Palette: night `#050a18`, blue `#2f7bff`, cyan `#5fd3ff`, ice `#cfeaff`, gold `#ffcf3a` for highlights; Noto Sans CJK SC 900 for CN titles, Inter for UI text; glow = layered text-shadow / drop-shadow.
+- 9 layouts: 01 glowing headline + chip · 02 rising trend line with live tip · 03 rotating dot globe + result chips · 04 AI mark + label + orbiting text ring · 05 glowing search box that types · 06 data wall, brackets lock on one tile · 07 particle stream from the mark to a gold site card · 08 checklist card, ticks one by one · 09 gold ring spotlight + title.
+- Placement: graphics may pass behind head and body, **text never does**. 9:16: text in the band above the head; 16:9: text in the left/right columns beside her (`EV.pick(landscape, portrait)`).
+- Copy comes from the script (`w.a`, `w.b`, `w.items`), auto-fit; sample copy is illustrative. Beats can be short (~1.2 s): cards and ticks land inside the beat.
+- No template sound or music; SFX per video with `K.cue`. Rendering needs the cut-out frames: run `matte.py` on the clip first (≈1 frame/s on CPU).
+
 ## Template fixes and layouts (Nov 6 2026)
 - **T26 Vintage Story (复古拼贴故事):** the presenter cut-out keeps the original scale in every layout (no 1.25–1.75× zoom, no entrance zoom); poses only move her (01 centre, 02 left, 03/08/09 right) so the whole head, shoulders and hands stay in frame and the titles sit behind her. The pixels come from the HD frame masked by the cut-out, with the cream outline and shadow on top.
 - **T17 Science Network:** original look unchanged. Face-safe headlines: the presenter is always on top; `T.sciAvoid` keeps big type upper-left (reflowed into a taller left column at full size, or above the head, or on the far side) and never across the face or hands; with a full-bleed presenter `T.sciCutTop` puts her sharp cut-out above the type.
