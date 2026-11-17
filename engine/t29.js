@@ -45,7 +45,10 @@
     if (opt.al === 'center') { e.style.left = (x - 2000) + 'px'; e.style.width = '4000px'; } return e; };
 
   /* ---------- layouts ---------- */
-  T.dgLayout = (n, L, w, m) => { w = w || {}; const o = { n, w };
+  /* w.auto (Studio automatic edits): no sample copy ever appears — a missing text is an invisible zero-width space, and the
+     skin hides the element (chip, ring, tag). Demos and the 9-layout sheets (no w.auto) are unchanged. */
+  T.dgLayout = (n, L, w, m) => { w = w || {}; if (w.auto) { const Z = '\u200b'; w = Object.assign({}, w); ['a', 'b', 'k', 'ring'].forEach(k => { if (w[k] == null || w[k] === '') w[k] = Z; }); }
+    const o = { n, w };
     const R = o.root = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden' });
     o.plate = T.dgPlate(R); const F = o.fx = el(R, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 10 }); o.cut = T.dgCut(R);
     const W = C.W, H = C.H;
