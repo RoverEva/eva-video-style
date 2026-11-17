@@ -26,7 +26,8 @@
     el(p, 'div', 'abs', { left: 0, top: 0, width: '100%', height: '100%', background: 'radial-gradient(ellipse at 50% 38%, rgba(0,0,0,0) 35%, rgba(0,0,0,.6) 100%)' });
     return p; };
   T.dgCut = R => { const w = el(R, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 50, filter: 'drop-shadow(0 0 26px rgba(95,170,255,.28))' });
-    w.im = el(w, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover', WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskPosition: '50% 50%', maskPosition: '50% 50%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }); return w; };
+    const land = C.portrait && C.src && C.src.w > C.src.h, fit = land ? 'contain' : 'cover', pos = land ? '50% 100%' : '50% 50%';   /* landscape footage in 9:16: her own size at the bottom */
+    w.im = el(w, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: pos, WebkitMaskSize: fit, maskSize: fit, WebkitMaskPosition: pos, maskPosition: pos, WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }); return w; };
   const depthAt = (o, m, t) => { C.setSrc(o.plate.im, m.frame(t)); C.setSrc(o.cut.im, m.frame(t)); const mk = `url(${m.cut(t)})`;
     if (o.cut.im._m !== mk) { o.cut.im.style.webkitMaskImage = o.cut.im.style.maskImage = mk; o.cut.im._m = mk; } tf(o.cut, { x: 0, y: 0, s: 1 }); };
 
