@@ -21,14 +21,17 @@
 
   /* ---------- depth layers ---------- */
   T.dgPlate = R => { const p = el(R, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 0, overflow: 'hidden', background: DG.NIGHT });
-    p.im = el(p, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(.34) saturate(.55) contrast(1.12)' });
+    if (C.portrait && C.src && C.src.w > C.src.h) {   /* landscape footage in 9:16: a blurred dark fill, then the real room at its own size at the bottom */
+      p.fill = el(p, 'img', 'abs', { left: '-6%', top: '-6%', width: '112%', height: '112%', objectFit: 'cover', filter: 'blur(36px) brightness(.18) saturate(.4)' });
+      p.im = el(p, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: '50% 100%', filter: 'brightness(.34) saturate(.55) contrast(1.12)' }); }
+    else p.im = el(p, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(.34) saturate(.55) contrast(1.12)' });
     el(p, 'div', 'abs', { left: 0, top: 0, width: '100%', height: '100%', background: 'linear-gradient(180deg, rgba(6,14,40,.55), rgba(5,10,24,.25) 55%, rgba(0,0,0,.55))', mixBlendMode: 'multiply' });
     el(p, 'div', 'abs', { left: 0, top: 0, width: '100%', height: '100%', background: 'radial-gradient(ellipse at 50% 38%, rgba(0,0,0,0) 35%, rgba(0,0,0,.6) 100%)' });
     return p; };
   T.dgCut = R => { const w = el(R, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 50, filter: 'drop-shadow(0 0 26px rgba(95,170,255,.28))' });
     const land = C.portrait && C.src && C.src.w > C.src.h, fit = land ? 'contain' : 'cover', pos = land ? '50% 100%' : '50% 50%';   /* landscape footage in 9:16: her own size at the bottom */
     w.im = el(w, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: fit, objectPosition: pos, WebkitMaskSize: fit, maskSize: fit, WebkitMaskPosition: pos, maskPosition: pos, WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }); return w; };
-  const depthAt = (o, m, t) => { C.setSrc(o.plate.im, m.frame(t)); C.setSrc(o.cut.im, m.frame(t)); const mk = `url(${m.cut(t)})`;
+  const depthAt = (o, m, t) => { C.setSrc(o.plate.im, m.frame(t)); if (o.plate.fill) C.setSrc(o.plate.fill, m.frame(t)); C.setSrc(o.cut.im, m.frame(t)); const mk = `url(${m.cut(t)})`;
     if (o.cut.im._m !== mk) { o.cut.im.style.webkitMaskImage = o.cut.im.style.maskImage = mk; o.cut.im._m = mk; } tf(o.cut, { x: 0, y: 0, s: 1 }); };
 
   /* ---------- shared graphic pieces ---------- */
