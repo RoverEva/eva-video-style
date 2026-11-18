@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "T26",
+  "window": {"x": 0, "y": 0, "w": 1920, "h": 1080, "r": 0, "s": 1},
+  "side": "left",
+  "theme": "t26",
+  "condensed": true,
+  "presenter": "own",
+  "owns_cards": true,
+  "portrait": "native"
+}
