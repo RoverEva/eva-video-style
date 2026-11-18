@@ -21,3 +21,5 @@ music-library/**/*.opus
 music-library/**/SOURCE_LICENSE.txt
 music-library/catalog.json
 *.m4a
+template/sample5/media26/
+template/sample5/media29w/

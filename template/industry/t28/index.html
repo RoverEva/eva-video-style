@@ -1,7 +1,8 @@
 <!doctype html><html><head><meta charset="utf-8"><title>T28 Real Estate Social</title>
 <link rel="stylesheet" href="../../../engine/engine.css"></head>
 <body><div id="stage"></div>
-<script>window.EV_AR = '9:16';   /* vertical by default; ?ar=16:9 renders the horizontal layout */</script>
+<script>window.EV_AR = '9:16';   /* T28 is 9:16 only (owner decision 2026-11-18): an ?ar= option is forced back to 9:16 */
+  (() => { const u = new URL(location.href); if (u.searchParams.has('ar') && u.searchParams.get('ar') !== '9:16') { u.searchParams.set('ar', '9:16'); history.replaceState(null, '', u); } })();</script>
 <script src="../../../engine/engine.js"></script>
 <script src="../../../engine/kit.js"></script>
 <script>document.write('<script src="' + (new URLSearchParams(location.search).get('data') || 'data.js') + '"><\/script>');  /* ?data=FILE picks another beat plan */</script>

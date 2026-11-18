@@ -1,6 +1,6 @@
-/* T28 Real Estate Social v2 (9:16 + 16:9; was built as T26 on feat/vertical-layouts-demos) —
+/* T28 Real Estate Social v2 (9:16 only, owner decision 2026-11-18; was built as T26 on feat/vertical-layouts-demos) —
  * v2 rules: the presenter is on top of every text layer and never larger than the footage (scale ≤ 1); text sits in the
- * free area (9:16: top and left; 16:9: left two thirds) so nothing is drawn over her.
+ * free area (top and left) so nothing is drawn over her. The 16:9 branches below are kept from v1 but not supported.
  * Chinese social "property tour" look:
  * cut-out presenter with a white sticker outline, heavy dark headline with a white keyline and one red phrase,
  * yellow brush underline, yellow spark strokes, red hearts, icon list that builds up line by line.
