@@ -126,6 +126,16 @@ All 23 templates are MIT-licensed, Free and independently installable. Download 
 
 T08, T25 and T28 are excluded. T18 and T22 are retired and their IDs are not reused.
 
+### MBTI · Glow Beat (music template) | MBTI 光之人格卡点（音乐模板）
+
+[`template/mbti/`](template/mbti/) makes a 29-second, 16:9 beat-synced music video for any of the 16 MBTI types. A hero drawn in glowing line art stands among candles, and the prop drop, candle waves, light beam, title burst, light rings and crowd rising all land on the beat. All 16 presets are included. Bring your own music track (the beat grid is measured from it). Unlike the talking-head templates, this one is music-driven and has no presenter. See its [README](template/mbti/README.md) and [prompts](template/mbti/PROMPTS.md).
+
+[`template/mbti/`](template/mbti/) 可以为 16 型人格中任意一型生成 29 秒的 16:9 音乐卡点短片：发光线稿人物、烛光、光束、光环、人群起立全部踩点，内置 16 套预设，音乐自备（节拍自动测量）。这是唯一一个音乐驱动、没有出镜人的模板。
+
+```sh
+python3 template/mbti/render.py --type ENFJ --music media/MBTI_music.mp3 --out out/ENFJ.mp4
+```
+
 ## Installation | 安装指南
 
 **Requirements / 系统要求**
