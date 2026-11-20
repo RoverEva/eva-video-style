@@ -56,5 +56,14 @@
       "金色关键词"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "hood | long_straight | long_wavy | curly | swept | tousled | side_part | spiky | crew | bun | pompadour | ponytail | headband | bob | faux_hawk | braid",
+    "eyes": "closed | open | smile | sharp",
+    "brows": "none | soft | angled | raised | straight",
+    "mouth": "calm | smile | line | grin | smirk",
+    "acc": [
+      "circlet | crown | star_clip | flower | glasses | earrings | beard"
+    ]
+  }
 }

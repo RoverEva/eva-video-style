@@ -56,5 +56,14 @@
       "替所有人思考"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "tousled",
+    "eyes": "open",
+    "brows": "straight",
+    "mouth": "line",
+    "acc": [
+      "glasses"
+    ]
+  }
 }

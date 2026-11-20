@@ -56,5 +56,12 @@
       "整片黑夜都亮了"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "hood",
+    "eyes": "closed",
+    "brows": "none",
+    "mouth": "calm",
+    "acc": []
+  }
 }

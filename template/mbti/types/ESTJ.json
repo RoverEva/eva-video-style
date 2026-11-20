@@ -56,5 +56,12 @@
       "靠得住"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "pompadour",
+    "eyes": "sharp",
+    "brows": "straight",
+    "mouth": "line",
+    "acc": []
+  }
 }

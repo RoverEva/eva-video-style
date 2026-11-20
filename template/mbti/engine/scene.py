@@ -5,6 +5,7 @@ so the template follows any track once its grid is measured (see beats.py).
 """
 import math
 import numpy as np, cv2
+from .heads import draw_head
 from .core import (W, H, GY, cl, ramp, eo, eio, lerp, pulse, pop, spline, mir, offset_line, Palette,
                    GROUP_PALETTE, Cam, Canvas, flame, Text, F, SERIF_B, SERIF_BL, SANS_M, gold_idx)
 
@@ -54,6 +55,7 @@ class MBTIScene:
         group = ('N' + self.L[2]) if self.L[1] == 'N' else ('S' + self.L[3])
         self.P = Palette(cfg.get('palette') or GROUP_PALETTE[group])
         self.prop = cfg.get('prop', 'sword')
+        self.look = cfg.get('look', {'hair': 'hood'})
         self.off, self.e8 = offset, eighth
         self.duration = self.T(END_BEAT)
         self.logo = logo     # optional BGR float image (brand logo), else a drawn eye
@@ -232,14 +234,7 @@ class MBTIScene:
         tp(cv, DRAPE_L, cb, a, 2.2, st(1)); tp(cv, mir(DRAPE_L), cb, a, 2.2, st(1))
         tp(cv, MANTLE, P.GOLD, a, 2.4, st(1.5))
         cv.poly(spline(MANTLE + [(1060, 390), (960, 360), (860, 390)], closed=True), P.GOLD * 0.08, a * st(1.5), layer=cv.F)
-        tp(cv, HOOD, P.SOFT, a, 2.4, st(2.5)); tp(cv, FACE, P.SOFT, a * 0.9, 1.8, st(2.5), closed=True)
-        if st(3) > 0.3:
-            k = st(3)
-            for ex in (943, 977): cv.path([(ex - 10, 246), (ex, 250), (ex + 10, 246)], P.SOFT, a * k, 1.6)
-            cv.path([(960, 252), (957, 272), (963, 274)], P.SOFT, a * 0.7 * k, 1.4, smooth=False)
-            cv.path([(951, 286), (960, 289), (969, 286)], P.SOFT, a * 0.8 * k, 1.4)
-            cv.path([(915, 300), (912, 345)], P.SOFT, a * .8 * k, 1.8, smooth=False)
-            cv.path([(1005, 300), (1008, 345)], P.SOFT, a * .8 * k, 1.8, smooth=False)
+        draw_head(self, cv, self.look, a, st(2.5), st(3) if st(3) > 0.3 else 0.0)
         c_ = cloak_pts(spread)
         tp(cv, c_, cb, a, 2.4, st(4)); tp(cv, mir(c_), cb, a, 2.4, st(4))
         hem = [c_[-1], (800 - 200 * spread, 916), (880, 906), (960, 917), (1040, 906), (1120 + 200 * spread, 916), (W - c_[-1][0], c_[-1][1])]

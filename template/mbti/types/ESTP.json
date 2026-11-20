@@ -56,5 +56,12 @@
       "机会"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "faux_hawk",
+    "eyes": "sharp",
+    "brows": "raised",
+    "mouth": "smirk",
+    "acc": []
+  }
 }

@@ -56,5 +56,14 @@
       "不肯让世界变冷"
     ]
   },
-  "ending_pre": "他就是"
+  "ending_pre": "他就是",
+  "look": {
+    "hair": "long_wavy",
+    "eyes": "closed",
+    "brows": "soft",
+    "mouth": "calm",
+    "acc": [
+      "flower"
+    ]
+  }
 }
