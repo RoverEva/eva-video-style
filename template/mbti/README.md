@@ -39,10 +39,25 @@ The palette follows the type's group, so the four groups look like one family. T
 
 | Group | Palette | Types → prop |
 |---|---|---|
-| NF 外交家 | emerald 翡翠绿 + gold | ENFJ 主人公 sword · INFJ 提倡者 lantern · ENFP 竞选者 star · INFP 调停者 lantern |
-| NT 分析家 | violet 紫 + gold | INTJ 建筑师 orb · INTP 逻辑学家 orb · ENTJ 指挥官 sword · ENTP 辩论家 star |
-| SJ 守护者 | azure 蓝 + pale gold | ISTJ 物流师 sword · ISFJ 守卫者 lantern · ESTJ 总经理 sword · ESFJ 执政官 lantern |
-| SP 探险家 | amber 琥珀 + white gold | ISTP 鉴赏家 orb · ISFP 探险家 star · ESTP 企业家 sword · ESFP 表演者 star |
+| NF 外交家 · 绿色系 | emerald 翡翠绿 + gold | ENFJ 主人公 sword · INFJ 提倡者 lantern · ENFP 竞选者 star · INFP 调停者 lantern |
+| NT 分析师 · 紫色系 | violet 紫 + gold | INTJ 建筑师 orb · INTP 逻辑学家 orb · ENTJ 指挥官 sword · ENTP 辩论家 star |
+| SJ 守护者 · 蓝色系 | azure 蓝 + pale gold | ISTJ 物流师 sword · ISFJ 守卫者 lantern · ESTJ 总经理 sword · ESFJ 执政官 lantern |
+| SP 探险家 · 黄色系 | amber 琥珀 + white gold | ISTP 鉴赏家 orb · ISFP 探险家 star · ESTP 企业家 sword · ESFP 表演者 star |
+
+Every type also has its own face and hairstyle (`"look"` in the preset): 16 hairstyles, four eye styles, brows, mouths and accessories. Edit `look` to restyle a hero. All the options are listed in `engine/heads.py` and `types/_TEMPLATE.json`.
+
+每型都有自己的脸和发型（预设里的 `look`）：16 种发型、4 种眼睛，加上眉毛、嘴型和配饰（额饰、王冠、星星发夹、花、眼镜、耳环、胡子）。
+
+| Type | Look | Type | Look |
+|---|---|---|---|
+| ENFJ | long straight hair, circlet, smile | INFJ | hood, closed eyes |
+| ENFP | curls, star clip, grin | INFP | long wavy hair, flower |
+| INTJ | swept-back, sharp eyes | INTP | tousled hair, glasses |
+| ENTJ | side part, crown | ENTP | spiky hair, smirk |
+| ISTJ | crew cut, beard | ISFJ | top bun, smiling eyes |
+| ESTJ | pompadour | ESFJ | ponytail, earrings |
+| ISTP | headband | ISFP | bob, earrings |
+| ESTP | faux hawk, smirk | ESFP | side braid, star clip |
 
 Each trait section changes its visual with the letter:
 
