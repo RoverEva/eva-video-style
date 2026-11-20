@@ -80,9 +80,27 @@ Copy `types/_TEMPLATE.json` to `types/XXXX.json`. Each caption slot holds `[line
 
 `--group NT` 渲染一支四人组队片：碎星图、四道光束按拍落下、四人同台、四段独段、对线、合力、星图拼完整。配置在 `groups/NT.json`。
 
+There are four groups. Each hero's solo is a beat-by-beat build defined in `engine/signatures.py`:
+
+四个组队片，每人的独段画面都是按拍搭起来的：
+
+| Group | Members → solo signature |
+|---|---|
+| `NT` 紫人组 · NT 分析师 | INTJ blueprint city · INTP derivation tree · ENTJ marching formation · ENTP morphing sparks |
+| `NF` 绿人组 · NF 外交家 | INFJ sky lanterns · INFP flower bloom · ENFJ light links lighting people · ENFP fireworks |
+| `SJ` 蓝人组 · SJ 守护者 | ISTJ checklist ticks · ISFJ shield dome over people · ESTJ pillars and roof · ESFJ circle of people |
+| `SP` 黄人组 · SP 探险家 | ISTP interlocking gears · ISFP rainbow brush strokes · ESTP darts into a target · ESFP spotlights and confetti |
+
 ```bash
 python3 template/mbti/render.py --group NT --music media/MBTI_music.mp3 --out out/NT_紫人组.mp4
+python3 template/mbti/render.py --group NF --music media/MBTI_music.mp3 --out out/NF_绿人组.mp4
+python3 template/mbti/render.py --group SJ --music media/MBTI_music.mp3 --out out/SJ_蓝人组.mp4
+python3 template/mbti/render.py --group SP --music media/MBTI_music.mp3 --out out/SP_黄人组.mp4
 ```
+
+To make a new group or swap a solo, copy a file in `groups/` and change `members[].signature` to any name in `SIG_CAM` in `signatures.py`.
+
+新建组或换独段画面：复制 `groups/` 里的配置，把 `signature` 换成 `signatures.py` 里任一效果名。
 
 ## Music | 音乐
 

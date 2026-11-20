@@ -9,9 +9,11 @@ import json, math, os
 import numpy as np, cv2
 from .core import (W, H, GY, cl, ramp, eo, eio, lerp, pulse, pop, Palette, Cam, Canvas, flame, Text, F,
                    SERIF_B, SERIF_BL, SANS_M, gold_idx)
+from .signatures import SIGS, SIG_CAM, SIG_CAP
 from .scene import (MBTIScene, ARM_L, ARM_R, lerp_pose, FLAMES, STARS, CROWD, SHARDS, END_BEAT)
 
 XS = (480, 800, 1120, 1440)      # stage positions, left to right
+SOLO = (31, 38, 46, 54, 62)      # solo start beats per stage slot
 K = 0.55                          # hero scale on the group stage
 
 _r = np.random.default_rng(23)
@@ -78,8 +80,8 @@ class GroupScene:
         self.CAMK = [(0, 0, 1.08, 960, 420), (T(1.5), 0.3, 1.0, 960, 520), (T(10), 0.6, 1.25, 960, 600),
                      (T(13), 0.01, 2.6, XS[0], 560), (T(15), 0.18, 2.6, XS[1], 560), (T(17), 0.18, 2.6, XS[2], 560),
                      (T(19), 0.18, 2.6, XS[3], 560), (T(20.5), 0.9, 1.0, 960, 540),
-                     (T(31), 0.3, 1.7, XS[0] + 120, 640), (T(38), 0.2, 3.0, XS[1], 560), (T(41), 0.35, 1.7, XS[1] + 120, 560),
-                     (T(46), 0.3, 1.45, XS[2], 700), (T(54), 0.3, 1.7, XS[3] - 160, 520),
+                     (T(31), 0.3, *self._solo_cam(0)), (T(38), 0.2, 3.0, XS[1], 560), (T(41), 0.35, *self._solo_cam(1)),
+                     (T(46), 0.3, *self._solo_cam(2)), (T(54), 0.3, *self._solo_cam(3)),
                      (T(62), 0.25, 1.0, 960, 540), (T(70.5), 0.35, 0.95, 960, 500), (T(79), 1.2, 1.0, 960, 540)]
         c = gcfg['captions']
         def cap(key, t1, t2, te, x, y, tag=None, big2=False):
@@ -88,12 +90,19 @@ class GroupScene:
         self.caps = [cap('open', T(0), T(2), T(6.5), 960, 640), cap('light', T(7), T(8), T(12.5), 960, 640),
                      cap('four', T(13.5), T(15.5), T(22.6), 960, 160),
                      cap('title2', T(26), T(27.5), T(30.6), 330, 170),
-                     cap('m0', T(32), T(34), T(37.6), 1460, 300, names[0]), cap('m1', T(38.5), T(42), T(45.6), 1460, 300, names[1]),
-                     cap('m2', T(47), T(49), T(53.6), 1660, 190, names[2]), cap('m3', T(55), T(57), T(61.6), 460, 300, names[3]),
+                     cap('m0', T(32), T(34), T(37.6), *self._solo_cap(0), names[0]), cap('m1', T(38.5), T(42), T(45.6), *self._solo_cap(1), names[1]),
+                     cap('m2', T(47), T(49), T(53.6), *self._solo_cap(2), names[2]), cap('m3', T(55), T(57), T(61.6), *self._solo_cap(3), names[3]),
                      cap('clash', T(62), T(64), T(66.6), 960, 160), cap('unite', T(67), T(68.5), T(70.6), 960, 160),
                      cap('climax', T(73), T(75), T(76.8), 960, 130), cap('end', T(77), T(78), T(80.4), 960, 300, big2=True)]
 
     def T(self, n): return self.off + n * self.e8
+
+    def _solo_cap(self, i):
+        return SIG_CAP.get(self.members[i][1], ((1460, 300), (1460, 300), (1660, 190), (460, 300))[i])
+
+    def _solo_cam(self, i):
+        dx, cy, sc = SIG_CAM[self.members[i][1]]
+        return (sc, XS[i] + dx, cy)
 
     # ------------------------------------------------------------ camera
     def camera(self, t):
@@ -211,7 +220,7 @@ class GroupScene:
             call = pulse(t, T(73 + i), 0.5) * 2.0 if t >= T(73) else 0
             bright = (0.6 if solo else 0) + call + 0.5 * pulse(t, T(65), 0.4)
             kU = kUp
-            if sig == 'formation': kU = max(kU, 0.75 * eio(ramp(t, T(47), T(47.6))) * (1 - eio(ramp(t, T(53), T(54)))))
+            if sig in ('formation', 'lightlink', 'target'): kU = max(kU, 0.75 * eio(ramp(t, T(SOLO[i] + 1), T(SOLO[i] + 1.6))) * (1 - eio(ramp(t, T(SOLO[i + 1] - 1), T(SOLO[i + 1])))))
             aL = lerp_pose(ARM_L['rest'], ARM_L['open'], kUp); aR = lerp_pose(ARM_R['rest'], ARM_R['up'], kU)
             cv.cam = sub
             sc.draw_figure(cv, t, (1.0 if t >= T(13) else 0.0) * (1 - 0.8 * endF), prog, aL, aR, spread, bright)
@@ -252,68 +261,12 @@ class GroupScene:
             self.members[0][0].ring_burst(cv, t, t0, c, r0, r1, 0.9)
         self.members[0][0].star_flare(cv, (960, 600), 420, pulse(t, T(23), 0.7) * 1.4)
 
-        # ---- solo signatures ----
-        X0 = XS[0]; bA = ramp(t, T(31), T(32)) * (1 - 0.75 * ramp(t, T(38), T(39)) - 0.25 * ramp(t, T(61), T(63))) * amb
-        if bA > 0:        # INTJ blueprint grid (one cell per beat) + rising city
-            n = cl((t - T(32)) / self.e8, 0, 12)
-            for k in range(7):
-                x = X0 - 360 + k * 120; on = ramp(n, k, k + 0.6)
-                cv.path([(x, GY + 4), (X0 + (x - X0) * 1.6, 1080)], LN, 0.5 * bA * on, 1.2, on, smooth=False)
-            for k in range(4):
-                y = GY + 4 + k * 42; on = ramp(n, 6 + k, 6.6 + k); w = 360 + k * 90
-                cv.path([(X0 - w, y), (X0 + w, y)], LN, 0.5 * bA * on, 1.2, on, smooth=False)
-            for k, (bx, bw, bh) in enumerate(((X0 - 330, 70, 150), (X0 - 240, 60, 220), (X0 + 180, 80, 190), (X0 + 280, 60, 260), (X0 + 360, 70, 140), (X0 - 400, 50, 110))):
-                up = eo(ramp(t, T(33 + k), T(33.6 + k))); hgt = bh * up
-                if up > 0:
-                    cv.path([(bx, GY), (bx, GY - hgt), (bx + bw, GY - hgt), (bx + bw, GY)], LN, 0.7 * bA, 1.6, smooth=False)
-                    for wy in range(int(GY - hgt + 20), GY - 10, 30):
-                        cv.path([(bx + 12, wy), (bx + bw - 12, wy)], G, 0.35 * bA, 1.0, smooth=False)
-        X1 = XS[1]; tA = ramp(t, T(41.5), T(42)) * (1 - 0.8 * ramp(t, T(46), T(47)) - 0.2 * ramp(t, T(61), T(63))) * amb
-        if t >= T(38) and t < T(39):     # glasses glint on the punch-in
-            cv.glow((face[1][0] - 9, face[1][1] - 2), 14, P.WARM, 2.0 * pulse(t, T(38), 0.3))
-        if tA > 0:        # INTP derivation tree, one level per beat
-            root = heads[1][0]; levels = [[root]]
-            for lv in range(4):
-                nxt = []
-                for p in levels[-1]:
-                    for s in (-1, 1): nxt.append((p[0] + s * 110 / (lv + 1) ** 0.7, p[1] - 70))
-                levels.append(nxt)
-            for lv in range(1, 5):
-                on = eo(ramp(t, T(41 + lv), T(41.4 + lv)))
-                if on <= 0: continue
-                for k, p in enumerate(levels[lv]):
-                    par = levels[lv - 1][k // 2]
-                    cv.path([par, p], G, 0.8 * tA, 1.4, on, smooth=False)
-                    if on >= 1: cv.circle(p, 3.5, Wm, tA, fill=True)
-            if t >= T(45):
-                for k, p in enumerate(levels[4][::3]):
-                    q = cam([p])[0]; sym = '?√∞π'[k % 4]
-                    a = eo(ramp(t, T(45) + k * 0.04, T(45.5) + k * 0.04)) * tA
-                    tx.d.text((q[0], q[1] - 12), sym, font=F(SERIF_B, int(30 * cam.s / 1.7)), fill=tuple(P.HI) + (int(255 * a),), anchor='ms')
-        X2 = XS[2]; fA = ramp(t, T(47), T(48)) * (1 - 0.7 * ramp(t, T(54), T(55)) - 0.3 * ramp(t, T(61), T(63))) * amb
-        if fA > 0:        # ENTJ formation: a row of light points per beat, marching forward
-            for row in range(6):
-                tr = T(48 + row)
-                if t < tr: continue
-                y = GY + 150 - row * 22; sc_ = 1 - row * 0.09
-                for c_ in range(9):
-                    x = X2 + (c_ - 4) * 52 * sc_
-                    self.members[2][0].person(cv, x, y + 30, 0.55 * sc_ * pop(t, tr, 0.15), Wm, fA * (0.7 + 0.6 * pulse(t, tr, 0.3)))
-                    cv.glow((x, y), 14, G, 0.5 * fA * pulse(t, tr, 0.3))
-        X3 = XS[3]; mA = ramp(t, T(55), T(55.5)) * (1 - ramp(t, T(61), T(63))) * amb
-        if mA > 0:        # ENTP sparks: scatter, then a new shape each beat
-            c0 = np.array([X3, 300.]); size = 110
-            k = int(cl((t - T(56)) / self.e8, -1, 3)); s = cl((t - T(56 + max(k, 0))) * 6)
-            for idx in range(40):
-                q, v = SPARK[idx]
-                scat = c0 + np.array([math.cos(q), math.sin(q)]) * 160 * v
-                if k < 0: p = heads[3][0] + (scat - np.array(heads[3][0])) * eo(ramp(t, T(55), T(56)))
-                else:
-                    prev = scat if k == 0 else c0 + SHAPES[k - 1][idx] * size
-                    p = prev + (c0 + SHAPES[k][idx] * size - prev) * eo(s)
-                cv.circle(tuple(p), 3.2, Wm, mA, fill=True); cv.glow(tuple(p), 9, G, 0.5 * mA)
-            if k >= 0 and s >= 0.99:
-                cv.path([tuple(c0 + p * size) for p in SHAPES[k]], G, 0.5 * mA, 1.2, smooth=False)
+        # ---- solo signatures (one per hero, beat-by-beat builds; see signatures.py) ----
+        for i, (sc, sig) in enumerate(self.members):
+            b0, b1 = SOLO[i], SOLO[i + 1]
+            A = ramp(t, T(b0), T(b0 + 1)) * (1 - 0.75 * ramp(t, T(b1), T(b1 + 1)) - 0.25 * ramp(t, T(61), T(63))) * amb
+            if A > 0 or sig == 'tree' and T(b0) <= t < T(b0 + 1):
+                SIGS[sig](self, cv, tx, t, i, b0, max(A, 0.0), heads, face)
 
         # ---- clash (one bolt per beat, pairs alternate) ----
         if T(62) <= t < T(67):
