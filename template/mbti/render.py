@@ -24,7 +24,12 @@ def make_scene(args):
     import cv2
     from engine.scene import MBTIScene
     from engine.beats import beat_grid
-    cfg = load_type(args.type)
+    if args.group:
+        from engine.group import GroupScene
+        with open(os.path.join(HERE, 'groups', f'{args.group.upper()}.json'), encoding='utf-8') as f: gcfg = json.load(f)
+        cfg = load_type(gcfg['members'][0]['code'])
+    else:
+        cfg = load_type(args.type)
     if args.grid: off, e8 = map(float, args.grid.split(','))
     elif args.music: off, e8, _ = beat_grid(args.music)
     else: off, e8 = 0.367, 1 / 3.
@@ -33,6 +38,11 @@ def make_scene(args):
     if lp:
         lp = lp if os.path.isabs(lp) else os.path.join(HERE, lp)
         if os.path.exists(lp): logo = cv2.imread(lp).astype('float32') / 255.0
+    if args.group:
+        sc = GroupScene(gcfg, os.path.join(HERE, 'types'), off, e8, logo)
+        for m, _ in sc.members: m.cfg.setdefault('brand', cfg.get('brand', {}))
+        sc.code, sc.cfg, sc.prop = gcfg['group'], {'name_cn': gcfg['title']}, 'group'
+        return sc
     return MBTIScene(cfg, off, e8, logo)
 
 
@@ -49,6 +59,7 @@ def worker(args, a, b, path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--type', default='ENFJ')
+    ap.add_argument('--group', help='render a group video instead, e.g. NT (see groups/)')
     ap.add_argument('--music', help='music track (beat grid is measured from it and it is muxed in)')
     ap.add_argument('--grid', help='override grid as "offset,eighth" seconds, e.g. 0.367,0.3333')
     ap.add_argument('--logo', help='brand logo image (PNG/JPG on black); default: drawn eye')

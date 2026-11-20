@@ -74,6 +74,16 @@ Copy `types/_TEMPLATE.json` to `types/XXXX.json`. Each caption slot holds `[line
 
 复制 `types/_TEMPLATE.json`；每个字幕位是 `[第一行, 第二行, 金色关键词]`，关键词必须出现在第二行里，每行建议不超过 11 个字。写文案的提示词见 `PROMPTS.md`。
 
+## Group videos | 组队片
+
+`--group NT` renders the four types of one temperament on one stage (紫人组 · NT 分析师). A broken star map hangs in the sky. Four beams fall, one per beat, and each brings down a hero's prop. Then come the four heroes, the title, one solo per hero (INTJ blueprint city, INTP derivation tree, ENTJ marching formation, ENTP sparks reshaping on each beat), a clash, the four uniting, and the climax: all four raise their props and the star map completes. The config lives in `groups/NT.json` (title, members, signature per member, captions).
+
+`--group NT` 渲染一支四人组队片：碎星图、四道光束按拍落下、四人同台、四段独段、对线、合力、星图拼完整。配置在 `groups/NT.json`。
+
+```bash
+python3 template/mbti/render.py --group NT --music media/MBTI_music.mp3 --out out/NT_紫人组.mp4
+```
+
 ## Music | 音乐
 
 The track is **not** in this repository. Bring a track you have the rights to and put it in `media/` (git-ignored).
