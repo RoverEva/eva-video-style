@@ -27,6 +27,7 @@ class ZodiacScene(MBTIScene):
                'captions': copy['captions'], 'ending_pre': copy.get('ending_pre', '他就是'), 'brand': brand or {}}
         super().__init__(cfg, offset, eighth, logo)
         self.prop = sign['prop']
+        self.display = sign['cn']
         self.traits = copy['traits']
         gm = glyph_mask(sign['glyph'], 110)
         self.glyph = gm[..., None] * np.array(self.P.GOLD, np.float32) * 1.1
@@ -44,10 +45,10 @@ class ZodiacScene(MBTIScene):
     def texts(self, tx, t):
         T, P, s = self.T, self.P, self.sign
         for l1, l2, t1, t2, te, x, y, g2, tag in self.caps:
-            if tag: tx.tag(tag[0], tag[1], x, y - 58, t, t1 - 0.03, te)
-            fs = 40 if max(len(l1), len(l2)) <= 11 else 36
+            if tag: tx.tag(tag[0], tag[1], x, y - 72, t, t1 - 0.03, te)
+            fs = 60 if max(len(l1), len(l2)) <= 9 else 52
             tx.chars(l1, x, y, F(SERIF_B, fs), P.WHITE, t, t1, te)
-            tx.chars(l2, x, y + 56, F(SERIF_B, fs), P.WHITE, t, t2, te, gold=g2)
+            tx.chars(l2, x, y + int(fs * 1.4), F(SERIF_B, fs), P.WHITE, t, t2, te, gold=g2)
         if T(23) <= t < T(31.5):
             te = T(31); x0 = 1500
             tx.chars(' '.join(s['en'].upper()), x0, 645, F(SERIF_B, 52 if len(s['en']) <= 7 else 42), (225, 240, 228), t, T(23), te, stagger=0.03, spacing=4)

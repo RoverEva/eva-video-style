@@ -27,7 +27,7 @@ def make_scene(args):
     if args.group:
         from engine.group import GroupScene
         with open(os.path.join(HERE, 'groups', f'{args.group.upper()}.json'), encoding='utf-8') as f: gcfg = json.load(f)
-        cfg = load_type(gcfg['members'][0]['code'])
+        cfg = load_type(gcfg['members'][0].get('code', 'ENFJ'))
     else:
         cfg = load_type(args.type)
     if args.grid: off, e8 = map(float, args.grid.split(','))

@@ -89,7 +89,7 @@ class MBTIScene:
             ('title', T(25), T(26.5), T(30.6), 470, 470, None),
             ('s1', T(32), T(34), T(37.6), 1500, 440, 0),
             ('s2', T(38.5), T(42), T(45.6), 1480, 440, 1),
-            ('s3', T(47), T(49.5), T(53.6), 1430, 470, 2),
+            ('s3', T(47), T(49.5), T(53.6), 1560, 430, 2),
             ('s4', T(55), T(57), T(61.6), 1450, 290, 3),
             ('low', T(62.5), T(65), T(70.4), 1500, 420, None),
             ('climax', T(71), T(73), T(76.6), 1460, 300, None)]
@@ -102,10 +102,10 @@ class MBTIScene:
     def texts(self, tx, t):
         T, P, cfg = self.T, self.P, self.cfg
         for l1, l2, t1, t2, te, x, y, g2, tag in self.caps:
-            if tag: tx.tag(tag[0], tag[1], x, y - 58, t, t1 - 0.03, te)
-            fs = 40 if max(len(l1), len(l2)) <= 11 else 36
+            if tag: tx.tag(tag[0], tag[1], x, y - 72, t, t1 - 0.03, te)
+            fs = 60 if max(len(l1), len(l2)) <= 9 else 52
             tx.chars(l1, x, y, F(SERIF_B, fs), P.WHITE, t, t1, te)
-            tx.chars(l2, x, y + 56, F(SERIF_B, fs), P.WHITE, t, t2, te, gold=g2)
+            tx.chars(l2, x, y + int(fs * 1.4), F(SERIF_B, fs), P.WHITE, t, t2, te, gold=g2)
         if T(23) <= t < T(31.5):
             te = T(31); x0 = 1500
             tx.chars(' '.join(self.L), x0, 645, F(SERIF_B, 64), (225, 240, 228), t, T(23), te, stagger=0.03, spacing=8)

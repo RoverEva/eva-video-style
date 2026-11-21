@@ -2,7 +2,7 @@
 
 Every function: sig(gs, cv, tx, t, i, b, A, heads, face)
   gs   GroupScene (T(), e8, P, members, cam via cv.cam)
-  i    stage slot 0..3 (x = XS[i]);  b = the slot's solo start beat;  A = alpha (fades after the solo)
+  i    stage slot 0..3 (x = gs.XS[i]);  b = the slot's solo start beat;  A = alpha (fades after the solo)
   heads[i] = (prop head, prop tip) in world coords;  face[i] = face centre
 SIG_CAM[name] = (dx, cy, scale): how the camera frames the solo (dx = offset from the hero's x).
 """
@@ -15,6 +15,7 @@ SIG_CAM = {
     'blueprint': (120, 640, 1.7), 'tree': (120, 560, 1.7), 'formation': (0, 700, 1.45), 'morph': (-160, 520, 1.7),
     'lanterns': (100, 540, 1.6), 'bloom': (120, 540, 1.7), 'lightlink': (0, 700, 1.45), 'fireworks': (-160, 500, 1.6),
     'checklist': (180, 600, 1.6), 'shield': (60, 700, 1.5), 'pillars': (0, 680, 1.45), 'circle': (-60, 720, 1.45),
+    'ignite': (0, 690, 1.35), 'sunburst': (0, 470, 1.55), 'arrows': (180, 470, 1.4),
     'gears': (160, 600, 1.6), 'brush': (120, 520, 1.7), 'target': (140, 640, 1.5), 'spotlight': (-120, 600, 1.5),
 }
 # caption anchor (screen x, y) when the default side would cover the effect
@@ -47,7 +48,7 @@ SHAPES = [_shape(k) for k in ('q', 'bulb', 'arrow', 'star')]
 
 # ------------------------------------------------------------------ NT
 def blueprint(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; X0 = XS[i]; LN, G = P.LINE, P.GOLD
+    T, P = gs.T, gs.P; X0 = gs.XS[i]; LN, G = P.LINE, P.GOLD
     n = cl((t - T(b + 1)) / gs.e8, 0, 12)
     for k in range(7):
         x = X0 - 360 + k * 120; on = ramp(n, k, k + 0.6)
@@ -84,7 +85,7 @@ def tree(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def formation(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; X2 = XS[i]
+    T, P = gs.T, gs.P; X2 = gs.XS[i]
     for row in range(6):
         tr = T(b + 2 + row)
         if t < tr: continue
@@ -96,7 +97,7 @@ def formation(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def morph(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; c0 = np.array([XS[i], 300.]); size = 110
+    T, P = gs.T, gs.P; c0 = np.array([gs.XS[i], 300.]); size = 110
     k = int(cl((t - T(b + 2)) / gs.e8, -1, 3)); s = cl((t - T(b + 2 + max(k, 0))) * 6)
     for idx in range(40):
         q, v = SPARK[idx]; scat = c0 + np.array([math.cos(q), math.sin(q)]) * 160 * v
@@ -110,7 +111,7 @@ def morph(gs, cv, tx, t, i, b, A, heads, face):
 
 # ------------------------------------------------------------------ NF
 def lanterns(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; X = XS[i]
+    T, P = gs.T, gs.P; X = gs.XS[i]
     for k, dx in enumerate((-240, 200, -120, 300, 60, -330)):
         tf = T(b + 1 + k)
         if t < tf: continue
@@ -120,7 +121,7 @@ def lanterns(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def bloom(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; cx, cy = XS[i], 320
+    T, P = gs.T, gs.P; cx, cy = gs.XS[i], 320
     for k in range(8):
         tf = T(b + 1 + k // 2) + (k % 2) * 0.05
         if t < tf: continue
@@ -135,7 +136,7 @@ def bloom(gs, cv, tx, t, i, b, A, heads, face):
 
 def lightlink(gs, cv, tx, t, i, b, A, heads, face):
     T, P = gs.T, gs.P; h = heads[i][0]
-    for k, (px, sc) in enumerate(((XS[i] - 300, 1.0), (XS[i] + 300, 1.0), (XS[i] - 170, 0.8), (XS[i] + 170, 0.8), (XS[i], 0.7))):
+    for k, (px, sc) in enumerate(((gs.XS[i] - 300, 1.0), (gs.XS[i] + 300, 1.0), (gs.XS[i] - 170, 0.8), (gs.XS[i] + 170, 0.8), (gs.XS[i], 0.7))):
         tf = T(b + 2 + k)
         if t < tf - 0.15: continue
         tgt = (px, GY + 120 - 30 * sc); kk = eo(ramp(t, tf - 0.15, tf)); m = (lerp(h[0], tgt[0], kk), lerp(h[1], tgt[1], kk))
@@ -150,7 +151,7 @@ def fireworks(gs, cv, tx, t, i, b, A, heads, face):
     for k, (dx, y) in enumerate(((-260, 260), (60, 180), (-60, 330), (-360, 160), (120, 300))):
         tf = T(b + 1 + k)
         if t < tf - 0.2: continue
-        x = XS[i] + dx
+        x = gs.XS[i] + dx
         if t < tf:
             yy = lerp(GY - 40, y, eo(ramp(t, tf - 0.2, tf))); cv.circle((x, yy), 4, P.WARM, A, fill=True); continue
         kk = cl((t - tf) / 1.1); r = 20 + 130 * eo(kk); a = A * (1 - kk) ** 1.2
@@ -162,7 +163,7 @@ def fireworks(gs, cv, tx, t, i, b, A, heads, face):
 
 # ------------------------------------------------------------------ SJ
 def checklist(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; x0, y0 = XS[i] + 230, 400
+    T, P = gs.T, gs.P; x0, y0 = gs.XS[i] + 230, 400
     if t >= T(b + 1):
         k = eo(ramp(t, T(b + 1), T(b + 1.5)))
         cv.path([(x0 - 30, y0 - 50), (x0 + 250, y0 - 50), (x0 + 250, y0 + 300), (x0 - 30, y0 + 300), (x0 - 30, y0 - 50)], P.LINE, A * 0.7, 1.6, k, smooth=False)
@@ -177,7 +178,7 @@ def checklist(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def shield(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; cx = XS[i] + 60; R = 250
+    T, P = gs.T, gs.P; cx = gs.XS[i] + 60; R = 250
     for k, dx in enumerate((-110, -40, 40, 110)):
         if t >= T(b + 1): gs.members[i][0].person(cv, cx + dx, GY + 140, 0.9, P.SOFT, A * 0.8 * eo(ramp(t, T(b + 1), T(b + 1.5))), 0, t)
     for k in range(6):
@@ -191,7 +192,7 @@ def shield(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def pillars(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; cx = XS[i]; xs = [cx - 300, cx - 180, cx + 180, cx + 300]
+    T, P = gs.T, gs.P; cx = gs.XS[i]; xs = [cx - 300, cx - 180, cx + 180, cx + 300]
     for k, x in enumerate(xs):
         tf = T(b + 2 + k); up = eo(ramp(t, tf, tf + 0.15))
         if up <= 0: continue
@@ -208,7 +209,7 @@ def pillars(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def circle(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; cx, cy, rx, ry = XS[i], GY + 70, 300, 70
+    T, P = gs.T, gs.P; cx, cy, rx, ry = gs.XS[i], GY + 70, 300, 70
     pos = []
     for k in range(10):
         q = math.pi / 2 + (k // 2 + 1) * (1 if k % 2 == 0 else -1) * math.pi / 6
@@ -234,7 +235,7 @@ def _gear(cv, c, r, teeth, rot, col, a):
 
 
 def gears(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; x0 = XS[i] + 260
+    T, P = gs.T, gs.P; x0 = gs.XS[i] + 260
     G = [((x0, 420), 60, 12, 1), ((x0 + 104, 470), 46, 9, -1.33), ((x0 + 40, 540), 38, 8, 1.6), ((x0 + 170, 380), 40, 8, 1.2), ((x0 + 150, 560), 30, 6, -2)]
     for k, (c, r, n, sp) in enumerate(G):
         tf = T(b + 1 + k)
@@ -244,7 +245,7 @@ def gears(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def brush(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; cx, cy = XS[i] + 40, 470
+    T, P = gs.T, gs.P; cx, cy = gs.XS[i] + 40, 470
     cols = (P.GOLD, P.SOFT, P.LINE, P.WARM, P.GOLD)
     for k in range(5):
         tf = T(b + 1 + k)
@@ -255,7 +256,7 @@ def brush(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def target(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; c = (XS[i] + 330, 470); h = heads[i][0]
+    T, P = gs.T, gs.P; c = (gs.XS[i] + 330, 470); h = heads[i][0]
     if t >= T(b + 1):
         k = eo(ramp(t, T(b + 1), T(b + 1.5)))
         for j, r in enumerate((90, 62, 34, 10)): cv.circle(c, r * k, P.SOFT if j % 2 else P.GOLD, A, 1.8, fill=(j == 3))
@@ -270,8 +271,8 @@ def target(gs, cv, tx, t, i, b, A, heads, face):
 
 
 def spotlight(gs, cv, tx, t, i, b, A, heads, face):
-    T, P = gs.T, gs.P; tgt = (XS[i], GY - 40)
-    for k, sx in enumerate((XS[i] - 520, XS[i] + 420, XS[i] - 220, XS[i] + 160)):
+    T, P = gs.T, gs.P; tgt = (gs.XS[i], GY - 40)
+    for k, sx in enumerate((gs.XS[i] - 520, gs.XS[i] + 420, gs.XS[i] - 220, gs.XS[i] + 160)):
         tf = T(b + 1 + k)
         if t < tf: continue
         a = A * (0.6 + 0.8 * pulse(t, tf, 0.3))
@@ -281,9 +282,65 @@ def spotlight(gs, cv, tx, t, i, b, A, heads, face):
         cv.path([src, cone[1]], P.WARM, a * 0.5, 1.2, smooth=False); cv.path([src, cone[2]], P.WARM, a * 0.5, 1.2, smooth=False)
     if t >= T(b + 5):
         for k in range(60):
-            x = XS[i] + ((k * 97) % 700) - 350; y = ((t - T(b + 5)) * (90 + k % 7 * 20) + (k * 53) % 300) % 700 + 80
+            x = gs.XS[i] + ((k * 97) % 700) - 350; y = ((t - T(b + 5)) * (90 + k % 7 * 20) + (k * 53) % 300) % 700 + 80
             cv.circle((x, y), 3, (P.GOLD, P.SOFT, P.WARM)[k % 3], A * 0.9, fill=True)
 
 
-SIGS = {f.__name__: f for f in (blueprint, tree, formation, morph, lanterns, bloom, lightlink, fireworks,
+# ------------------------------------------------------------------ fire signs
+def ignite(gs, cv, tx, t, i, b, A, heads, face):
+    """Aries: fire pillars burst out along the ground, alternating left/right, one per beat"""
+    T, P = gs.T, gs.P; X = gs.XS[i]
+    for k in range(7):
+        tf = T(b + 1 + k)
+        if t < tf: continue
+        side = -1 if k % 2 == 0 else 1; x = X + side * (130 + 70 * (k // 2) * 1.6)
+        g = pop(t, tf, 0.18); h = (150 + 30 * (k % 3)) * g * (1 + 0.08 * math.sin(t * 9 + k))
+        flame(cv, x, GY + 6, h, P.GOLD, A); flame(cv, x, GY + 6, h * 0.6, P.WARM, A)
+        flame(cv, x, GY + 6, h * 1.5, P.GOLD, 0.35 * A, layer=cv.F)
+        cv.glow((x, GY - h * 0.4), 60, P.GOLD, A * (0.4 + 1.2 * pulse(t, tf, 0.3)))
+        for j in range(6):
+            q = -math.pi / 2 + (j - 2.5) * 0.35; r = 40 + 160 * cl((t - tf) * 2)
+            if t - tf < 0.6:
+                cv.circle((x + r * math.cos(q), GY - 40 + r * math.sin(q)), 3, P.WARM, A * (1 - (t - tf) / 0.6), fill=True)
+
+
+def sunburst(gs, cv, tx, t, i, b, A, heads, face):
+    """Leo: a sun rises behind the head; every beat adds a ring of rays"""
+    T, P = gs.T, gs.P; c = (gs.XS[i], face[i][1] - 10)
+    up = eo(ramp(t, T(b + 1), T(b + 2)))
+    if up <= 0: return
+    R = 90 * up
+    cv.circle(c, R, P.GOLD, A, 2.4); cv.circle(c, R * 0.8, P.WARM, A * 0.5, 1.2); cv.glow(c, R * 1.6, P.GOLD, 0.35 * A)
+    for ring in range(5):
+        tf = T(b + 2 + ring)
+        if t < tf: continue
+        n = 12 + ring * 4; r0 = R + 18 + ring * 26; L = (40 + ring * 10) * eo(ramp(t, tf, tf + 0.15))
+        for k in range(n):
+            q = k * 2 * math.pi / n + ring * 0.2 + t * 0.05 * (1 if ring % 2 else -1)
+            cv.path([(c[0] + r0 * math.cos(q), c[1] + r0 * math.sin(q)), (c[0] + (r0 + L) * math.cos(q), c[1] + (r0 + L) * math.sin(q))],
+                    P.GOLD if ring % 2 == 0 else P.WARM, A * (0.8 - ring * 0.08), 1.6, smooth=False)
+        cv.glow(c, R * 2, P.GOLD, 0.3 * A * pulse(t, tf, 0.3))
+
+
+def arrows(gs, cv, tx, t, i, b, A, heads, face):
+    """Sagittarius: one arrow per beat flies into the sky and becomes a star"""
+    T, P = gs.T, gs.P; src = np.array(heads[i][0])
+    targets = [(gs.XS[i] + dx, y) for dx, y in ((-260, 130), (-60, 70), (160, 150), (320, 60), (80, 230), (420, 210))]
+    stars = []
+    for k, tg in enumerate(targets):
+        tf = T(b + 1 + k)
+        if t < tf - 0.2: continue
+        kk = eo(ramp(t, tf - 0.2, tf)); tg = np.array(tg)
+        if kk < 1:
+            p = src + (tg - src) * kk; tail = src + (tg - src) * max(0, kk - 0.3)
+            cv.path([tuple(tail), tuple(p)], P.WARM, A, 2.4, smooth=False); cv.path([tuple(tail), tuple(p)], P.GOLD, A * 0.35, 10, smooth=False, layer=cv.F)
+        else:
+            gs.members[i][0].star_flare(cv, tuple(tg), 40 * (1 + 1.5 * pulse(t, tf, 0.3)), A)
+            stars.append(tuple(tg))
+    if len(stars) > 1:
+        for k in range(len(stars) - 1):
+            cv.path([stars[k], stars[k + 1]], P.LINE, A * 0.6, 1.4, smooth=False)
+
+
+SIGS = {f.__name__: f for f in (ignite, sunburst, arrows, blueprint, tree, formation, morph, lanterns, bloom, lightlink, fireworks,
                                   checklist, shield, pillars, circle, gears, brush, target, spotlight)}

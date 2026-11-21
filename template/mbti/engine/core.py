@@ -192,17 +192,19 @@ class Text:
     def tag(s, letter, word, x, y, t, t0, t1):
         if t < t0 or t > t1 + 0.25: return
         k = eo(ramp(t, t0, t0 + 0.25)) * (1 - ramp(t, t1, t1 + 0.25)); al = int(255 * k)
-        f = F(SANS_M, 18); w = f.getlength(word) + 34; x0 = x - w / 2
+        f = F(SANS_M, 26); bw = max(34, f.getlength(letter) + 14); w = f.getlength(word) + bw + 12; x0 = x - w / 2
         hr, hg, hb = s.P.HI
-        s.d.rounded_rectangle([x0, y - 20, x0 + 24, y + 4], 4, fill=(hr, int(hg * 0.85), int(hb * 0.6), al))
-        s.d.text((x0 + 12, y - 1), letter, font=f, fill=(20, 30, 20, al), anchor='ms')
-        s.d.text((x0 + 32, y - 1), word, font=f, fill=tuple(s.P.TAG) + (al,), anchor='ls')
+        s.d.rounded_rectangle([x0, y - 28, x0 + bw, y + 6], 5, fill=(hr, int(hg * 0.85), int(hb * 0.6), al))
+        s.d.text((x0 + bw / 2, y - 2), letter, font=f, fill=(20, 30, 20, al), anchor='ms')
+        s.d.text((x0 + bw + 10, y - 2), word, font=f, fill=tuple(s.P.TAG) + (al,), anchor='ls')
 
     def blend(s, img):
         ta = np.asarray(s.img, np.float32) / 255.0
         if ta[..., 3].max() <= 0: return img
         rgb = ta[..., [2, 1, 0]]; al = ta[..., 3:4]
-        return img * (1 - al) + rgb * al + cv2.GaussianBlur(rgb * al, (0, 0), 6) * 0.35
+        shade = cv2.GaussianBlur(al[..., 0], (0, 0), 12)[..., None]        # soft dark backing for legibility
+        img = img * (1 - 0.6 * np.clip(shade * 1.6, 0, 1))
+        return img * (1 - al) + rgb * al + cv2.GaussianBlur(rgb * al, (0, 0), 5) * 0.25
 
 
 def gold_idx(line, word):
