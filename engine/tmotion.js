@@ -77,6 +77,55 @@
   M.img = (p, x, y, w, h, f, sty) => { const i = el(p, 'img', 'abs', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', objectFit: 'cover', objectPosition: '52% 30%' }, sty || {})); i.src = `../../sample10/media/eva/f_${String(f).padStart(5, '0')}.jpg`; return i; };
   /* placeholder brand mark (the studio's own EVA monogram) for logo-only templates: .lr frame (drawable), .lt wordmark */
   M.logo = (p, x, y, sz, col, fill) => M.svg(p, x, y, sz, sz, `<rect class="lr" x="${sz * .04}" y="${sz * .04}" width="${sz * .92}" height="${sz * .92}" rx="${sz * .24}" fill="${fill || 'none'}" stroke="${col}" stroke-width="${sz * .045}" pathLength="1" stroke-dasharray="1 1"/><text class="lt" x="${sz / 2}" y="${sz * .62}" text-anchor="middle" font-family="Anton, sans-serif" font-size="${sz * .36}" fill="${col}" letter-spacing="${sz * .012}">EVA</text>`, { transformOrigin: '50% 50%' });
+
+  /* ================= T101+ : three-scene stories with real transitions (not slides) =================
+     Each template = 3 scenes (≈0.45–3.45, 3.45–6.65, 6.65–9.3). Scene changes are transitions (push / zoom / iris / wipe / flip /
+     rise / shutter / blur), the whole stage drifts like a camera, and Eva's window re-shapes on every scene change. */
+  M.TB = [[.45, 3.45], [3.45, 6.65], [6.65, 9.35]];
+  const TRD = .6;   /* transition length (s) */
+  const EX = () => C.portrait ? 1200 : 0, EY = () => C.portrait ? 1700 : 0, W = () => 1920 + 2 * EX(), H = () => 1080 + 2 * EY();
+  M.TR = {
+    push: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(-W() * e).toFixed(1)}px)`; i.style.transform = `translateX(${(W() * (1 - e)).toFixed(1)}px)`; },
+    rise: (o, i, p) => { const e = M.io(p); o.style.transform = `translateY(${(-H() * e).toFixed(1)}px)`; i.style.transform = `translateY(${(H() * (1 - e)).toFixed(1)}px)`; },
+    zoom: (o, i, p) => { o.style.transform = `scale(${(1 + .6 * M.i2(p)).toFixed(4)})`; o.style.opacity = (1 - M.i2(p)).toFixed(3); o.style.filter = `blur(${(10 * p).toFixed(1)}px)`;
+      i.style.transform = `scale(${(.72 + .28 * M.o5(p)).toFixed(4)})`; i.style.opacity = M.o3(p * 1.4).toFixed(3); },
+    iris: (o, i, p) => { o.style.transform = `scale(${(1 + .08 * p).toFixed(4)})`; i.style.clipPath = `circle(${((C.portrait ? 2400 : 1300) * M.o3(p)).toFixed(0)}px at 50% 50%)`; },
+    wipe: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(-160 * e).toFixed(1)}px)`; o.style.filter = `brightness(${(1 - .4 * e).toFixed(3)})`; i.style.clipPath = `inset(0 ${(100 - 100 * e).toFixed(2)}% 0 0)`; },
+    flip: (o, i, p) => { const e = M.io(p); o.style.transform = `perspective(2200px) rotateY(${(90 * Math.min(1, e * 2)).toFixed(2)}deg)`; o.style.opacity = e < .5 ? 1 : 0;
+      i.style.transform = `perspective(2200px) rotateY(${(-90 * Math.max(0, 1 - (e - .5) * 2)).toFixed(2)}deg)`; i.style.opacity = e >= .5 ? 1 : 0; },
+    shutter: (o, i, p) => { const e = M.io(p); i.style.clipPath = `inset(${(50 * (1 - e)).toFixed(2)}% 0 ${(50 * (1 - e)).toFixed(2)}% 0)`; o.style.transform = `scale(${(1 - .06 * e).toFixed(4)})`; },
+    blur: (o, i, p) => { o.style.opacity = (1 - p).toFixed(3); o.style.filter = `blur(${(16 * p).toFixed(1)}px)`; i.style.opacity = p.toFixed(3); i.style.filter = `blur(${(16 * (1 - p)).toFixed(1)}px)`; },
+    slide: (o, i, p) => { const e = M.io(p); o.style.transform = `translateX(${(W() * .35 * e).toFixed(1)}px) scale(${(1 - .15 * e).toFixed(4)})`; o.style.opacity = (1 - e).toFixed(3); i.style.transform = `translateX(${(-W() * (1 - e)).toFixed(1)}px)`; }
+  };
+  /* window shapes for the three scenes: c(x,y,d) circle · q(x,y,w,h,r) rounded */
+  M.c = (x, y, d, s) => ({ x, y, w: d, h: d, r: d / 2, o: 1, s: s || 1.15 });
+  M.q = (x, y, w, h, r, s) => ({ x, y, w, h, r: r ?? 28, o: 1, s: s || 1.15 });
+  M.story = o => {
+    const tr = o.tr || ['zoom', 'push'], keys = [];
+    if (!o.noface && o.wins) o.wins.slice(1).forEach((L, k) => keys.push({ t: M.TB[k + 1][0] - .28, d: TRD, L }));
+    M.setup({ over: o.over, overCover: o.overCover, bg: o.bg, noface: o.noface, win: o.wins ? o.wins[0] : undefined, keys, ring: o.ring, port: o.port, captions: M.caps(o.caps),
+      build(L) { const s = {}; s.cam = M.box(L, 0, 0, { width: '1920px', height: '1080px', transformOrigin: '50% 50%' });
+        if (o.back) s.back = o.back(s.cam);
+        s.sc = o.scenes.map((sc, i) => { const ex = EX(), ey = EY(), c = M.box(s.cam, -ex, -ey, { width: (1920 + 2 * ex) + 'px', height: (1080 + 2 * ey) + 'px', transformOrigin: `${ex + 960}px ${ey + 540}px`, background: (o.sbg || [])[i] || '' });
+          const inner = M.box(c, ex, ey, { width: '1920px', height: '1080px' }); c.s = sc[0](inner); c.u = sc[1]; return c; });
+        if (o.front) s.front = o.front(s.cam); return s; },
+      update(s, t) { const k = clamp(t / 10);
+        s.cam.style.transform = `scale(${(1.0 + .045 * k).toFixed(4)}) translate(${(-14 * k).toFixed(1)}px, ${(-8 * k).toFixed(1)}px)`;   /* camera push */
+        if (s.back && o.backU) o.backU(s.back, t);
+        s.sc.forEach((c, i) => { const [a, b] = M.TB[i]; c.style.transform = ''; c.style.opacity = ''; c.style.filter = ''; c.style.clipPath = '';
+          const start = i ? a - TRD / 2 : 0, end = i < 2 ? b + TRD / 2 : 99; c.style.display = t >= start && t <= end ? '' : 'none';
+          if (c.style.display) return; c.u(c.s, t, a);
+          if (i === 2 && !o.noface) c.style.opacity = (1 - M.i2((t - 9.05) / .3)).toFixed(3); });
+        [0, 1].forEach(j => { const T = M.TB[j + 1][0], p = clamp((t - (T - TRD / 2)) / TRD); if (p > 0 && p < 1) M.TR[tr[j]](s.sc[j], s.sc[j + 1], p); });
+        if (s.front && o.frontU) o.frontU(s.front, t); } });
+  };
+  /* scene decor helpers */
+  M.grid = (p, col, sz, w) => M.box(p, -40, -40, { width: '2000px', height: '1160px', backgroundImage: `linear-gradient(${col} ${w || 1}px, transparent ${w || 1}px), linear-gradient(90deg, ${col} ${w || 1}px, transparent ${w || 1}px)`, backgroundSize: `${sz}px ${sz}px` });
+  M.dots = (p, col, sz, r) => M.box(p, -40, -40, { width: '2000px', height: '1160px', backgroundImage: `radial-gradient(${col} ${r || 1.6}px, transparent ${(r || 1.6) + .5}px)`, backgroundSize: `${sz}px ${sz}px` });
+  M.card = (p, x, y, w, h, bg, sty) => M.box(p, x, y, Object.assign({ width: w + 'px', height: h + 'px', background: bg, borderRadius: '20px', boxShadow: '0 16px 34px rgba(0,0,0,.18)' }, sty || {}));
+  M.drift = (e, t, vx, vy) => { if (e) e.style.transform = `translate(${(-vx * t).toFixed(1)}px, ${(-(vy || 0) * t).toFixed(1)}px)`; };
+  /* compact text: X(parent, x, y, size, color, text, weight=900, family=CN, extra) */
+  M.X = (p, x, y, px, col, txt, w, fam, sty) => M.txt(p, x, y, M.f(w || 900, px, fam || M.CN), col, txt, sty);
   /* common setup for a 10 s concept sample on the Eva raw clip */
   /* 9:16: the graphics scene keeps its 16:9 drawing; the content box (o.port.box) is scaled into the top zone (y≈200–900),
      the presenter window sits below it (circle stays a circle, rounded square keeps its shape), captions below that.
@@ -96,8 +145,9 @@
     if (C.portrait && o.noface) { const bx = (o.port || {}).box || [90, 60, 1740, 760], sc = Math.min(984 / bx[2], 1000 / bx[3]);   /* centre the logo block between the top safe line and the captions */
       C.portLayout({ box: bx, top: 200 + Math.max(0, (1150 - bx[3] * sc) / 2), maxH: 1000, keep: [1], eva: false }); }
     else if (C.portrait) { const pp = o.port || {}; M._w16 = o.win;
-      C.portLayout({ box: pp.box || [90, 60, 1100, 760], top: pp.top ?? 200, maxH: pp.maxH ?? 700, keep: [1], eva: L => L.w >= 1900 ? M.FULLP : (pp.win || M.pwin(L)) });
+      C.portLayout({ box: pp.box || [90, 60, 1100, 760], top: pp.top ?? 200, maxH: pp.maxH ?? 700, keep: [1], cover: o.over && o.overCover ? [2] : [], eva: L => L.w >= 1900 ? M.FULLP : (pp.win || M.pwin(L)) });
       M._wp = C.evaKeys[1].L; } C.ringFn = o.ring || (() => ({ color: '#fff', width: 0, shadow: .35 }));
     C.scene({ t0: 0, t1: 10.05, bg: o.bg, cls: o.cls || '', quiet: true, build: o.build, update: (lt, s, t) => o.update(s, t) });
-    C.scene({ t0: 0, t1: 10.05, z: 70, quiet: true, build: L => M.captions(L, o.captions), update: (lt, f, t) => f(t) }); };
+    C.scene({ t0: 0, t1: 10.05, z: 70, quiet: true, build: L => M.captions(L, o.captions), update: (lt, f, t) => f(t) });
+    if (o.over) C.scene({ t0: 0, t1: 10.05, z: 60, quiet: true, build: o.over[0], update: (lt, v, t) => o.over[1](v, t) });   /* layer above Eva's window (index 2: captions stay index 1) */ };
 })();

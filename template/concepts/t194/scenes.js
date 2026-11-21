@@ -1,0 +1,14 @@
+/* T194 取景器 Viewfinder: a camera HUD on a layer ABOVE the window — REC, focus box hunts and locks, exposure scale, shutter flash. */
+(function () { const M = K.T.mo, X = M.X, Y = '#ffd23f', A = M.TB.map(b => b[0]);
+  const hud = c => { const g = M.box(c, 0, 0, { width: '1920px', height: '1080px' }); [[60, 60], [1800, 60], [60, 900], [1800, 900]].forEach(([x, y], i) => M.box(g, x, y, { width: '60px', height: '60px', borderTop: i < 2 ? '6px solid #fff' : '', borderBottom: i > 1 ? '6px solid #fff' : '', borderLeft: i % 2 ? '' : '6px solid #fff', borderRight: i % 2 ? '6px solid #fff' : '' })); g.rec = X(g, 120, 76, 34, '#fff', '', 700, M.MONO, { textShadow: '0 2px 6px rgba(0,0,0,.5)' }); X(g, 1620, 76, 34, '#fff', '4K 30', 700, M.MONO, { textShadow: '0 2px 6px rgba(0,0,0,.5)' }); g.ex = X(g, 740, 820, 30, '#fff', '-2 · · · · <b style="color:#ffd23f">|</b> · · · · +2', 700, M.MONO, { textShadow: '0 2px 6px rgba(0,0,0,.5)' }); return g; };
+  M.story({ bg: '#000', sbg: ['#000', '#000', '#111'], tr: ['blur', 'iris'], ring: () => ({ color: '#ffffff', width: 0, shadow: 0 }),
+    wins: [M.q(0, 0, 1920, 1080, 0, 1), M.q(0, 0, 1920, 1080, 0, 1.15), M.q(320, 120, 1280, 720, 12, 1.02)],
+    caps: [['开机，录制中', 'Camera on — recording'], ['对焦，找到你', 'Focus finds you'], ['咔嚓，这张就是封面', 'Click — that’s the cover']], port: { box: [0, 0, 1920, 1080] },
+    over: [L => ({ h: hud(L), f: M.box(L, 0, 0, { width: '300px', height: '300px', border: `5px solid ${Y}`, boxSizing: 'border-box' }), lbl: X(L, 0, 0, 26, Y, 'AF · FACE', 700, M.MONO), fl: M.box(L, 0, 0, { width: '1920px', height: '1080px', background: '#fff' }), cv: X(L, 340, 860, 40, '#fff', 'COVER · 封面', 700, M.MONO) }),
+      (s, t) => { const hv = M.env(t, A[0] + .2, A[2] - .3).a; s.h.style.opacity = hv; s.h.rec.innerHTML = `<span style="color:${Math.floor(t * 2) % 2 ? '#ff3b30' : 'transparent'}">●</span> REC 00:00:${String(Math.floor(t)).padStart(2, '0')}`;
+        const a = A[1], u = M.io((t - a - .1) / 1.4), x = 300 + (800 - 300) * u + 50 * Math.sin((t - a) * 9) * (1 - u), y = 520 + (150 - 520) * u, sz = 320 - 60 * u, fo = M.env(t, a - .2, A[2] - .3).a;
+        Object.assign(s.f.style, { transform: `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px)`, width: sz + 'px', height: sz + 'px', borderColor: u >= 1 ? '#7cff6b' : Y, opacity: fo }); s.lbl.style.transform = `translate(${x.toFixed(0)}px, ${(y + sz + 10).toFixed(0)}px)`; s.lbl.style.opacity = fo; s.lbl.textContent = u >= 1 ? 'AF · LOCKED' : 'AF · FACE';
+        s.fl.style.opacity = t > A[2] - .05 ? Math.max(0, 1 - (t - A[2] + .05) / .4) : 0; s.cv.style.opacity = M.env(t, A[2] + .5, 99).a; }],
+    scenes: [[c => ({}), () => {}], [c => ({}), () => {}], [c => ({ fr: M.box(c, 300, 100, { width: '1320px', height: '760px', border: '3px solid #555' }) }), (s, t, a) => M.pop(s.fr, t, a + .2, 99, { from: 1.1 })]]
+  });
+})();

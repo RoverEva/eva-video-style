@@ -1,0 +1,17 @@
+/* T171 像素闯关 Pixel Run (game commentary): a pixel runner jumps blocks, coins pop, level-clear flag. Original sprites. */
+(function () { const M = K.T.mo, X = M.X, PX = "'Press Start 2P', 'Courier New', monospace", BR = '#c84c0c';
+  const ground = c => M.box(c, -60, 960, { width: '4000px', height: '120px', background: `repeating-linear-gradient(90deg,${BR} 0 56px,#8a2e00 56px 60px)`, borderTop: '6px solid #ffb070' });
+  const hero = c => M.svg(c, 0, 0, 60, 90, '<g transform="scale(1)"><rect x="10" y="0" width="40" height="20" fill="#e52521"/><rect x="10" y="20" width="40" height="30" fill="#ffcc99"/><rect x="5" y="50" width="50" height="25" fill="#2038ec"/><rect x="5" y="75" width="20" height="15" fill="#6b3a1a"/><rect x="35" y="75" width="20" height="15" fill="#6b3a1a"/></g>');
+  const coin = c => M.box(c, 0, 0, { width: '32px', height: '44px', borderRadius: '16px', background: '#ffd23f', border: '4px solid #b8860b', boxSizing: 'border-box' });
+  M.story({ bg: '#5c94fc', sbg: ['#5c94fc', '#5c94fc', '#000'], tr: ['slide', 'iris'], ring: () => ({ color: '#111', width: 6, shadow: .3 }),
+    wins: [M.q(1360, 120, 420, 460, 12), M.q(1360, 120, 420, 460, 12), M.c(1360, 140, 400)],
+    caps: [['第一关，先熟悉操作', 'Level one: learn the controls'], ['这里跳，金币全拿', 'Jump here — grab every coin'], ['通关！下一关见', 'Cleared! See you next level']], port: { box: [0, 40, 1920, 1000] },
+    scenes: [
+      [c => ({ g: ground(c), b: [0, 1, 2].map(i => M.box(c, 500 + i * 70, 600, { width: '64px', height: '64px', background: '#e8a040', border: '4px solid #7a3e00', boxSizing: 'border-box' })), h: hero(c), t: X(c, 60, 60, 44, '#fff', 'WORLD 1-1 · 关卡讲解', 400, PX) }),
+       (s, t, a) => { s.g.style.transform = `translateX(${(-((t - a) * 160) % 60).toFixed(1)}px)`; s.b.forEach((e, i) => M.pop(e, t, a + .3 + i * .1, 99, { from: 0 })); const x = 120 + (t - a) * 160; s.h.style.opacity = t > a ? 1 : 0; s.h.style.transform = `translate(${x.toFixed(0)}px, 870px)`; M.rise(s.t, t, a + .2, 99); }],
+      [c => ({ g: ground(c), h: hero(c), cs: Array.from({ length: 6 }, (_, i) => coin(c)), arc: M.path(c, 0, 0, 1920, 1080, 'M200 880 Q 600 300, 1000 880', '#fff', 4, 'stroke-dasharray="14 14"') }),
+       (s, t, a) => { const u = M.io((t - a - .2) / 1.8), x = 200 + 800 * u, y = 880 - 4 * 290 * u * (1 - u); s.h.style.opacity = 1; s.h.style.transform = `translate(${(x - 30).toFixed(0)}px, ${(y - 10).toFixed(0)}px)`; M.draw(s.arc, t, a - .1, .6, 99); s.cs.forEach((e, i) => { const cu = (i + 1) / 7, cx = 200 + 800 * cu, cy = 880 - 4 * 290 * cu * (1 - cu) - 40; const got = u > cu; e.style.opacity = got ? Math.max(0, 1 - (u - cu) * 6) : M.env(t, a, 99).a; e.style.transform = `translate(${cx.toFixed(0)}px, ${(cy - (got ? (u - cu) * 400 : 0)).toFixed(0)}px) scaleX(${Math.cos(t * 6 + i).toFixed(2)})`; }); }],
+      [c => ({ f: M.box(c, 300, 260, { width: '10px', height: '600px', background: '#7cff6b' }), fl: M.box(c, 310, 260, { width: '120px', height: '80px', background: '#fff', clipPath: 'polygon(0 0,100% 50%,0 100%)' }), t: X(c, 560, 400, 90, '#fff', 'COURSE CLEAR!', 400, PX), sc: X(c, 560, 560, 50, '#ffd23f', 'SCORE 012800', 400, PX) }),
+       (s, t, a) => { M.rise(s.f, t, a - .1, 99, { dy: 200 }); s.fl.style.opacity = M.env(t, a, 99).a; s.fl.style.transform = `translateY(${(500 * M.o3((t - a - .2) / 1)).toFixed(0)}px)`; s.t.style.opacity = t > a + .6 && Math.floor((t - a) * 4) % 2 === 0 || t > a + 1.6 ? 1 : 0; M.rise(s.sc, t, a + 1, 99); }]
+    ] });
+})();
