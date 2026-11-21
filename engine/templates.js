@@ -1,4 +1,4 @@
-/* Eva Video Style · template library for T08–T17, T23 and T24. Load after kit.js (and land.js for the T14 globe).
+/* Eva Video Style · template library for T08–T17, T19 (product demo), T23 and T24. Load after kit.js (and land.js for the T14 globe).
  *   T08 NEON  · 霓虹讲解 Neon Explainer
  *   T09 WALL  · 作品墙开场 Showcase Wall Opener
  *   T10 KEY   · HUD 发布会 HUD Keynote
@@ -24,7 +24,7 @@
   /* frame: corner brackets, mono labels, running timecode, bottom tick ruler. Call T.hudFrameAt(f, t) in update. */
   T.hudFrame = (L, label, code) => {
     const f = { L }; const m = 26, H = T.HUD;
-    const box = el(L, 'div', 'abs', { left: m + 'px', top: m + 'px', width: (1920 - 2 * m) + 'px', height: (1080 - 2 * m) + 'px', color: 'rgba(255,255,255,.28)', zIndex: 2 });
+    const box = el(L, 'div', 'abs', { left: m + 'px', top: m + 'px', width: (C.W - 2 * m) + 'px', height: (C.H - 2 * m) + 'px', color: 'rgba(255,255,255,.28)', zIndex: 2 });
     ['tl', 'tr', 'bl', 'br'].forEach(c => el(box, 'div', 'hudc ' + c));
     f.lab = el(L, 'div', 'abs mono', { left: '62px', top: '44px', fontSize: '13px', color: H.DIM }, (label || 'EVA · VIDEO STYLE') + '  —  ' + (code || '01'));
     f.tc = el(L, 'div', 'abs mono', { right: '62px', top: '44px', fontSize: '13px', color: H.DIM }, '00:00:00:00');
@@ -33,7 +33,7 @@
     return f; };
   T.hudFrameAt = (f, t, total) => { const fr = Math.floor(t * 30); const s = Math.floor(t);
     f.tc.textContent = `00:${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}:${String(fr % 30).padStart(2, '0')}`;
-    f.dot.style.left = (62 + (1920 - 136) * clamp(t / (total || C.end))) + 'px'; };
+    f.dot.style.left = (62 + (C.W - 136) * clamp(t / (total || C.end))) + 'px'; };
   /* small title with one highlighted word: T.title(L, 'KEEP ', 'IMPROVING', x, y, size, hiColor) */
   T.title = (L, a, hi, x, y, size, col, after) => el(L, 'div', 'abs cn', { left: x + 'px', top: y + 'px', fontSize: (size || 46) + 'px', color: '#fff', fontWeight: 900 }, `${a || ''}<span style="color:${col || T.HUD.BLUE}">${hi || ''}</span>${after || ''}`);
   T.kicker = (L, txt, x, y, col) => el(L, 'div', 'abs mono', { left: x + 'px', top: y + 'px', fontSize: '16px', color: col || T.HUD.DIM }, txt);
@@ -79,9 +79,9 @@
     const t = el(L, 'div', 'abs sans', { left: x + 'px', top: (y + h * .38) + 'px', width: w + 'px', textAlign: 'center', fontSize: (w * .3) + 'px', fontWeight: 800, color: solid ? '#fff' : T.HUD.BLUE }, txt || '?'); return { s, t }; };
   /* big metallic title with a spark burst (canvas). T.metalAt(m, lt) */
   T.metal = (L, txt, y, size) => { const m = {}; m.t = K.center(el(L, 'div', 'abs sans', { top: y + 'px', fontSize: (size || 200) + 'px', fontWeight: 900, letterSpacing: '-.02em', background: 'linear-gradient(180deg,#ffffff 0%,#c9cfdc 45%,#6f7690 60%,#e7eaf2 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: 'drop-shadow(0 0 30px rgba(140,160,255,.35))' }, txt));
-    m.cv = el(L, 'canvas', 'abs', { left: 0, top: 0 }); m.cv.width = 1920; m.cv.height = 1080; m.g = m.cv.getContext('2d'); const R = C.rng(5); m.sp = [];
+    m.cv = el(L, 'canvas', 'abs', { left: 0, top: 0 }); m.cv.width = C.W; m.cv.height = C.H; m.g = m.cv.getContext('2d'); const R = C.rng(5); m.sp = [];
     for (let i = 0; i < 160; i++) { const a = R() * 6.283, v = 300 + R() * 900; m.sp.push([Math.cos(a) * v, Math.sin(a) * v * .6, .4 + R() * .8]); } m.cy = y + (size || 200) * .6; return m; };
-  T.metalAt = (m, lt, t0) => { const u = lt - (t0 || 0); m.g.clearRect(0, 0, 1920, 1080); m.t.style.opacity = clamp(u * 3); m.t.style.transform = `scale(${1.25 - .25 * ease.outExpo(clamp(u / .8))})`; m.t.style.transformOrigin = '50% 50%';
+  T.metalAt = (m, lt, t0) => { const u = lt - (t0 || 0); m.g.clearRect(0, 0, C.W, C.H); m.t.style.opacity = clamp(u * 3); m.t.style.transform = `scale(${1.25 - .25 * ease.outExpo(clamp(u / .8))})`; m.t.style.transformOrigin = '50% 50%';
     if (u < 0 || u > 1.6) return; for (const [vx, vy, l] of m.sp) { const k = clamp(u / l); if (k >= 1) continue; const x = 960 + vx * k, y = m.cy + vy * k; m.g.strokeStyle = `rgba(200,215,255,${1 - k})`; m.g.lineWidth = 2; m.g.beginPath(); m.g.moveTo(x, y); m.g.lineTo(x - vx * .05, y - vy * .05); m.g.stroke(); } };
   /* file tree / list panel rows: T.rows(L, x, y, [['icon','scenes.js','small note'], ...]) */
   T.rows = (L, x, y, items, w) => items.map((it, i) => { const r = el(L, 'div', 'abs', { left: (x + (i ? 24 : 0)) + 'px', top: (y + i * 90) + 'px', width: (w || 560) + 'px', height: '72px', borderRadius: '10px', background: T.HUD.PANEL, border: '1px solid rgba(255,255,255,.12)' });
@@ -156,15 +156,15 @@
   /* ---------- T08 Neon Explainer ---------- */
   T.NEON = { CREAM: '#fff3c4', GLOW: '0 0 8px rgba(255,236,150,.9), 0 0 24px rgba(255,214,90,.7), 0 0 60px rgba(255,190,60,.45)', PINK: '#ff4fd8', VIO: '#7b3cff' };
   /* colour grade over full-bleed Eva: violet/magenta "neon room" wash (z above Eva) */
-  T.neonGrade = L => { el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: 'radial-gradient(900px 700px at 18% 20%, rgba(255,60,200,.55), rgba(0,0,0,0) 60%), radial-gradient(1100px 800px at 85% 15%, rgba(110,60,255,.55), rgba(0,0,0,0) 65%), linear-gradient(rgba(40,10,90,.35), rgba(10,0,30,.55))', mixBlendMode: 'soft-light' });
-    return el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: 'radial-gradient(1300px 900px at 50% 45%, rgba(0,0,0,0) 55%, rgba(10,0,25,.55))' }); };
+  T.neonGrade = L => { el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'radial-gradient(900px 700px at 18% 20%, rgba(255,60,200,.55), rgba(0,0,0,0) 60%), radial-gradient(1100px 800px at 85% 15%, rgba(110,60,255,.55), rgba(0,0,0,0) 65%), linear-gradient(rgba(40,10,90,.35), rgba(10,0,30,.55))', mixBlendMode: 'soft-light' });
+    return el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'radial-gradient(1300px 900px at 50% 45%, rgba(0,0,0,0) 55%, rgba(10,0,25,.55))' }); };
   /* glowing cream text */
   T.glow = (L, txt, x, y, size, extra) => el(L, 'div', 'abs cn', Object.assign({ left: x + 'px', top: y + 'px', fontSize: size + 'px', color: T.NEON.CREAM, textShadow: T.NEON.GLOW, fontStyle: 'italic' }, extra || {}), txt);
   /* pixel text: drawn tiny on a canvas, scaled up with hard pixels (works for Chinese) */
   T.pixel = (L, txt, cy, size, col) => { const sm = Math.round(size / 10), cv = document.createElement('canvas'), g = cv.getContext('2d'); g.font = `900 ${sm}px 'Noto Sans CJK SC'`; const w = Math.ceil(g.measureText(txt).width) + 4; cv.width = w; cv.height = sm + 6;
     g.font = `900 ${sm}px 'Noto Sans CJK SC'`; g.fillStyle = col || T.NEON.CREAM; g.textBaseline = 'top'; g.fillText(txt, 2, 2); const img = el(L, 'img', 'abs', { imageRendering: 'pixelated', width: (w * 10) + 'px', height: ((sm + 6) * 10) + 'px', left: (960 - w * 5) + 'px', top: (cy - (sm + 6) * 5) + 'px', filter: `drop-shadow(0 0 18px rgba(255,214,90,.7))`, transformOrigin: '50% 50%' }); img.src = cv.toDataURL(); return img; };
   /* echo stack: the same word repeated, centre line bright, others fading */
-  T.echo = (L, txt, size, n) => { const box = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px' }); const rows = [];
+  T.echo = (L, txt, size, n) => { const box = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px' }); const rows = [];
     for (let i = -n; i <= n; i++) rows.push(K.center(el(box, 'div', 'abs', { top: (540 - size * .6 + i * size * 1.1) + 'px', fontSize: size + 'px', fontStyle: 'italic', fontWeight: 900, fontFamily: "'Inter','Noto Sans CJK SC'", color: i ? 'rgba(255,243,196,0)' : T.NEON.CREAM, WebkitTextStroke: i ? '1.5px rgba(255,243,196,' + (.65 - Math.abs(i) * .12) + ')' : '0', textShadow: i ? 'none' : T.NEON.GLOW }, txt))); box.rows = rows; return box; };
   /* article card with a highlighter sweep over the key phrase */
   T.article = (L, x, y, w, pre, hi, post, src) => { const a = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', width: w + 'px', background: '#f7f7f5', borderRadius: '10px', padding: '40px 46px', boxShadow: '0 40px 90px rgba(0,0,0,.5)', fontFamily: "Georgia,'Noto Serif CJK SC',serif", fontSize: '84px', lineHeight: 1.25, color: '#1a1a1a' });
@@ -189,6 +189,23 @@
     bullets.forEach((t, i) => g.b.push(el(L, 'div', 'abs cn', { left: x + 'px', top: (y + 86 + i * 58) + 'px', fontSize: '34px', color: '#111', background: '#fff', padding: '2px 12px', borderRadius: '4px', transformOrigin: '0 50%' }, '· ' + t))); return g; };
   T.tagAt = (g, t, t0, step) => { tf(g.h, pop(t, t0, .3, 1.8)); g.b.forEach((b, i) => tf(b, slide(t, t0 + .4 + i * (step || .5), .3, -30, 0))); };
   T.dotsBg = '#050507';
+  /* T08 v2 "clean neon" stage (T24-level presenter clarity): the purple-blue mood lives in the BACKGROUND only.
+   * bg  = the original frame, softened and dimmed, with a purple-blue light wash; person = the same HD frame masked by the
+   * AI cut-out, sharpened and lifted slightly, never under any haze. Needs media/cut (scripts/matte.py).
+   * T.neonStageAt(o, full, cut) per frame. T.neonTitle = bold sans cream headline, soft glow only, dark shadow for reading. */
+  T.neonSharp = () => { if (document.getElementById('neSharp')) return 'neSharp'; const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('width', 0); s.setAttribute('height', 0); s.style.position = 'absolute';
+    s.innerHTML = '<filter id="neSharp" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" kernelMatrix="0 -.3 0 -.3 2.2 -.3 0 -.3 0" preserveAlpha="true"/></filter>'; document.body.appendChild(s); return 'neSharp'; };
+  T.neonStage = (L, opt) => { opt = opt || {}; const o = {}, W = C.W, H = C.H, full = { left: 0, top: 0, width: W + 'px', height: H + 'px', objectFit: 'cover' };
+    o.bg = el(L, 'img', 'abs', Object.assign({}, full, { filter: `blur(${opt.blur ?? 3}px) brightness(${opt.dim ?? .4}) saturate(.55) contrast(1.08)`, transform: 'scale(1.03)' }));
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', mixBlendMode: 'color', opacity: .34, background: 'linear-gradient(120deg, #6a34e0, #3446f0 60%, #1d2490)' });
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', mixBlendMode: 'screen', background: `radial-gradient(${W * .45}px ${H * .6}px at 14% 22%, rgba(140,80,255,.30), rgba(0,0,0,0) 70%), radial-gradient(${W * .4}px ${H * .55}px at 88% 70%, rgba(60,100,255,.26), rgba(0,0,0,0) 70%)` });
+    el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', background: `linear-gradient(90deg, rgba(8,4,26,.6), rgba(8,4,26,0) 48%), radial-gradient(${W * .7}px ${H * .75}px at 55% 50%, rgba(0,0,0,0) 60%, rgba(4,2,16,.55))` });
+    o.sh = el(L, 'div', 'abs', { left: 0, top: 0, width: W + 'px', height: H + 'px', filter: 'drop-shadow(0 0 16px rgba(130,100,255,.26)) drop-shadow(0 14px 30px rgba(0,0,0,.45))' });
+    o.p = el(o.sh, 'img', 'abs', Object.assign({}, full, { filter: `url(#${T.neonSharp()}) brightness(${opt.lift ?? 1.1}) contrast(1.07) saturate(1.06)`, WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }));
+    return o; };
+  T.neonStageAt = (o, fullSrc, cutSrc) => { C.setSrc(o.bg, fullSrc); C.setSrc(o.p, fullSrc); const m = `url(${cutSrc})`; if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = m; o.p._m = m; } };
+  T.NEON2 = { CREAM: '#fff4d8', GLOW: '0 2px 0 rgba(20,8,40,.55), 0 8px 24px rgba(6,2,20,.6), 0 0 18px rgba(255,226,150,.32)' };
+  T.neonTitle = (L, lines, x, y, size) => lines.map((s, i) => el(L, 'div', 'abs', { left: x + 'px', top: (y + i * size * 1.22) + 'px', fontFamily: "'Noto Sans CJK SC','Inter',sans-serif", fontWeight: 900, fontSize: (i ? size * 1.0 : size) + 'px', lineHeight: 1.1, letterSpacing: '.01em', color: i ? T.NEON2.CREAM : '#ffffff', textShadow: T.NEON2.GLOW, whiteSpace: 'nowrap', transformOrigin: '0 50%' }, s));
 
   /* ---------- T12 Old Newspaper ---------- */
   T.NEWS = { PAPER: '#e8dcc0', AGED: '#d6c6a0', INK: '#1c1814', RED: '#c4232b', DARK: '#211b15', SERIF: "'Noto Serif CJK SC','Noto Serif CJK JP',Georgia,serif", TYPE: "'Courier 10 Pitch',Courier,monospace",
@@ -246,7 +263,7 @@
   /* full-frame HUD outline: chamfered inner frame, detached corner strokes, blue tabs top-left, dash ladder left, cyan bars right, barcode bottom.
      T.techFrameAt(f, u) draws it in (0..1). opts {inset, tabs, ladder, barcode} */
   T.techFrame = (L, opts) => { const o = Object.assign({ x: 90, y: 110, w: 1720, h: 880, tabs: true, ladder: true, barcode: true, right: true }, opts || {}); const f = { parts: [] };
-    const s = K.svg(L, 1920, 1080, 0, 0); const { x, y, w, h } = o, c = 34;
+    const s = K.svg(L, C.W, C.H, 0, 0); const { x, y, w, h } = o, c = 34;
     const line = (d, wdt, col) => { const p = K.sv(s, 'path', { d, fill: 'none', stroke: col || T.TECH.LINE, 'stroke-width': wdt || 3, 'stroke-linejoin': 'round' }); p.l = p.getTotalLength(); p.setAttribute('stroke-dasharray', p.l); p.setAttribute('stroke-dashoffset', p.l); f.parts.push(p); return p; };
     line(`M${x + 420} ${y} L${x + w - c - 160} ${y} L${x + w - c - 130} ${y + 22} L${x + w - c} ${y + 22} L${x + w} ${y + 22 + c} L${x + w} ${y + h - c} L${x + w - c} ${y + h} L${x + 180} ${y + h} L${x + 150} ${y + h - 22} L${x} ${y + h - 22} L${x} ${y + 60} L${x + 30} ${y + 30}`, 3);
     line(`M${x + w - 220} ${y - 38} L${x + w + 40} ${y - 38} L${x + w + 70} ${y - 8}`, 3, T.TECH.LINE);
@@ -260,13 +277,13 @@
     return f; };
   T.techFrameAt = (f, u) => { f.parts.forEach((p, i) => p.setAttribute('stroke-dashoffset', p.l * (1 - ease.out3(clamp(u * 1.3 - i * .12))))); f.extra.forEach((e, i) => { const k = ease.outExpo(clamp(u * 1.6 - .3 - i * .08)); e.style.opacity = k > 0 ? 1 : 0; e.style.transform = e.style.transformOrigin === '50% 0' ? `scaleY(${k})` : `scaleX(${k})`; }); };
   /* cyan serif title + white spaced uppercase subtitle */
-  T.techTitle = (L, title, sub, x, y, size, align) => { const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', textAlign: align || 'left' }); if (align === 'center') { d.style.left = '0'; d.style.width = '1920px'; }
+  T.techTitle = (L, title, sub, x, y, size, align) => { const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', textAlign: align || 'left' }); if (align === 'center') { d.style.left = '0'; d.style.width = C.W + 'px'; }
     d.a = el(d, 'div', '', { fontFamily: T.TECH.SERIF, fontWeight: 700, fontSize: (size || 120) + 'px', lineHeight: 1.1, color: T.TECH.CYAN, textShadow: '0 0 30px rgba(98,240,255,.35)', whiteSpace: 'nowrap' }, title);
     d.b = el(d, 'div', '', { fontFamily: T.TECH.SANS, fontWeight: 700, fontSize: Math.round((size || 120) * .33) + 'px', letterSpacing: '.08em', color: '#fff', marginTop: '18px', whiteSpace: 'nowrap', textTransform: 'uppercase' }, sub || ''); return d; };
   /* table of contents: items [[title, sub], ...] in two columns with numbered circles. T.tocAt(t, time, t0, step) */
   T.toc = (L, items, cy) => { const rows = Math.ceil(items.length / 2), o = { r: [] }; const y0 = (cy || 600) - rows * 75;
     items.forEach(([ti, su], i) => { const col = i % 2, row = Math.floor(i / 2), y = y0 + row * 150, left = col === 0;
-      const r = el(L, 'div', 'abs', { top: y + 'px', [left ? 'right' : 'left']: (left ? 1920 - 940 : 980) + 'px', display: 'flex', alignItems: 'center', gap: '22px', flexDirection: left ? 'row' : 'row-reverse', transformOrigin: left ? '100% 50%' : '0 50%' });
+      const r = el(L, 'div', 'abs', { top: y + 'px', [left ? 'right' : 'left']: (left ? C.W - 940 : 980) + 'px', display: 'flex', alignItems: 'center', gap: '22px', flexDirection: left ? 'row' : 'row-reverse', transformOrigin: left ? '100% 50%' : '0 50%' });
       const tx = el(r, 'div', '', { textAlign: left ? 'right' : 'left' }); el(tx, 'div', '', { fontFamily: T.TECH.SERIF, fontWeight: 700, fontSize: '38px', color: '#fff', whiteSpace: 'nowrap' }, ti); el(tx, 'div', 'cn', { fontSize: '22px', fontWeight: 400, color: T.TECH.DIM }, su);
       el(r, 'div', '', { width: '88px', height: '88px', borderRadius: '50%', border: `2px solid ${T.TECH.LINE}`, color: T.TECH.CYAN, fontFamily: T.TECH.SERIF, fontSize: '32px', lineHeight: '84px', textAlign: 'center', flex: 'none' }, String(i + 1).padStart(2, '0')); o.r.push(r); }); return o; };
   T.tocAt = (o, t, t0, step) => o.r.forEach((r, i) => tf(r, slide(t, t0 + i * (step || .25), .45, (i % 2 ? 60 : -60), 0)));
@@ -308,10 +325,10 @@
   /* ---------- T14 Future Style: wave mesh, rotating globe, circuit chip, wireframe ring ---------- */
   T.FUT = { CYAN: '#2ee6ff', BLUE: '#2f5bff', VIOLET: '#8a5cff', PINK: '#ff8adf', WHITE: '#ffffff', SANS: "'Inter','Noto Sans CJK SC',sans-serif" };
   T.futBg = 'linear-gradient(180deg, #02041f 0%, #050d55 55%, #0a1c96 100%)';
-  const fcan = (L, z) => { const cv = el(L, 'canvas', 'abs', { left: 0, top: 0, zIndex: z || 1 }); cv.width = 1920; cv.height = 1080; return cv; };
+  const fcan = (L, z) => { const cv = el(L, 'canvas', 'abs', { left: 0, top: 0, zIndex: z || 1 }); cv.width = C.W; cv.height = C.H; return cv; };
   /* undulating 3D wireframe floor. opts {horizon, amp, speed, rows, cols}. T.waveAt(w, t) — call every frame so it keeps moving */
   T.wave = (L, opts) => { const o = Object.assign({ horizon: 560, amp: 70, speed: 1, rows: 34, cols: 56, cam: 260, f: 760 }, opts || {}); o.cv = fcan(L, 1); o.g = o.cv.getContext('2d'); return o; };
-  T.waveAt = (o, t) => { const { g } = o; g.clearRect(0, 0, 1920, 1080); g.globalCompositeOperation = 'lighter';
+  T.waveAt = (o, t) => { const { g } = o; g.clearRect(0, 0, C.W, C.H); g.globalCompositeOperation = 'lighter';
     const H = (x, z) => o.amp * (Math.sin(x * .006 + t * 1.1 * o.speed) * Math.cos(z * .004 - t * .8 * o.speed) + .6 * Math.sin((x + z) * .004 + t * .6 * o.speed));
     const proj = (x, z) => { const y = H(x, z); return [960 + x * o.f / z, o.horizon + (o.cam - y) * o.f / z]; };
     const col = (sx, a) => { const e = Math.min(1, Math.abs(sx - 960) / 960); const r = Math.round(60 + 195 * e * e), gg = Math.round(120 - 40 * e), b = 255; return `rgba(${r},${gg},${b},${a})`; };
@@ -327,7 +344,7 @@
     for (let lat = -84; lat <= 84; lat += 0.95) { const st = 0.95 / Math.max(.25, Math.cos(lat * Math.PI / 180)); for (let lon = -180; lon < 180; lon += st) if (on(lon, lat)) LANDPTS.push([lon * Math.PI / 180, lat * Math.PI / 180]); } return LANDPTS; };
   T.globeT = (L, cx, cy, r, opts) => { const o = Object.assign({ cx, cy, r, tilt: 14, lon0: -125, speed: 6, orbit: true }, opts || {}); o.back = fcan(L, 2); o.cv = fcan(L, 3); o.front = fcan(L, 4); landPts(); return o; };
   T.globeTAt = (G, t, u) => { const { cx, cy, r } = G; const vis = u === undefined ? 1 : clamp(u); [G.back, G.cv, G.front].forEach(c => { c.style.opacity = vis; }); const g = G.cv.getContext('2d'), gb = G.back.getContext('2d'), gf = G.front.getContext('2d');
-    [g, gb, gf].forEach(x => x.clearRect(0, 0, 1920, 1080)); const rot = (G.lon0 + G.speed * t) * Math.PI / 180, ti = G.tilt * Math.PI / 180, ct = Math.cos(ti), stt = Math.sin(ti);
+    [g, gb, gf].forEach(x => x.clearRect(0, 0, C.W, C.H)); const rot = (G.lon0 + G.speed * t) * Math.PI / 180, ti = G.tilt * Math.PI / 180, ct = Math.cos(ti), stt = Math.sin(ti);
     const P3 = (lon, lat) => { const x = Math.cos(lat) * Math.sin(lon + rot), y = Math.sin(lat), z = Math.cos(lat) * Math.cos(lon + rot); const y2 = y * ct - z * stt, z2 = y * stt + z * ct; return [cx + x * r, cy - y2 * r, z2]; };
     let gr = g.createRadialGradient(cx, cy, r * .2, cx, cy, r * 1.25); gr.addColorStop(0, 'rgba(40,90,255,.0)'); gr.addColorStop(.78, 'rgba(60,120,255,.18)'); gr.addColorStop(.82, 'rgba(90,170,255,.45)'); gr.addColorStop(1, 'rgba(40,80,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, r * 1.25, 0, 7); g.fill();
     gr = g.createRadialGradient(cx - r * .35, cy - r * .35, r * .1, cx, cy, r); gr.addColorStop(0, 'rgba(40,110,255,.55)'); gr.addColorStop(1, 'rgba(8,20,110,.85)'); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.fill();
@@ -347,7 +364,7 @@
     /* traces also fan out behind/right of the chip */
     for (let i = 0; i < 10; i++) { const sy = cy - c.s * .1 + i * c.s * .05; const pts = [[cx + c.s * .4, sy]]; let x = cx + c.s * .4, y = sy; for (let k = 0; k < 3; k++) { x += 80 + R() * 120; pts.push([x, y]); const dy = (R() - .6) * 70; x += Math.abs(dy); y += dy; pts.push([x, y]); } c.tr.push({ pts, ph: R(), sp: .2 + R() * .2 }); }
     return c; };
-  T.chipAt = (c, t) => { const g = c.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); g.globalCompositeOperation = 'lighter';
+  T.chipAt = (c, t) => { const g = c.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); g.globalCompositeOperation = 'lighter';
     for (const tr of c.tr) { g.lineWidth = 2; g.strokeStyle = 'rgba(80,170,255,.55)'; g.beginPath(); tr.pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.stroke();
       const segs = []; let tot = 0; for (let i = 1; i < tr.pts.length; i++) { const d = Math.hypot(tr.pts[i][0] - tr.pts[i - 1][0], tr.pts[i][1] - tr.pts[i - 1][1]); segs.push(d); tot += d; }
       let dd = ((t * tr.sp + tr.ph) % 1) * tot; for (let i = 0; i < segs.length; i++) { if (dd <= segs[i]) { const k = dd / segs[i], x = tr.pts[i][0] + (tr.pts[i + 1][0] - tr.pts[i][0]) * k, y = tr.pts[i][1] + (tr.pts[i + 1][1] - tr.pts[i][1]) * k; const rg = g.createRadialGradient(x, y, 0, x, y, 14); rg.addColorStop(0, 'rgba(255,255,255,1)'); rg.addColorStop(1, 'rgba(90,170,255,0)'); g.fillStyle = rg; g.beginPath(); g.arc(x, y, 14, 0, 7); g.fill(); break; } dd -= segs[i]; } }
@@ -357,7 +374,7 @@
     const pul = .5 + .5 * Math.sin(t * 2); g.globalAlpha = .15 + .15 * pul; quad(18, '#4f8cff'); g.globalAlpha = 1; };
   /* rotating wireframe torus (ring). T.torusAt(o, t) */
   T.torus = (L, cx, cy, R, r) => ({ cx, cy, R, r, cv: fcan(L, 3) });
-  T.torusAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); g.globalCompositeOperation = 'lighter'; const ry = -0.55 + .12 * Math.sin(t * .4), rx = .12, spin = t * .25;
+  T.torusAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); g.globalCompositeOperation = 'lighter'; const ry = -0.55 + .12 * Math.sin(t * .4), rx = .12, spin = t * .25;
     const P3 = (u, v) => { const x0 = (o.R + o.r * Math.cos(v)) * Math.cos(u + spin), y0 = (o.R + o.r * Math.cos(v)) * Math.sin(u + spin), z0 = o.r * Math.sin(v); let x = x0 * Math.cos(ry) + z0 * Math.sin(ry), z = -x0 * Math.sin(ry) + z0 * Math.cos(ry); let y = y0 * Math.cos(rx) - z * Math.sin(rx); z = y0 * Math.sin(rx) + z * Math.cos(rx); const k = 1400 / (1400 + z); return [o.cx + x * k, o.cy + y * k, z]; };
     const colr = (u, a) => { const e = (Math.cos(u) + 1) / 2; return `rgba(${Math.round(60 + 160 * e)},${Math.round(200 - 60 * e)},255,${a})`; };
     for (const [lw, al] of [[4, .12], [1.2, .7]]) { g.lineWidth = lw;
@@ -384,12 +401,12 @@
   T.learnBg = `radial-gradient(1300px 900px at 50% 45%, #3d2f99, #372a8c 60%, #2e2378 100%)`;
   const NSV = (L, w, h, x, y, z) => { const s = K.svg(L, w, h, x, y); if (z) s.style.zIndex = z; return s; };
   /* bubbly rounded lettering: heavy font + thick round-joined stroke in the same colour (works for CN + EN) */
-  T.bubbly = (L, txt, x, y, size, opts) => { const o = Object.assign({ fill: '#fff', anchor: 'start', font: T.LRN.EN }, opts || {}); if (o.stroke === undefined) o.stroke = o.font === T.LRN.CN ? .018 : .05; const w = 1920, h = Math.ceil(size * 1.4); const s = NSV(L, w, h, 0, y, 6);
+  T.bubbly = (L, txt, x, y, size, opts) => { const o = Object.assign({ fill: '#fff', anchor: 'start', font: T.LRN.EN }, opts || {}); if (o.stroke === undefined) o.stroke = o.font === T.LRN.CN ? .018 : .05; const w = C.W, h = Math.ceil(size * 1.4); const s = NSV(L, w, h, 0, y, 6);
     const tx = K.sv(s, 'text', { x: x, y: size * 1.05, 'font-family': o.font, 'font-weight': 900, 'font-size': size, fill: o.fill, stroke: o.fill, 'stroke-width': size * o.stroke, 'stroke-linejoin': 'round', 'stroke-linecap': 'round', 'paint-order': 'stroke', 'text-anchor': o.anchor, 'letter-spacing': size * (o.font === T.LRN.CN ? .04 : .025) }); tx.textContent = txt; s.style.transformOrigin = `${o.anchor === 'middle' ? x : x + 200}px 50%`; return s; };
   /* twinkling stars + drifting clouds. T.skyAt(sky, t) */
-  T.sky = (L, nStars, seed, clouds) => { const R = C.rng(seed || 5), s = NSV(L, 1920, 1080, 0, 0, 1); const o = { stars: [], clouds: [] };
+  T.sky = (L, nStars, seed, clouds) => { const R = C.rng(seed || 5), s = NSV(L, C.W, C.H, 0, 0, 1); const o = { s, stars: [], clouds: [] };
     const star = (cx, cy, r) => { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; p.push((cx + rr * Math.cos(a)).toFixed(1) + ',' + (cy + rr * Math.sin(a)).toFixed(1)); } const e = K.sv(s, 'polygon', { points: p.join(' '), fill: T.LRN.STAR, 'stroke-linejoin': 'round', stroke: T.LRN.STAR, 'stroke-width': r * .25 }); e.style.transformOrigin = `${cx}px ${cy}px`; e.style.transformBox = 'view-box'; return e; };
-    for (let i = 0; i < (nStars || 14); i++) o.stars.push({ e: star(R() * 1920, R() * 1080, 12 + R() * 12), ph: R() * 6.28, sp: 1.5 + R() * 2 });
+    for (let i = 0; i < (nStars || 14); i++) o.stars.push({ e: star(R() * C.W, R() * C.H, 12 + R() * 12), ph: R() * 6.28, sp: 1.5 + R() * 2 });
     (clouds || [[120, 860, 1], [1560, 130, .9], [380, 110, .7], [1700, 640, .8]]).forEach(([x, y, k]) => { const g = K.sv(s, 'g', {}); const sc = k * 1.2;
       [[0, 30, 60, 30], [55, 0, 75, 75], [120, 25, 55, 55]].forEach(([cx, cy, rw]) => K.sv(g, 'circle', { cx: cx * sc + 40 * sc, cy: (cy + 45) * sc, r: rw / 2 * sc + 10 * sc, fill: T.LRN.CLOUD }));
       K.sv(g, 'rect', { x: 20 * sc, y: 70 * sc, width: 180 * sc, height: 40 * sc, rx: 20 * sc, fill: T.LRN.CLOUD }); o.clouds.push({ g, x, y, k }); }); return o; };
@@ -410,7 +427,7 @@
     K.sv(s, 'circle', { cx: 2 * r, cy: 2 * r, r, fill: T.LRN.STAR }); s.rays = g; s.r = r; return s; };
   T.sunAt = (s, t, u) => { s.rays.setAttribute('transform', `rotate(${t * 12} ${2 * s.r} ${2 * s.r})`); tf(s, { s: ease.outBack(clamp(u ?? 1), 1.5), o: clamp((u ?? 1) * 3) }); };
   /* paper plane flying along a dashed path. pts: [[x,y],...] (smooth). T.planeAt(p, u) */
-  T.plane = (L, pts, size) => { const s = NSV(L, 1920, 1080, 0, 0, 7); let d = `M${pts[0][0]} ${pts[0][1]}`; for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += ` Q${pts[i][0]} ${pts[i][1]} ${mx} ${my}`; } d += ` L${pts[pts.length - 1][0]} ${pts[pts.length - 1][1]}`;
+  T.plane = (L, pts, size) => { const s = NSV(L, C.W, C.H, 0, 0, 7); let d = `M${pts[0][0]} ${pts[0][1]}`; for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += ` Q${pts[i][0]} ${pts[i][1]} ${mx} ${my}`; } d += ` L${pts[pts.length - 1][0]} ${pts[pts.length - 1][1]}`;
     const path = K.sv(s, 'path', { d, fill: 'none', stroke: '#fff', 'stroke-width': 5, 'stroke-dasharray': '16 14', 'stroke-linecap': 'round' }); const l = path.getTotalLength();
     const z = size || 90, g = K.sv(s, 'g', {}); K.sv(g, 'polygon', { points: `0,0 ${-z},${-z * .38} ${-z * .62},0`, fill: '#ffffff' }); K.sv(g, 'polygon', { points: `0,0 ${-z * .62},0 ${-z * .78},${z * .3}`, fill: '#cfe2ff' }); K.sv(g, 'polygon', { points: `0,0 ${-z},${-z * .38} ${-z * .55},${z * .12}`, fill: '#e8f1ff' });
     return { path, l, g }; };
@@ -438,7 +455,7 @@
   /* little burst lines around an icon */
   T.rays = (L, cx, cy, r, n, a0, a1) => { const s = NSV(L, r * 3, r * 3, cx - r * 1.5, cy - r * 1.5, 5); for (let i = 0; i < n; i++) { const a = (a0 + (a1 - a0) * i / Math.max(1, n - 1)) * Math.PI / 180; K.sv(s, 'line', { x1: 1.5 * r + Math.cos(a) * r, y1: 1.5 * r + Math.sin(a) * r, x2: 1.5 * r + Math.cos(a) * r * 1.3, y2: 1.5 * r + Math.sin(a) * r * 1.3, stroke: T.LRN.STAR, 'stroke-width': 10, 'stroke-linecap': 'round' }); } s.style.transformOrigin = '50% 50%'; return s; };
   /* white dashed arc between two points (drawn in) */
-  T.dashArc = (L, x1, y1, x2, y2, lift) => { const s = NSV(L, 1920, 1080, 0, 0, 5); const p = K.sv(s, 'path', { d: `M${x1} ${y1} Q${(x1 + x2) / 2} ${Math.min(y1, y2) - (lift || 80)} ${x2} ${y2}`, fill: 'none', stroke: '#fff', 'stroke-width': 5, 'stroke-linecap': 'round' }); p.l = p.getTotalLength(); return p; };
+  T.dashArc = (L, x1, y1, x2, y2, lift) => { const s = NSV(L, C.W, C.H, 0, 0, 5); const p = K.sv(s, 'path', { d: `M${x1} ${y1} Q${(x1 + x2) / 2} ${Math.min(y1, y2) - (lift || 80)} ${x2} ${y2}`, fill: 'none', stroke: '#fff', 'stroke-width': 5, 'stroke-linecap': 'round' }); p.l = p.getTotalLength(); return p; };
   T.dashArcAt = (p, u) => p.setAttribute('stroke-dasharray', dashUpTo(p.l * clamp(u)));
   /* open book with fanned pages and a glowing pink sunrise behind it */
   T.bigBook = (L, cx, by, w) => { const s = NSV(L, w * 1.4, w * .9, cx - w * .7, by - w * .7, 3); const ox = w * .7, oy = w * .7; const o = { s };
@@ -457,16 +474,16 @@
   T.CMC = { GREEN: ['#3fae2a', '#8fd63a'], YELLOW: ['#f7a90f', '#ffd43b'], BLUE: ['#1e8fe0', '#4cc3f5'], PURPLE: ['#7b3fb8', '#a868d8'], CYAN: ['#14b5e0', '#3fe6f5'], LIME: ['#4cd61f', '#a8f53a'],
     INK: '#111111', SHADE: '#d9e6f2', STAR: '#ffd21f', EN: "'Inter','Noto Sans CJK SC',sans-serif", CN: "'Noto Sans CJK SC',sans-serif" };
   /* sunburst rays (rotating) + halftone dots, clipped to an optional polygon. pal = [dark, light]. T.burstAt(b, t) */
-  T.burst = (L, cx, cy, pal, clip, opts) => { const o = Object.assign({ rays: 18, dots: true, glow: true }, opts || {}); const box = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', overflow: 'hidden', clipPath: clip || 'none', background: pal[0] });
+  T.burst = (L, cx, cy, pal, clip, opts) => { const o = Object.assign({ rays: 18, dots: true, glow: true }, opts || {}); const box = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden', clipPath: clip || 'none', background: pal[0] });
     const deg = 360 / o.rays; box.r = el(box, 'div', 'abs', { left: (cx - 1800) + 'px', top: (cy - 1800) + 'px', width: '3600px', height: '3600px', background: `repeating-conic-gradient(from 0deg, ${pal[1]} 0deg ${deg * .45}deg, ${pal[0]} ${deg * .45}deg ${deg}deg)` });
-    if (o.glow) el(box, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', background: `radial-gradient(700px 500px at ${cx}px ${cy}px, rgba(255,255,190,.55), rgba(255,255,190,0) 70%)` });
-    if (o.dots) el(box, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', backgroundImage: 'radial-gradient(rgba(0,0,0,.16) 3.2px, transparent 3.8px)', backgroundSize: '22px 22px', WebkitMaskImage: `radial-gradient(1100px 800px at ${cx}px ${cy}px, rgba(0,0,0,.15), rgba(0,0,0,1) 75%)` });
+    if (o.glow) el(box, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: `radial-gradient(700px 500px at ${cx}px ${cy}px, rgba(255,255,190,.55), rgba(255,255,190,0) 70%)` });
+    if (o.dots) el(box, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'radial-gradient(rgba(0,0,0,.16) 3.2px, transparent 3.8px)', backgroundSize: '22px 22px', WebkitMaskImage: `radial-gradient(1100px 800px at ${cx}px ${cy}px, rgba(0,0,0,.15), rgba(0,0,0,1) 75%)` });
     box.cx = cx; box.cy = cy; return box; };
   T.burstAt = (b, t, speed) => { b.r.style.transform = `rotate(${t * (speed ?? 5)}deg)`; };
   /* white zigzag lightning divider between two halves; returns the two clip polygons + svg */
-  T.zigzag = (L, pts) => { pts = pts || [[640, 0], [760, 330], [1010, 470], [1220, 1080]]; const s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 4; const d = 'M' + pts.map(p => p.join(' ')).join(' L');
+  T.zigzag = (L, pts) => { pts = pts || [[640, 0], [760, 330], [1010, 470], [1220, C.H]]; const s = K.svg(L, C.W, C.H, 0, 0); s.style.zIndex = 4; const d = 'M' + pts.map(p => p.join(' ')).join(' L');
     K.sv(s, 'path', { d, fill: 'none', stroke: T.CMC.INK, 'stroke-width': 40, 'stroke-linejoin': 'miter' }); K.sv(s, 'path', { d, fill: 'none', stroke: '#fff', 'stroke-width': 28, 'stroke-linejoin': 'miter' });
-    const poly = pts.map(p => `${p[0]}px ${p[1]}px`).join(','); return { s, left: `polygon(0 0, ${poly}, 0 1080px)`, right: `polygon(${poly}, 1920px 1080px, 1920px 0)` }; };
+    const poly = pts.map(p => `${p[0]}px ${p[1]}px`).join(','); return { s, left: `polygon(0 0, ${poly}, 0 ${C.H}px)`, right: `polygon(${poly}, ${C.W}px ${C.H}px, ${C.W}px 0)` }; };
   /* puffy comic cloud with thick black outline and soft inner shading. T.cloudAt(c, t) bobs it */
   T.comicCloud = (L, x, y, w, seed, z) => { const R = C.rng(seed || 7), h = w * .62, s = K.svg(L, w + 40, h + 40, x - 20, y - 20); s.style.zIndex = z || 5; const g = K.sv(s, 'g', { transform: 'translate(20 20)' });
     const cs = []; const n = 6; for (let i = 0; i < n; i++) { const a = Math.PI + i / (n - 1) * Math.PI; cs.push([w / 2 + Math.cos(a) * w * .36, h * .58 + Math.sin(a) * h * .34, w * (.17 + R() * .07)]); }
@@ -478,11 +495,11 @@
   T.cStar = (L, cx, cy, r, col) => { const s = K.svg(L, r * 3, r * 3, cx - r * 1.5, cy - r * 1.5); s.style.zIndex = 6; const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .48 : r; p.push((1.5 * r + rr * Math.cos(a)).toFixed(1) + ',' + (1.5 * r + rr * Math.sin(a)).toFixed(1)); }
     K.sv(s, 'polygon', { points: p.join(' '), fill: col || T.CMC.STAR, stroke: T.CMC.INK, 'stroke-width': Math.max(3, r * .14), 'stroke-linejoin': 'round' }); s.style.transformOrigin = '50% 50%'; return s; };
   /* black action wedges radiating from a point (emphasis marks) */
-  T.action = (L, cx, cy, r, angles) => { const s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 6; (angles || [-150, -125, -35, -10, 30, 150, 205, 235]).forEach(a => { const A = a * Math.PI / 180, l = r * .35, w = 9;
+  T.action = (L, cx, cy, r, angles) => { const s = K.svg(L, C.W, C.H, 0, 0); s.style.zIndex = 6; (angles || [-150, -125, -35, -10, 30, 150, 205, 235]).forEach(a => { const A = a * Math.PI / 180, l = r * .35, w = 9;
       const x1 = cx + Math.cos(A) * r, y1 = cy + Math.sin(A) * r, x2 = cx + Math.cos(A) * (r + l), y2 = cy + Math.sin(A) * (r + l), nx = -Math.sin(A) * w, ny = Math.cos(A) * w;
       K.sv(s, 'polygon', { points: `${x1},${y1} ${x2 + nx},${y2 + ny} ${x2 - nx},${y2 - ny}`, fill: T.CMC.INK }); }); s.style.transformOrigin = `${cx}px ${cy}px`; return s; };
   /* comic lettering: heavy fill + thick black outline + hard offset shadow (EN or CN) */
-  T.comicText = (L, txt, x, y, size, fill, opts) => { const o = Object.assign({ anchor: 'start', font: T.CMC.EN, rot: 0 }, opts || {}); const s = K.svg(L, 1920, Math.ceil(size * 1.5), 0, y); s.style.zIndex = 7; s.style.overflow = 'visible';
+  T.comicText = (L, txt, x, y, size, fill, opts) => { const o = Object.assign({ anchor: 'start', font: T.CMC.EN, rot: 0 }, opts || {}); const s = K.svg(L, C.W, Math.ceil(size * 1.5), 0, y); s.style.zIndex = 7; s.style.overflow = 'visible';
     const a = { x, y: size * 1.08, 'font-family': o.font, 'font-weight': 900, 'font-size': size, 'text-anchor': o.anchor, 'stroke-linejoin': 'round', 'paint-order': 'stroke', 'letter-spacing': size * .02 };
     const sh = K.sv(s, 'text', Object.assign({}, a, { x: x + size * .06, y: size * 1.08 + size * .06, fill: T.CMC.INK, stroke: T.CMC.INK, 'stroke-width': size * .16 })); sh.textContent = txt;
     const tx = K.sv(s, 'text', Object.assign({}, a, { fill: fill || '#fff', stroke: T.CMC.INK, 'stroke-width': size * .14 })); tx.textContent = txt;
@@ -491,7 +508,7 @@
   T.speechCloud = (L, cx, cy, w, txt, size, font) => { const c = T.comicCloud(L, cx - w / 2, cy - w * .31, w, 11, 5); const t = el(L, 'div', 'abs', { left: (cx - w / 2) + 'px', width: w + 'px', top: (cy - (size || 64) * .55) + 'px', textAlign: 'center', fontFamily: font || "Georgia,'Noto Serif CJK SC',serif", fontSize: (size || 64) + 'px', fontWeight: 700, color: T.CMC.INK, zIndex: 6, whiteSpace: 'nowrap' }, txt);
     return { c, t }; };
   /* twinkling 4-point sparkles (white) */
-  T.sparkles = (L, n, seed) => { const R = C.rng(seed || 3), s = K.svg(L, 1920, 1080, 0, 0); s.style.zIndex = 3; const a = []; for (let i = 0; i < n; i++) { const x = R() * 1920, y = R() * 700, r = 6 + R() * 12; const p = K.sv(s, 'path', { d: `M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q${x} ${y} ${x} ${y + r} Q${x} ${y} ${x - r} ${y} Q${x} ${y} ${x} ${y - r} Z`, fill: '#fff' }); a.push({ p, ph: R() * 6.28, sp: 2 + R() * 3 }); } return a; };
+  T.sparkles = (L, n, seed) => { const R = C.rng(seed || 3), s = K.svg(L, C.W, C.H, 0, 0); s.style.zIndex = 3; const a = []; for (let i = 0; i < n; i++) { const x = R() * C.W, y = R() * 700, r = 6 + R() * 12; const p = K.sv(s, 'path', { d: `M${x} ${y - r} Q${x} ${y} ${x + r} ${y} Q${x} ${y} ${x} ${y + r} Q${x} ${y} ${x - r} ${y} Q${x} ${y} ${x} ${y - r} Z`, fill: '#fff' }); a.push({ p, ph: R() * 6.28, sp: 2 + R() * 3 }); } return a; };
   T.sparklesAt = (a, t) => a.forEach(q => q.p.setAttribute('opacity', (.3 + .7 * Math.max(0, Math.sin(t * q.sp + q.ph))).toFixed(2)));
   /* row of clouds along the bottom (ground) */
   T.cloudGround = (L, y, n, seed) => { const out = []; const R = C.rng(seed || 2); for (let i = 0; i < n; i++) out.push(T.comicCloud(L, -120 + i * (2160 / n) + R() * 40, y - R() * 60, 2160 / n * 1.5, 30 + i, 5)); return out; };
@@ -501,15 +518,15 @@
   /* ---------- T17 Science Network: plexus ribbon, plexus globe, sphere chain, tunnel, bokeh ---------- */
   T.SCN = { BG: '#03060f', CYAN: '#18e0f2', BLUE: '#2a7fff', ORANGE: '#ff8a3d', EN: "'Inter','Noto Sans CJK SC',sans-serif" };
   T.sciNetBg = 'radial-gradient(1400px 900px at 60% 45%, #0a1630, #03060f 70%)';
-  const scv = (L, z, blur) => { const cv = el(L, 'canvas', 'abs', { left: 0, top: 0, zIndex: z || 2, filter: blur ? `blur(${blur}px)` : 'none' }); cv.width = 1920; cv.height = 1080; return cv; };
+  const scv = (L, z, blur) => { const cv = el(L, 'canvas', 'abs', { left: 0, top: 0, zIndex: z || 2, filter: blur ? `blur(${blur}px)` : 'none' }); cv.width = C.W; cv.height = C.H; return cv; };
   const glowDot = (g, x, y, r, rgb, a) => { const gr = g.createRadialGradient(x, y, 0, x, y, r * 3); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(.25, `rgba(${rgb},${a})`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r * 3, 0, 7); g.fill(); };
   const NODECOL = (k) => k < .22 ? '255,140,60' : k < .55 ? '60,200,255' : '200,225,255';
   /* soft out-of-focus bokeh dots drifting. T.bokehAt(b, t) */
-  T.bokeh = (L, n, seed) => { const R = C.rng(seed || 13), o = { cv: scv(L, 1, 6), p: [] }; for (let i = 0; i < (n || 40); i++) o.p.push([R() * 1920, R() * 1080, 8 + R() * 34, R() < .45 ? '255,130,60' : '60,150,255', .15 + R() * .35, (R() - .5) * 10]); return o; };
-  T.bokehAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); for (const [x, y, r, c, a, v] of o.p) { const xx = (x + v * t + 1920) % 1920; const gr = g.createRadialGradient(xx, y, 0, xx, y, r); gr.addColorStop(0, `rgba(${c},${a})`); gr.addColorStop(.7, `rgba(${c},${a * .6})`); gr.addColorStop(1, `rgba(${c},0)`); g.fillStyle = gr; g.beginPath(); g.arc(xx, y, r, 0, 7); g.fill(); } };
+  T.bokeh = (L, n, seed) => { const R = C.rng(seed || 13), o = { cv: scv(L, 1, 6), p: [] }; for (let i = 0; i < (n || 40); i++) o.p.push([R() * C.W, R() * C.H, 8 + R() * 34, R() < .45 ? '255,130,60' : '60,150,255', .15 + R() * .35, (R() - .5) * 10]); return o; };
+  T.bokehAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); for (const [x, y, r, c, a, v] of o.p) { const xx = (x + v * t + C.W) % C.W; const gr = g.createRadialGradient(xx, y, 0, xx, y, r); gr.addColorStop(0, `rgba(${c},${a})`); gr.addColorStop(.7, `rgba(${c},${a * .6})`); gr.addColorStop(1, `rgba(${c},0)`); g.fillStyle = gr; g.beginPath(); g.arc(xx, y, r, 0, 7); g.fill(); } };
   /* rippling plexus ribbon: a 3D wave of connected nodes. opts {y, amp, width, cols, rows, tilt}. T.ribbonAt(r, t) */
   T.ribbon = (L, opts) => { const o = Object.assign({ y: 520, amp: 160, width: 220, cols: 46, rows: 7, x0: -100, x1: 2020, seed: 5 }, opts || {}); o.cv = scv(L, 3); const R = C.rng(o.seed); o.j = []; for (let i = 0; i < o.cols * o.rows; i++) o.j.push([(R() - .5) * .6, (R() - .5) * .6, R()]); return o; };
-  T.ribbonAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); g.globalCompositeOperation = 'lighter'; const P2 = [];
+  T.ribbonAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); g.globalCompositeOperation = 'lighter'; const P2 = [];
     for (let i = 0; i < o.cols; i++) for (let j = 0; j < o.rows; j++) { const k = o.j[i * o.rows + j]; const u = (i + k[0]) / (o.cols - 1), v = (j + k[1]) / (o.rows - 1) - .5;
       const x = o.x0 + (o.x1 - o.x0) * u, ph = u * 7 - t * .9, cy = o.y - o.amp * Math.sin(ph) - u * 120, tw = Math.cos(ph * .8 + t * .4); const z = 1 + .35 * v * tw; P2.push([x + v * o.width * .3 * Math.sin(ph), cy + v * o.width * tw, z, k[2]]); }
     const idx = (i, j) => i * o.rows + j;
@@ -521,7 +538,7 @@
     for (let i = 0; i < o.n; i++) { const y = 1 - (i + .5) / o.n * 2, rr = Math.sqrt(1 - y * y), th = i * 2.39996; o.p.push([Math.cos(th) * rr, y, Math.sin(th) * rr, R()]); }
     o.e = []; const th = o.link * 3.6 / Math.sqrt(o.n); for (let i = 0; i < o.n; i++) for (let j = i + 1; j < o.n; j++) { const a = o.p[i], b = o.p[j]; if (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < th) o.e.push([i, j]); }
     if (o.land) landPts(); return o; };
-  T.pSphereAt = (o, t, u) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); o.cv.style.opacity = u === undefined ? 1 : clamp(u); g.globalCompositeOperation = 'lighter';
+  T.pSphereAt = (o, t, u) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); o.cv.style.opacity = u === undefined ? 1 : clamp(u); g.globalCompositeOperation = 'lighter';
     const rot = (o.lon0 + o.speed * t) * Math.PI / 180, ti = o.tilt * Math.PI / 180; const pr = (x, y, z) => { const x1 = x * Math.cos(rot) + z * Math.sin(rot), z1 = -x * Math.sin(rot) + z * Math.cos(rot); const y2 = y * Math.cos(ti) - z1 * Math.sin(ti), z2 = y * Math.sin(ti) + z1 * Math.cos(ti); return [o.cx + x1 * o.r, o.cy - y2 * o.r, z2]; };
     const gr = g.createRadialGradient(o.cx, o.cy, o.r * .2, o.cx, o.cy, o.r * 1.15); gr.addColorStop(0, 'rgba(20,60,140,.25)'); gr.addColorStop(.85, 'rgba(40,120,255,.12)'); gr.addColorStop(1, 'rgba(40,120,255,0)'); g.fillStyle = gr; g.beginPath(); g.arc(o.cx, o.cy, o.r * 1.15, 0, 7); g.fill();
     const Q = o.p.map(([x, y, z, k]) => pr(x, y, z).concat(k));
@@ -531,7 +548,7 @@
     g.globalCompositeOperation = 'source-over'; };
   /* plexus tunnel / vortex flowing toward the viewer. T.tunnelAt(o, t) */
   T.tunnel = (L, cx, cy, opts) => { const o = Object.assign({ cx, cy, rings: 22, per: 28, rmax: 900, speed: .35 }, opts || {}); o.cv = scv(L, 3); const R = C.rng(3); o.k = []; for (let i = 0; i < o.rings * o.per; i++) o.k.push(R()); return o; };
-  T.tunnelAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, 1920, 1080); g.globalCompositeOperation = 'lighter'; const rings = [];
+  T.tunnelAt = (o, t) => { const g = o.cv.getContext('2d'); g.clearRect(0, 0, C.W, C.H); g.globalCompositeOperation = 'lighter'; const rings = [];
     for (let i = 0; i < o.rings; i++) { const z = ((i / o.rings + t * o.speed * .1) % 1); const d = .06 + z * z * 1.0, rr = o.rmax * d, sp = t * .25 + i * .21; const pts = []; for (let j = 0; j < o.per; j++) { const a = j / o.per * 2 * Math.PI + sp; pts.push([o.cx + Math.cos(a) * rr * (1 + .08 * Math.sin(a * 3 + t)), o.cy + Math.sin(a) * rr * .82, z, o.k[i * o.per + j]]); } rings.push(pts); }
     rings.sort((a, b) => a[0][2] - b[0][2]);
     rings.forEach((pts, ri) => { const z = pts[0][2], al = Math.min(1, z * 1.6) * (1 - Math.max(0, z - .85) / .15); g.lineWidth = .6 + z * 1.4; g.strokeStyle = `rgba(120,190,255,${(.35 * al).toFixed(3)})`; g.beginPath(); pts.forEach(([x, y], j) => j ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.stroke();
@@ -541,7 +558,75 @@
   /* white headline with one cyan word + small sub line. T.sciHeadAt(h, t, t0) */
   T.sciHead = (L, lines, sub, x, y, size) => { size = size || 92; const d = el(L, 'div', 'abs', { left: x + 'px', top: y + 'px', zIndex: 8 }); d.ls = lines.map(l => el(d, 'div', '', { fontFamily: T.SCN.EN, fontWeight: 900, fontSize: size + 'px', lineHeight: 1.02, color: '#fff', whiteSpace: 'nowrap', textShadow: '0 4px 30px rgba(0,0,0,.6)' }, l.replace(/\[(.+?)\]/g, `<span style="color:${T.SCN.CYAN}">$1</span>`)));
     d.s = el(d, 'div', 'cn', { fontSize: (size * .32) + 'px', fontWeight: 400, color: '#e8f2ff', marginTop: '20px', lineHeight: 1.35, whiteSpace: 'pre' }, sub || ''); return d; };
+  /* T17 face-safe rule: the presenter is always the top layer and big type never crosses the face, features or hands.
+   * T.sciAvoid(head, g, opt): g = the presenter's rectangle on stage (the evaKeys pose, or {x:0,y:0,w:C.W,h:C.H} for full-bleed).
+   * After fonts load it measures the headline block; if it would overlap the person zone (head + shoulders + gesture room,
+   * from C.faceRect(g)), it keeps the block upper-left and shrinks it to the room left of the person, or moves it above the
+   * head, or to the right side, whichever keeps the type biggest. Text may tuck behind the presenter, never over her. */
+  T.sciPerson = (g, opt) => { opt = opt || {}; const f = C.faceRect(g), px = opt.padX ?? .22, pt = opt.padTop ?? .28;
+    return { x: f.x - f.w * px, y: f.y - f.h * pt, w: f.w * (1 + 2 * px), h: C.H - (f.y - f.h * pt), face: f }; };
+  T.sciAvoid = (d, g, opt) => { opt = opt || {}; const gap = opt.gap ?? 40, SF = C.SAFE, yMax = opt.yMax ?? C.H * .7;
+    C.fits.push(() => { const lay = d.closest('.layer'), disp = lay && lay.style.display; if (lay) lay.style.display = 'block';  // layers start hidden: show to measure
+      const P0 = T.sciPerson(g, opt), x = parseFloat(d.style.left), y = parseFloat(d.style.top), bw = d.offsetWidth, bh = d.offsetHeight;
+      const hit = (x1, y1, w1, h1) => x1 < P0.x + P0.w && x1 + w1 > P0.x && y1 < P0.y + P0.h && y1 + h1 > P0.y;
+      if (!hit(x, y, bw, bh)) { if (lay) lay.style.display = disp; return; }
+      const ls = [...d.querySelectorAll(':scope > div')], cand = [], wl = P0.x - gap - x;
+      if (wl > 0) { cand.push({ k: Math.min(1, wl / bw), x, y });                                                         // shrink, stay upper-left
+        // reflow: break lines at spaces into a taller left column at full size (CJK runs never break), shrink only if a word is wider
+        d.style.width = wl + 'px'; ls.forEach(l => { l.style.whiteSpace = 'normal'; l.style.wordBreak = 'keep-all'; });
+        const wide = Math.max(...ls.map(l => l.scrollWidth)), hh = d.offsetHeight, kw = Math.min(1, wl / wide), kh = Math.min(1, (yMax - y) / hh);
+        cand.push({ k: Math.min(kw, kh) * .999, x, y, wrap: 1 }); d.style.width = ''; ls.forEach(l => { l.style.whiteSpace = 'nowrap'; l.style.wordBreak = ''; }); }
+      const ha = P0.y - gap - SF.top; if (ha > 0) cand.push({ k: Math.min(1, ha / bh, (C.W - SF.left - SF.right) / bw), x, y: SF.top }); // above the head
+      const xr = P0.x + P0.w + gap, wr = C.W - SF.right - xr; if (wr > 0) cand.push({ k: Math.min(1, wr / bw), x: xr, y });        // right side
+      if (lay) lay.style.display = disp;
+      const b = cand.sort((p, q) => q.k - p.k)[0]; if (!b) { d.style.opacity = 0; return; }
+      if (b.wrap) { d.style.width = (wl / b.k) + 'px'; ls.forEach(l => { l.style.whiteSpace = 'normal'; l.style.wordBreak = 'keep-all'; }); }
+      d.querySelectorAll('div').forEach(l => { l.style.fontSize = (parseFloat(getComputedStyle(l).fontSize) * b.k).toFixed(1) + 'px'; });
+      if (b.wrap) d.style.width = wl + 'px';
+      d.style.left = b.x + 'px'; d.style.top = b.y + 'px'; });
+    return d; };
+  /* full-bleed or large presenter in T17: put the type BETWEEN the video and a cut-out of her. Register after the text scenes:
+   * T.sciCutTop(t0, t1, frameFn, cutFn) adds a scene at z 60 (above the Eva window at 50 and text scenes at z 55) that draws
+   * the original HD frame masked by the AI cut-out (scripts/matte.py), so she stays sharp and on top. */
+  T.sciCutTop = (t0, t1, frameFn, cutFn) => C.scene({ t0, t1, z: 60, quiet: true, build(L) { return { p: el(L, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', WebkitMaskSize: 'cover', maskSize: 'cover', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' }) }; },
+    update(lt, st, t) { C.setSrc(st.p, frameFn(t)); const m = `url(${cutFn(t)})`; if (st.p._m !== m) { st.p.style.webkitMaskImage = st.p.style.maskImage = m; st.p._m = m; } } });
   T.sciHeadAt = (d, t, t0) => { d.ls.forEach((l, i) => tf(l, slide(t, t0 + i * .14, .5, -60, 0))); tf(d.s, { o: P(t, t0 + .5, .4) }); };
+
+  /* T19 Footage Intro · product demo. The product video plays full-bleed BEHIND (normal speed, slow push-in); the presenter is
+   * cut out in FRONT at full size, then (at opt.morph s) shrinks into a small white-ringed circle with a cyan glow that hops
+   * to the bottom-left corner, then alternates top-left ↔ bottom-left every opt.hop s (squash on landing, shadow below).
+   * Inside the circle her head and shoulders break out of its top. Optional slanted T19 label chip (text from the screen).
+   * T.ftDemo(L, {D, morph, hop, corners, label}) then per frame T.ftDemoAt(o, t, screenSrc, frameSrc, cutSrc). Needs media/cut. */
+  T.ftDemo = (L, opt) => { opt = opt || {}; const V = C.portrait, o = { D: opt.D || (V ? 300 : 250), hop: opt.hop || 1.1, morph: opt.morph ?? 1.4, t0: opt.t0 || 0 }, D = o.D;
+    o.corners = opt.corners || (V ? [[230, 1330], [230, 420]] : [[250, 800], [250, 285]]);   // [bottom-left, top-left]
+    o.scr = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', overflow: 'hidden', zIndex: 4, transformOrigin: '50% 50%' });
+    o.img = el(o.scr, 'img', 'abs', { left: 0, top: 0, width: '100%', height: '100%', objectFit: 'cover' });
+    o.vig = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 5, background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 45%, rgba(0,0,0,.4))' });
+    if (opt.label) o.lab = el(L, 'div', 'abs', { right: (V ? 60 : 90) + 'px', top: (V ? 230 : 70) + 'px', zIndex: 12, fontFamily: "'Inter','Noto Sans CJK SC',sans-serif", fontWeight: 900, fontStyle: 'italic', fontSize: (V ? 50 : 46) + 'px', color: '#2ee6ff', background: 'rgba(8,14,32,.92)', padding: '.12em .55em', transform: 'skewX(-10deg)', boxShadow: '0 10px 30px rgba(0,0,0,.4)', whiteSpace: 'nowrap', transformOrigin: '100% 50%' }, opt.label);
+    const mask = { WebkitMaskSize: '100% 100%', maskSize: '100% 100%', WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' };
+    // full-size cut-out over the product video (soft shadow so she sits on it)
+    o.fw = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: 10, transformOrigin: '0 0', filter: 'drop-shadow(0 18px 34px rgba(0,0,0,.45))' });
+    o.full = el(o.fw, 'img', 'abs', Object.assign({ left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', objectFit: 'cover', filter: 'brightness(1.05) contrast(1.04)' }, mask));
+    o.shadow = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: (D * .16) + 'px', borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0))', zIndex: 9 });
+    o.b = el(L, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', zIndex: 11, transformOrigin: '50% 100%' });
+    el(o.b, 'div', 'abs', { left: 0, top: 0, width: D + 'px', height: D + 'px', borderRadius: '50%', background: 'radial-gradient(circle at 50% 30%, #ffffff, #dfe8f2 75%)', border: '6px solid #fff', boxShadow: '0 0 0 3px rgba(46,230,255,.9), 0 0 30px rgba(46,230,255,.55), 0 16px 34px rgba(0,0,0,.35)', boxSizing: 'border-box' });
+    const top = D * .62; o.pw = el(o.b, 'div', 'abs', { left: 0, top: -top + 'px', width: D + 'px', height: (D + top) + 'px', clipPath: `path('M0 0 L${D} 0 L${D} ${top + D / 2} A${D / 2} ${D / 2} 0 0 1 0 ${top + D / 2} Z')` });
+    const fh = C.face.h * C.src.h, k = D * (opt.head || .46) / fh, iw = C.src.w * k, ih = C.src.h * k; o.k = k;
+    o.p = el(o.pw, 'img', 'abs', Object.assign({ width: iw + 'px', height: ih + 'px', left: (D / 2 - C.face.x * iw) + 'px', top: (top + D * (opt.faceY ?? .1) - C.face.y * ih) + 'px', filter: 'brightness(1.06) contrast(1.05) saturate(1.05)' }, mask));
+    return o; };
+  T.ftDemoAt = (o, t, scr, frame, cut) => { C.setSrc(o.img, scr); C.setSrc(o.full, frame); C.setSrc(o.p, frame); const m = `url(${cut})`;
+    if (o.p._m !== m) { o.p.style.webkitMaskImage = o.p.style.maskImage = o.full.style.webkitMaskImage = o.full.style.maskImage = m; o.p._m = m; }
+    const D = o.D, lt = t - o.t0; tf(o.scr, { s: 1 + .035 * P(lt, 0, 6) }); if (o.lab) tf(o.lab, slide(lt, .5, .35, 80, 0));
+    // 1) full-size cut-out → 2) shrinks toward the first corner while the circle pops in → 3) hops BL ↔ TL
+    const mu = ease.io3(P(lt, o.morph, .45)), [cx0, cy0] = o.corners[0];
+    const fx = C.face.x * C.W, fy = C.face.y * C.H, sF = 1 - mu * (1 - o.k * 1.0), tx = (cx0 - fx * sF) * mu, ty = (cy0 - D * .4 - fy * sF) * mu;
+    o.fw.style.transform = `translate(${tx}px, ${ty}px) scale(${sF})`; o.fw.style.opacity = 1 - P(lt, o.morph + .25, .2); o.fw.style.display = lt > o.morph + .5 ? 'none' : '';
+    const on = lt >= o.morph + .3; o.b.style.display = o.shadow.style.display = on ? '' : 'none'; if (!on) return;
+    const enter = ease.outBack(P(lt, o.morph + .3, .3), 1.8), h = Math.max(0, lt - o.morph - .9) / o.hop, n = o.corners.length;
+    const i = Math.floor(h), f = h - i, a = o.corners[i % n], b = o.corners[(i + 1) % n], mv = ease.io3(f / .6), lift = Math.sin(Math.PI * clamp(f / .6)) * D * .45;
+    const x = a[0] + (b[0] - a[0]) * mv, y = a[1] + (b[1] - a[1]) * mv - lift, sq = Math.sin(Math.PI * clamp((f - .6) / .25)) * .1;
+    o.b.style.transform = `translate(${x - D / 2}px, ${y - D / 2}px) scale(${(1 + sq) * enter}, ${(1 - sq) * enter})`;
+    const gy = a[1] + (b[1] - a[1]) * mv; o.shadow.style.transform = `translate(${x - D / 2}px, ${gy + D * .44}px) scale(${(1 - lift / D * .8) * enter})`; o.shadow.style.opacity = .85 - lift / D; };
 
   /* ---------- T23 Creative Pop: seven-colour card system, rounded cards, big keywords, icons, arrows, sparkles, stickers ----------
    * Every layout takes a list of items { t: label, i: icon name, c: colour (optional) } and returns an object; the matching
@@ -596,13 +681,13 @@
       borderRadius: '10px', transform: `rotate(${rot || -4}deg) skewX(-6deg)`, transformOrigin: '0 50%', boxShadow: '0 10px 0 rgba(29,27,58,.85), 0 20px 40px rgba(29,27,58,.25)', whiteSpace: 'nowrap', zIndex: 22, clipPath: 'inset(0 100% 0 0)' }, txt); b.rot = rot || -4; return b; };
   T.cpBannerAt = (b, t, t0) => { const u = ease.outExpo(P(t, t0, .5)); b.style.clipPath = `inset(0 ${100 - 100 * u}% 0 0)`; };
   /* four-point sparkles + dots scattered over the frame that twinkle. T.cpSparklesAt(o, t) */
-  T.cpSparkles = (L, n, seed, box) => { const R = C.rng(seed || 7), B = box || [60, 60, 1800, 960], s = NSV(L, 1920, 1080, 0, 0, 25); const o = { s, a: [] };
+  T.cpSparkles = (L, n, seed, box) => { const R = C.rng(seed || 7), B = box || [60, 60, 1800, 960], s = NSV(L, C.W, C.H, 0, 0, 25); const o = { s, a: [] };
     for (let i = 0; i < (n || 14); i++) { const x = B[0] + R() * B[2], y = B[1] + R() * B[3], r = 8 + R() * 16, col = R() < .5 ? T.CP.INK : T.CP.C[Math.floor(R() * 7)];
       const e = R() < .7 ? K.sv(s, 'path', { d: `M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}z`, fill: col }) : K.sv(s, 'circle', { cx: x, cy: y, r: r * .3, fill: col });
       e.style.transformOrigin = `${x}px ${y}px`; e.style.transformBox = 'view-box'; o.a.push({ e, ph: R() * 6, sp: 2 + R() * 3 }); } return o; };
   T.cpSparklesAt = (o, t, fade) => { o.s.style.opacity = fade === undefined ? 1 : fade; o.a.forEach(q => { const k = .55 + .45 * Math.sin(t * q.sp + q.ph); q.e.style.transform = `scale(${k}) rotate(${t * 40 + q.ph * 30}deg)`; }); };
   /* hand-drawn curved arrow (with arrowhead) that draws itself. pts = [[x,y],...] */
-  T.cpArrow = (L, pts, col, w, z) => { const s = NSV(L, 1920, 1080, 0, 0, z || 21); let d = `M${pts[0][0]} ${pts[0][1]}`; for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += ` Q${pts[i][0]} ${pts[i][1]} ${mx} ${my}`; }
+  T.cpArrow = (L, pts, col, w, z) => { const s = NSV(L, C.W, C.H, 0, 0, z || 21); let d = `M${pts[0][0]} ${pts[0][1]}`; for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; d += ` Q${pts[i][0]} ${pts[i][1]} ${mx} ${my}`; }
     const L2 = pts[pts.length - 1], P2 = pts[pts.length - 2]; d += ` L${L2[0]} ${L2[1]}`; const p = K.sv(s, 'path', { d, fill: 'none', stroke: col || T.CP.INK, 'stroke-width': w || 9, 'stroke-linecap': 'round' });
     const a = Math.atan2(L2[1] - P2[1], L2[0] - P2[0]), hl = (w || 9) * 4; const h = K.sv(s, 'path', { d: `M${L2[0] - hl * Math.cos(a - .5)} ${L2[1] - hl * Math.sin(a - .5)} L${L2[0]} ${L2[1]} L${L2[0] - hl * Math.cos(a + .5)} ${L2[1] - hl * Math.sin(a + .5)}`, fill: 'none', stroke: col || T.CP.INK, 'stroke-width': w || 9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
     const l = p.getTotalLength ? p.getTotalLength() || 1200 : 1200; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); return { s, p, h, l }; };
@@ -627,7 +712,7 @@
     o.ar = T.cpArrow(L, [[x + 20, y + h + 70], [x + w * .5, y + h + 110], [x + w - 10, y + h - 20]], 'rgba(47,107,255,.8)', 14, 9); return o; };
   T.cpRowAt = (o, t, times) => { o.c.forEach((d, k) => { const u = P(t, times[k], .45); tf(d, { y: 120 * (1 - ease.outBack(u, 1.8)), o: clamp(u * 4), s: 1 + .03 * Math.sin(t * 3 + k) * (u >= 1 ? 1 : 0) }); }); T.cpArrowAt(o.ar, P(t, times[0], (times[times.length - 1] - times[0]) + .5)); };
   /* 3 · Circular Hub: a centre (often the presenter window) with colour nodes around it on dashed spokes */
-  T.cpHub = (L, items, cx, cy, R, node, a0) => { const n = items.length, o = { n: [], cx, cy }, ns = node || 150; o.s = NSV(L, 1920, 1080, 0, 0, 9); o.ring = K.sv(o.s, 'circle', { cx, cy, r: R, fill: 'none', stroke: 'rgba(29,27,58,.18)', 'stroke-width': 4, 'stroke-dasharray': '4 14', 'stroke-linecap': 'round' });
+  T.cpHub = (L, items, cx, cy, R, node, a0) => { const n = items.length, o = { n: [], cx, cy }, ns = node || 150; o.s = NSV(L, C.W, C.H, 0, 0, 9); o.ring = K.sv(o.s, 'circle', { cx, cy, r: R, fill: 'none', stroke: 'rgba(29,27,58,.18)', 'stroke-width': 4, 'stroke-dasharray': '4 14', 'stroke-linecap': 'round' });
     items.forEach((it, k) => { const a = (a0 === undefined ? -Math.PI / 2 : a0) + k * 2 * Math.PI / n, x = cx + R * Math.cos(a), y = cy + R * Math.sin(a), col = CPc(k, it.c);
       const sp = K.sv(o.s, 'line', { x1: cx + (R * .45) * Math.cos(a), y1: cy + (R * .45) * Math.sin(a), x2: x, y2: y, stroke: col, 'stroke-width': 5, 'stroke-dasharray': '2 12', 'stroke-linecap': 'round', opacity: 0 });
       const d = el(L, 'div', 'abs', { left: (x - ns / 2) + 'px', top: (y - ns / 2) + 'px', width: ns + 'px', height: ns + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${CPshade(col, 1.15)}, ${col} 60%, ${CPshade(col, .8)})`, border: '6px solid #fff', boxSizing: 'border-box', boxShadow: '0 10px 0 rgba(29,27,58,.18), 0 18px 34px rgba(29,27,58,.22)', zIndex: 20, transformOrigin: '50% 50%' });
@@ -641,7 +726,7 @@
       el(d, 'div', 'abs', { left: (h * 1.15) + 'px', top: 0, height: h + 'px', lineHeight: h + 'px', fontFamily: T.CP.KEY, fontSize: (h * .42) + 'px', color: '#fff', whiteSpace: 'nowrap' }, it.t); o.c.push(d); }); return o; };
   T.cpStackAt = (o, t, times) => o.c.forEach((d, k) => { const u = ease.outBack(P(t, times[k], .45), 1.6); tf(d, { x: -700 * (1 - u), o: clamp(P(t, times[k], .15)), r: (1 - u) * -6 }); });
   /* 5 · Path Journey: wavy dashed road with numbered colour stops; a paper plane flies along it */
-  T.cpPath = (L, items, pts, stop) => { const o = { st: [] }, ss = stop || 170; o.s = NSV(L, 1920, 1080, 0, 0, 9); let d = `M${pts[0][0]} ${pts[0][1]}`;
+  T.cpPath = (L, items, pts, stop) => { const o = { st: [] }, ss = stop || 170; o.s = NSV(L, C.W, C.H, 0, 0, 9); let d = `M${pts[0][0]} ${pts[0][1]}`;
     for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` C${x0 + (x1 - x0) * .5} ${y0} ${x0 + (x1 - x0) * .5} ${y1} ${x1} ${y1}`; }
     o.road = K.sv(o.s, 'path', { d, fill: 'none', stroke: 'rgba(18,179,200,.25)', 'stroke-width': 56, 'stroke-linecap': 'round' }); o.dash = K.sv(o.s, 'path', { d, fill: 'none', stroke: '#fff', 'stroke-width': 6, 'stroke-dasharray': '14 16', 'stroke-linecap': 'round' });
     o.len = o.road.getTotalLength ? o.road.getTotalLength() || 2000 : 2000; o.road.setAttribute('stroke-dasharray', o.len); o.road.setAttribute('stroke-dashoffset', o.len);
@@ -662,7 +747,7 @@
       el(d, 'div', 'abs', { left: '22px', top: (ph * .66) + 'px', fontFamily: T.CP.KEY, fontSize: Math.min(ph * .15, pw * .075) + 'px', color: '#fff', whiteSpace: 'nowrap', textShadow: '0 3px 0 rgba(29,27,58,.35)' }, it.t); o.p.push(d); }); return o; };
   T.cpSplitAt = (o, t, times) => o.p.forEach((d, k) => { const u = ease.outExpo(P(t, times[k], .45)); d.style.opacity = clamp(P(t, times[k], .12)); tf(d, { x: (k % 2 ? 1 : -1) * 260 * (1 - u), s: .9 + .1 * u }); });
   /* 7 · Icon Burst: colour icon discs fly out of a centre with burst rays; pair with cpBanner */
-  T.cpBurst = (L, items, cx, cy, R, size) => { const n = items.length, o = { d: [], cx, cy }, sz = size || 130; o.s = NSV(L, 1920, 1080, 0, 0, 9);
+  T.cpBurst = (L, items, cx, cy, R, size) => { const n = items.length, o = { d: [], cx, cy }, sz = size || 130; o.s = NSV(L, C.W, C.H, 0, 0, 9);
     o.rays = Array.from({ length: 16 }, (_, i) => { const a = i * Math.PI / 8; return K.sv(o.s, 'line', { x1: cx + R * .55 * Math.cos(a), y1: cy + R * .55 * Math.sin(a), x2: cx + R * 1.35 * Math.cos(a), y2: cy + R * 1.35 * Math.sin(a), stroke: i % 2 ? T.CP.INK : T.CP.C[i % 7], 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': '0 40 30 400' }); });
     items.forEach((it, k) => { const aa = -Math.PI / 2 + (k + .5) * (2 * Math.PI / n), col = CPc(k, it.c);
       const d = el(L, 'div', 'abs', { left: (cx - sz / 2) + 'px', top: (cy - sz / 2) + 'px', width: sz + 'px', height: sz + 'px', borderRadius: '50%', background: `radial-gradient(circle at 35% 30%, ${CPshade(col, 1.15)}, ${col} 60%, ${CPshade(col, .8)})`, border: '6px solid #fff', boxSizing: 'border-box', boxShadow: '0 10px 0 rgba(29,27,58,.18), 0 18px 34px rgba(29,27,58,.22)', zIndex: 20, transformOrigin: '50% 50%' });
@@ -698,7 +783,7 @@
   /* big outlined-3D numeral */
   const lxNum = (p, n, x, y, size) => el(p, 'div', 'abs', { left: x + 'px', top: y + 'px', fontFamily: LXX.HEAD, fontWeight: 900, fontSize: size + 'px', lineHeight: 1, color: '#fff', textShadow: T.lxType3D(4) }, String(n));
   /* thin white connector line / arc that draws itself */
-  T.lxLine = (L, d, w, z) => { const s = NSV(L, 1920, 1080, 0, 0, z || 12); const p = K.sv(s, 'path', { d, fill: 'none', stroke: LXX.LINE, 'stroke-width': w || 5, 'stroke-linecap': 'round', filter: '' });
+  T.lxLine = (L, d, w, z) => { const s = NSV(L, C.W, C.H, 0, 0, z || 12); const p = K.sv(s, 'path', { d, fill: 'none', stroke: LXX.LINE, 'stroke-width': w || 5, 'stroke-linecap': 'round', filter: '' });
     s.style.filter = `drop-shadow(0 6px 8px ${sh(.25)})`; const l = p.getTotalLength ? p.getTotalLength() || 1500 : 1500; p.setAttribute('stroke-dasharray', l); p.setAttribute('stroke-dashoffset', l); return { s, p, l }; };
   T.lxLineAt = (o, u) => o.p.setAttribute('stroke-dashoffset', o.l * (1 - ease.io3(clamp(u))));
   /* line + arrowhead (the swooping arrow under rows) */
@@ -710,9 +795,9 @@
   T.lxSweepAt = (o, t, t0) => { const u = P(t, t0, .8); o.style.opacity = u > 0 && u < 1 ? 1 : 0; o.style.left = (-900 + 3300 * ease.io3(u)) + 'px'; };
 
   /* presenter rig: AI cut-out frames composited on the nude stage, with a soft contact shadow. pose = {x, y, s} (px offset, scale from the bottom-centre) */
-  T.lxPresenter = (L, z) => { const o = {}; o.w = el(L, 'div', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', zIndex: z || 10, transformOrigin: '50% 100%' });
+  T.lxPresenter = (L, z) => { const o = {}; o.w = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', zIndex: z || 10, transformOrigin: '50% 100%' });
     o.sh = el(o.w, 'div', 'abs', { left: '560px', top: '980px', width: '800px', height: '140px', borderRadius: '50%', background: `radial-gradient(closest-side, ${sh(.35)}, ${sh(0)})`, filter: 'blur(6px)' });
-    o.img = el(o.w, 'img', 'abs', { left: 0, top: 0, width: '1920px', height: '1080px', filter: `drop-shadow(18px 24px 30px ${sh(.30)})` }); return o; };
+    o.img = el(o.w, 'img', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', filter: `drop-shadow(18px 24px 30px ${sh(.30)})` }); return o; };
   T.lxPresenterAt = (o, src, pose, z) => { C.setSrc(o.img, src); tf(o.w, { x: pose.x || 0, y: pose.y || 0, s: pose.s || 1 }); if (z) o.w.style.zIndex = z; };
   T.lxPose = (t, keys) => { let a = keys[0], b = keys[0]; for (const k2 of keys) { if (t >= k2.t) { a = b; b = k2; } } const u = ease.io3(P(t, b.t, b.d || .8)); const f = n => lerp(a[n] || (n === 's' ? 1 : 0), b[n] || (n === 's' ? 1 : 0), u); return { x: f('x'), y: f('y'), s: f('s') }; };
 

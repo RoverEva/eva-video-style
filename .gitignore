@@ -8,3 +8,6 @@ check/
 *.wav
 .DS_Store
 template/sample5/media
+
+# private presenter footage used by the concept demos (never committed)
+template/sample10/media/
