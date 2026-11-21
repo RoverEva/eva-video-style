@@ -37,6 +37,12 @@ SHOTS = {
     'quest': (1.25, 960, 520, 960, 0.78, 0.35, 960, 470, 330, 0.3),
 }
 
+_WARNED = set()
+def _warn(msg):
+    k = msg.split(' @ ')[0]
+    if k not in _WARNED: _WARNED.add(k); print('WARN', msg, file=sys.stderr, flush=True)
+
+
 HERO_K = 0.78               # hero scale on stage
 HOOK_E8 = 40                # hook length in eighths
 
@@ -120,7 +126,7 @@ def bolts(gs, cv, tx, t, i, b, A, heads, face):
     T, P = gs.T, gs.P
     n = gs.card_index(t); t0 = gs.card_start(n); age = t - t0
     if age < 0.5:
-        rng = np.random.default_rng(n * 7 + int(age * 24))
+        rng = np.random.default_rng(abs(n * 7 + int(age * 24)))
         x0 = 400 + (n * 397) % 1100; pts = [(x0, -20)]
         for k in range(8): pts.append((pts[-1][0] + rng.uniform(-40, 40), pts[-1][1] + 70))
         a = A * (1 - age / 0.5)
@@ -144,6 +150,8 @@ MOTIF_CAM = {  # (scale, cx, cy) framing per motif
 
 
 class LongScene:
+    HOOK = HOOK_E8
+    CH_E8 = 8
     def __init__(self, script, offset=0.0, eighth=60 / 112.9 / 2, logo=None, brand=None, target=(482, 505)):
         self.s = script; self.off, self.e8 = offset, eighth; self.E8 = eighth; self.logo = logo; self.brand = brand or {}
         sub = script['subject']
@@ -170,9 +178,9 @@ class LongScene:
         chapters = self.s['chapters']
         for ch in chapters: ch['_cards'] = [parse_card(c) for c in ch['cards']]
         def layout(cps):
-            n = HOOK_E8; segs = []
+            n = self.HOOK; segs = []
             for ci, ch in enumerate(chapters):
-                ch_start = n; n += 8                               # chapter title card: 2 bars of quarter... 8 eighths
+                ch_start = n; n += self.CH_E8                               # chapter title card: 2 bars of quarter... 8 eighths
                 cards = []
                 for c in ch['_cards']:
                     secs = c['chars'] / cps + (1.6 if c['key'] else 0.9)
@@ -275,7 +283,7 @@ class LongScene:
     # ------------------------------------------------------------ camera
     def camera(self, t):
         T = self.T; n = (t - self.off) / self.e8
-        if n < HOOK_E8:
+        if n < self.HOOK:
             keys = [(0, 1.6, 960, 540), (10, 1.6, 960, 540), (12, 1.0, 960, 560), (14, 2.2, 960, 560), (22, 1.7, 960, 400), (24, 1.0, 960, 520), (40, 1.08, 960, 520)]
             s, cx, cy = keys[0][1:]
             for (k, s1, x1, y1), (k0) in zip(keys[1:], keys[:-1]):
@@ -358,15 +366,15 @@ class LongScene:
             a = min(1.6, boost) * world; hh = h * (1 + 0.12 * math.sin(t * 7 + ph)) * pop(t, ton, 0.16)
             flame(cv, x, y, hh, G, 0.95 * a, lean=0.08 * math.sin(t * 2 + ph)); flame(cv, x, y, hh * 1.6, G, 0.25 * a, layer=cv.F)
         # ---- hook: heartbeat, glyph slam, prop drop ----
-        if n < HOOK_E8 + 2:
+        if n < self.HOOK + 2:
             for p0 in (0, 1, 4, 5):
                 if T(p0) <= t < T(p0) + 0.8:
                     k = (t - T(p0)) / 0.8
                     cv.circle((960, 540), 60 + 380 * eo(k), G, (1 - k) * 0.9, 2.4); cv.glow((960, 540), 120, G, 0.6 * pulse(t, T(p0), 0.3))
         # ---- hero ----
         prog = ramp(n, 14, 22)
-        shp, cut = self.shot_at(t, seg, card) if n >= HOOK_E8 else (list(SHOTS['hero']), 0.0)
-        hx, hkk, ha = (shp[3], shp[4], shp[5]) if n >= HOOK_E8 else (960, HERO_K, 1.0)
+        shp, cut = self.shot_at(t, seg, card) if n >= self.HOOK else (list(SHOTS['hero']), 0.0)
+        hx, hkk, ha = (shp[3], shp[4], shp[5]) if n >= self.HOOK else (960, HERO_K, 1.0)
         self.XS = (hx,)
         sub = SubCam(cam, hx, hkk)
         cv.cam = sub
@@ -381,7 +389,8 @@ class LongScene:
                 for k in range(5): cv.path([(960 + (k - 2) * 6, 230 + off - 300), (960 + (k - 2) * 6, 230 + off + 200)], G, 0.25, 2, smooth=False, layer=cv.F)
             if ha > 0.01: head, tip = hero.draw_prop(cv, (grip[0], grip[1] + off), math.pi / 2, world * ha, 0.4 + 0.4 * key_dim, t)
         if card is not None and card[2]['vis'] in VIS_FACE:
-            draw_face_fx(self, cv, card[2]['vis'], t, T(card[0]), T(card[0] + card[1]), amb * ha)
+            try: draw_face_fx(self, cv, card[2]['vis'], t, T(card[0]), T(card[0] + card[1]), amb * ha)
+            except Exception as e: _warn(f'face {card[2]["vis"]} @ {t:.2f}s: {e!r}')
         cv.cam = cam
         face = [tuple(sub.to_world([(960, 250)])[0])]
         heads = [(tuple(sub.to_world([(960, 470)])[0]),) * 2]
@@ -410,13 +419,15 @@ class LongScene:
                     return float(_st[-1] + (j - len(_st) + 1) * self._avg)
                 self.T = Tm; self.e8 = self._avg
                 try: f(self, cv, tx, t, 0, b, A, heads, face)
+                except Exception as e: _warn(f'motif {seg["motif"]} @ {t:.2f}s: {e!r}')
                 finally: self.T, self.e8 = saveT, save8
             # chapter entry: ring + flash
             hero.ring_burst(cv, t, T(seg['start']), (960, 520), 100, 900, 0.9)
             if card and card[2]['vis'] and card[2]['vis'] not in VIS_FACE and shp[8] > 0:
                 ec = cv.cam; cv.cam = Cam(1.0)
                 va = amb * (0.5 if card[2]['key'] and not card[2]['q'] else 1.0) * (0.55 if card[2]['q'] else 1.0)
-                draw_vis(self, cv, card[2]['vis'], t, T(card[0]), T(card[0] + card[1]), shp[6], shp[7], shp[8], va)
+                try: draw_vis(self, cv, card[2]['vis'], t, T(card[0]), T(card[0] + card[1]), shp[6], shp[7], shp[8], va)
+                except Exception as e: _warn(f'vis {card[2]["vis"]} @ {t:.2f}s: {e!r}')
                 cv.cam = ec
             if card and card[2]['key'] and card[2]['_shot'] not in ('face',):
                 hero.star_flare(cv, (960, 470), 380, pulse(t, T(card[0]), 0.6) * 1.2)
@@ -439,7 +450,7 @@ class LongScene:
 
         # ================= text =================
         hk_ = self.s['hook']
-        if n < HOOK_E8 + 1:
+        if n < self.HOOK + 1:
             q = hk_['q']
             tx.chars(q[0], 960, 470, F(SERIF_BL, 88), P.WHITE, t, T(2), T(8.6), stagger=0.04)
             tx.chars(q[1], 960, 600, F(SERIF_BL, 88), P.WHITE, t, T(4), T(8.6), stagger=0.04)
@@ -447,10 +458,10 @@ class LongScene:
             tx.chars(bt[0], 960, 900, F(SERIF_B, 64), P.WHITE, t, T(14), T(23.6), stagger=0.03)
             tx.chars(bt[1], 960, 990, F(SERIF_B, 64), P.WHITE, t, T(18), T(23.6), stagger=0.03)
             tt = self.s['title']
-            tx.chars(tt, 960, 560, F(SERIF_BL, 132 if len(tt) <= 8 else 110), P.HI, t, T(24), T(HOOK_E8 - 0.4), stagger=0.05)
+            tx.chars(tt, 960, 560, F(SERIF_BL, 132 if len(tt) <= 8 else 110), P.HI, t, T(24), T(self.HOOK - 0.4), stagger=0.05)
             tg = parse_card(hk_['tagline'])
             for k, (l, g) in enumerate(zip(tg['lines'], tg['golds'])):
-                tx.chars(l, 960, 700 + k * 92, F(SERIF_B, 68), P.WHITE, t, T(31 + 2 * k), T(HOOK_E8 - 0.4), gold=g, stagger=0.04)
+                tx.chars(l, 960, 700 + k * 92, F(SERIF_B, 68), P.WHITE, t, T(31 + 2 * k), T(self.HOOK - 0.4), gold=g, stagger=0.04)
         if seg is not None:
             st = T(seg['start'])
             tx.chars(f"CHAPTER {seg['ci'] + 1:02d}", 960, 400, F(SANS_M, 44), P.TAG, t, st, T(seg['start'] + 7.6), stagger=0.03)

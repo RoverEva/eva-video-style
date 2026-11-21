@@ -23,6 +23,7 @@ def grid(music):
 def scene(args):
     import cv2
     from longform import LongScene
+    from longform_v2 import LongSceneV2
     with open(args.script, encoding='utf-8') as f: script = json.load(f)
     e8 = float(args.eighth) if args.eighth else (grid(args.music)[1] if args.music else 60 / 112.9 / 2)
     brand = {}
@@ -33,11 +34,11 @@ def scene(args):
     if lp:
         lp = lp if os.path.isabs(lp) else os.path.join(HERE, '..', 'mbti', lp)
         if os.path.exists(lp): logo = cv2.imread(lp).astype('float32') / 255.0
-    return LongScene(script, 0.0, e8, logo, brand)
+    return (LongSceneV2 if script.get('style') == 'v2' else LongScene)(script, 0.0, e8, logo, brand)
 
 
-def build_music(music, duration, out):
-    phase, e8 = grid(music)
+def build_music(music, duration, out, start_e8=0):
+    phase, e8 = grid(music); phase += start_e8 * e8
     probe = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', music],
                                  capture_output=True, text=True).stdout)
     bar = 8 * e8; nbars = int((probe - phase - 0.05) / bar); seg = nbars * bar
@@ -52,7 +53,13 @@ def worker(args, a, b, path):
     sc = scene(args); fps = args.fps
     p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', '1920x1080', '-r', str(fps), '-i', '-',
                           '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '19', '-pix_fmt', 'yuv420p', path + '.tmp.mp4'], stdin=subprocess.PIPE)
-    for n in range(a, b): p.stdin.write(sc.frame(n / fps).tobytes())
+    last = None
+    for n in range(a, b):
+        try: last = sc.frame(n / fps)
+        except Exception as e:
+            print(f'frame {n / fps:.2f}s failed: {e!r}', file=sys.stderr, flush=True)
+            if last is None: raise
+        p.stdin.write(last.tobytes())
     p.stdin.close(); p.wait()
     if p.returncode == 0: os.replace(path + '.tmp.mp4', path)
 
@@ -60,7 +67,7 @@ def worker(args, a, b, path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--script', required=True); ap.add_argument('--music'); ap.add_argument('--out', required=True)
-    ap.add_argument('--eighth'); ap.add_argument('--logo'); ap.add_argument('--stills')
+    ap.add_argument('--eighth'); ap.add_argument('--logo'); ap.add_argument('--stills'); ap.add_argument('--range')
     ap.add_argument('--fps', type=int, default=24); ap.add_argument('--workers', type=int, default=max(1, os.cpu_count() or 2))
     args = ap.parse_args()
     sc = scene(args)
@@ -74,7 +81,10 @@ def main():
         return
     os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
     N = int(sc.duration * args.fps); k = args.workers; tmp = tempfile.mkdtemp(prefix='long_')
-    parts = [os.path.join(tmp, f'p{i}.mp4') for i in range(k)]; cuts = [N * i // k for i in range(k + 1)]
+    a0 = 0
+    if args.range:
+        r0, r1 = map(float, args.range.split(',')); a0, N = int(r0 * args.fps), int(r1 * args.fps)
+    parts = [os.path.join(tmp, f'p{i}.mp4') for i in range(k)]; cuts = [a0 + (N - a0) * i // k for i in range(k + 1)]
     t0 = time.time()
     procs = [Process(target=worker, args=(args, cuts[i], cuts[i + 1], parts[i])) for i in range(k)]
     for p in procs: p.start()
@@ -85,10 +95,13 @@ def main():
     video = os.path.join(tmp, 'v.mp4')
     subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', video], check=True)
     if args.music:
-        audio = os.path.join(tmp, 'a.m4a'); build_music(args.music, sc.duration, audio)
+        audio = os.path.join(tmp, 'a.m4a'); build_music(args.music, sc.duration, audio, sc.s.get('music_start_e8', 0))
+        if args.range:
+            a2 = os.path.join(tmp, 'a2.m4a'); subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', str(a0 / args.fps), '-t', str((N - a0) / args.fps), '-i', audio, '-af', f'afade=t=out:st={(N - a0) / args.fps - 1.2}:d=1.2', '-c:a', 'aac', a2], check=True); audio = a2
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', video, '-i', audio, '-map', '0:v', '-map', '1:a', '-c', 'copy', '-shortest',
                         '-movflags', '+faststart', args.out], check=True)
     else: os.replace(video, args.out)
+    import shutil; shutil.rmtree(tmp, ignore_errors=True)
     print(f'wrote {args.out} in {time.time() - t0:.0f}s', flush=True)
 
 

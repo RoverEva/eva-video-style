@@ -24,6 +24,12 @@ def compile_txt(path):
         elif k == 'Q': hook['q'] = v.split('/')
         elif k == 'B': hook['beats'] = v.split('/')
         elif k == 'TAG': hook['tagline'] = v
+        elif k == 'STYLE': d['style'] = v
+        elif k == 'MUSIC_START': d['music_start_e8'] = int(v)
+        elif k == 'H':   # H start_e8 e8_per_char y size end_e8 gold text   (gold: - | all | 2,3)
+            m0, step, y, size, m1, gold, txt = v.split(' ', 6)
+            g = gold if gold in ('-', 'all') else [int(x) for x in gold.split(',')]
+            d.setdefault('hook2', []).append([txt, float(m0), float(step), int(y), int(size), float(m1), [] if g == '-' else g])
         else:
             import re
             for v in re.findall(r'\{([a-z0-9]+)', l): assert v in VIS, (path, v)
