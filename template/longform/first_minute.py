@@ -39,38 +39,65 @@ def quarter(t): return 2 * E8 * math.floor(t / (2 * E8))
 
 # ================================================================ growing canvas
 class GrowCanvas(Canvas):
-    """every draw call is element k; element k appears at t0 + k*dt and grows over `dur`"""
-    def __init__(self, cam, t, t0=-99, dt=0.004, dur=0.45):
-        super().__init__(cam); self.t, self.t0, self.dt, self.dur, self.k = t, t0, dt, dur, 0
+    """Every draw call is one stroke. Strokes are drawn in order, like a pen: 'bg' strokes over a short window,
+    'fg' strokes spread over the whole scene so something is always being drawn. A growing stroke carries a
+    bright pen tip."""
+    def __init__(self, cam, t, sched):
+        super().__init__(cam); self.t = t; self.sched = sched; self.mode = 'bg'; self.cnt = {'bg': 0, 'fg': 0}; self.instant = False
 
     def _f(self):
-        f = cl((self.t - self.t0 - self.k * self.dt) / self.dur); self.k += 1; return eo(f)
+        k = self.cnt[self.mode]; self.cnt[self.mode] += 1
+        if self.instant or self.mode not in self.sched: return 1.0
+        t0, dt, dur = self.sched[self.mode]
+        return cl((self.t - t0 - k * dt) / dur)
 
     def path(self, pts, col, a=1., th=2., frac=1., smooth=True, closed=False, layer=None):
         f = self._f()
-        if f > 0: super().path(pts, col, a, th, frac * f, smooth, closed, layer)
+        if f <= 0: return
+        g = eio(f)
+        super().path(pts, col, a, th, frac * g, smooth, closed, layer)
+        if g < 1 and layer is None and len(pts) > 1:   # pen tip
+            P = spline(pts, closed=closed) if smooth and len(pts) > 2 else np.array(pts, float)
+            seg = np.linalg.norm(np.diff(P, axis=0), axis=1); cum = np.concatenate([[0], np.cumsum(seg)])
+            L = cum[-1] * frac * g; k = int(np.clip(np.searchsorted(cum, L), 1, len(P) - 1)); r = (L - cum[k - 1]) / max(seg[k - 1], 1e-6)
+            tip = P[k - 1] + (P[k] - P[k - 1]) * r
+            super().circle(tuple(tip), th * 0.9, PF.WARM, a, fill=True); super().glow(tuple(tip), 10 + 4 * th, PF.GOLD, 0.9 * a)
 
     def poly(self, pts, col, a=1., layer=None):
         f = self._f()
-        if f > 0: super().poly(pts, col, a * (1 if not np.any(col) else f), layer)
+        if f > 0: super().poly(pts, col, a * (1 if not np.any(col) else eio(f)), layer)
 
     def circle(self, c, r, col, a=1., th=2., fill=False, layer=None):
         f = self._f()
-        if f > 0: super().circle(c, r, col, a * f, th, fill, layer)
+        if f > 0: super().circle(c, r, col, a * eio(f), th, fill, layer)
 
     def glow(self, c, r, col, a=1.):
         f = self._f()
-        if f > 0: super().glow(c, r, col, a * f)
+        if f > 0: super().glow(c, r, col, a * eio(f))
+
+
+_COUNTS = {}
 
 
 class Shot:
-    def __init__(self, cam, t, t0, dt=0.004, dur=0.45):
-        self.cv = GrowCanvas(cam, t, t0, dt, dur); self.fg = np.zeros((H, W, 3), np.float32); self.roll = 0.0; self.cam = cam
+    """scene canvas. bg strokes appear over `bg_span` s from t0; fg strokes are spread over [t0, t0 + fg_span]"""
+    def __init__(self, cam, t, t0, key=None, bg_span=1.2, fg_span=6.0, dur=0.7, count_fn=None):
+        sched = {}
+        if key is not None:
+            nb, nf = _COUNTS.get(key, (400, 200))
+            sched = {'bg': (t0, bg_span / max(nb, 1), 0.5), 'fg': (t0 + 0.15, max(0.0, fg_span - dur) / max(nf, 1), dur)}
+        self.cv = GrowCanvas(cam, t, sched); self.fg = np.zeros((H, W, 3), np.float32); self.roll = 0.0; self.cam = cam
 
     def bokeh(self, c, r, col, a=0.5):
         q = self.cam([c])[0]
         cv2.circle(self.fg, (int(q[0]), int(q[1])), int(r), tuple(float(v) * a * 0.55 for v in col), -1, cv2.LINE_AA)
         cv2.circle(self.fg, (int(q[0]), int(q[1])), int(r), tuple(float(v) * a for v in col), 2, cv2.LINE_AA)
+
+
+def drift(t, t0, amp=1.0):
+    """the camera never stops: slow continuous dolly + float"""
+    u = t - t0
+    return 1 + 0.006 * u * amp, 14 * math.sin(t * 0.37) * amp, 9 * math.sin(t * 0.29 + 1) * amp
 
 
 def stars_live(cv, P, t, n=180, ymax=760, seed=5, a=1.0, glints=7, x0=-400, x1=W + 400, drift=0.0):
@@ -146,8 +173,9 @@ def hook(t, n, tx):
     if n >= 24: s = lerp(1.12, 1.55, eio(ramp(n, 24, 34)))
     if n >= 44: s = 1.55 * (1 + 7 * eio(ramp(n, 44, 52)) ** 2.2)
     s *= 1 + 0.08 * pulse(t, T(20), 0.35)
-    cam = Cam(s, 960, lerp(610, 560, ramp(n, 24, 34)) if n < 44 else 560)
-    sh = Shot(cam, t, -99); cv = sh.cv; P = PF; qt = quarter(t)
+    ds, dx, dy = drift(t, 0, 0.6)
+    cam = Cam(s * ds, 960 + dx, (lerp(610, 560, ramp(n, 24, 34)) if n < 44 else 560) + dy)
+    sh = Shot(cam, t, 0); cv = sh.cv; P = PF; qt = quarter(t)
     # dust + bokeh
     rr = np.random.default_rng(1)
     for i in range(60):
@@ -208,10 +236,9 @@ def drop_scene(t, n, tx):
     chest = (640 + 0.014 * 380, 814 - 0.47 * 380 - 0.34 * 380 + 0.115 * 380)
     u = eio(ramp(n, DROP, DROP + 5))
     s = lerp(7.0, 1.0, u) * (1 + 0.04 * ramp(n, DROP + 5, 80))
-    cam = Cam(s, lerp(chest[0], 960, u), lerp(chest[1], 540, u))
-    sh = Shot(cam, t, T(DROP) + 0.1, 0.0018, 0.5); cv = sh.cv; P = PF
-    milkyway(cv, P, (200, 0), (1500, 700), 170, 6, 0.9)
-    stars_live(cv, P, t, 220, 760, 5, 0.9, 8)
+    ds, dx, dy = drift(t, T(DROP) + 1.5, 0.8 * u)
+    cam = Cam(s * ds, lerp(chest[0], 960, u) + dx, lerp(chest[1], 540, u) + dy)
+    sh = Shot(cam, t, T(DROP), 'drop', 3.0, T(78) - T(DROP), 0.9); cv = sh.cv; P = PF
     if T(58) <= t < T(58) + 1.2:
         k = (t - T(58)) / 1.2; meteor(cv, (lerp(1900, 1300, k), lerp(60, 260, k)), math.radians(160), 300, P.WARM, 1 - 0.6 * k)
     skyline(cv, 1040, P, 0.45, 3, 0, W, 60, 220, 0.3)
@@ -219,9 +246,14 @@ def drop_scene(t, n, tx):
     for i in range(26): sh.bokeh((rr.uniform(0, W) + 10 * math.sin(t + i), rr.uniform(900, 1080)), rr.uniform(10, 26), [P.WARM, P.GOLD][i % 2], 0.6)
     hill = sp([(-50, 920), (300, 870), (560, 820), (760, 812), (980, 840), (1260, 910), (1500, 960), (1970, 990)], 8)
     cv.poly(hill + [(1970, 1080), (-50, 1080)], BLACK, 1.0); cv.path(hill, P.LINE, 0.9, 2.2, smooth=False)
-    keep = cv.t0; cv.t0 = -99   # the hero is there at once (match cut from the heart)
+    cv.instant = True
+    heart(cv, (chest[0] + 6, chest[1]), 12, P, 1.0, 1.0, pulse(t, quarter(t), 0.25)); cv.glow((chest[0] + 6, chest[1]), 60, P.GOLD, 0.8)
+    cv.instant = False
+    milkyway(cv, P, (200, 0), (1500, 700), 170, 6, 0.9)
+    stars_live(cv, P, t, 220, 760, 5, 0.9, 8)
+    cv.mode = 'fg'   # he is drawn outward from the heart, stroke after stroke, for the whole scene
     f = figure(cv, 640, 814, 380, 'stand', P.SOFT, 1.0, 1, heart=1.5 * (1 + 0.15 * pulse(t, quarter(t), 0.25)), P=P, rim=(1, -0.3))
-    cv.t0 = keep
+    cv.mode = 'bg'
     for j, r1 in enumerate((900, 1300, 1750)):
         tj = T(DROP + 2 * j)
         if tj <= t < tj + 1.4:
@@ -238,17 +270,22 @@ def run_scene(t, n, tx):
     t0 = T(80); dtm = t - t0
     rx = 1150 + v * dtm
     zoom = 1 + 0.35 * eio(ramp(n, 104, 108)) * (1 - eio(ramp(n, 110, 114)))
-    cam = Cam(zoom * (1 + 0.012 * pulse(t, quarter(t), 0.3)), rx - 190 + (100 if zoom > 1.01 else 0) * (zoom - 1) / 0.35, 540 + 80 * (zoom - 1))
-    sh = Shot(cam, t, t0 + 0.05, 0.003, 0.4); cv = sh.cv
+    ds, dx, dy = drift(t, t0, 0.7)
+    cam = Cam(zoom * ds * (1 + 0.012 * pulse(t, quarter(t), 0.3)), rx - 190 + (100 if zoom > 1.01 else 0) * (zoom - 1) / 0.35 + dx, 540 + 80 * (zoom - 1) + dy)
+    sh = Shot(cam, t, t0, 'run', 2.5, T(126) - t0, 1.0); cv = sh.cv
     stars_live(cv, P, t, 90, 600, 7, 0.6, 4, x0=rx - 1400, x1=rx + 1400, drift=-0.0)
     cv.path([(rx - 1500, gy), (rx + 1500, gy)], P.LINE, 0.8, 1.6, smooth=False)
     for k in range(1, 5): cv.path([(rx - 1500, gy + k * 34), (rx + 1500, gy + k * 34)], P.LINE, 0.25 / k, 1, smooth=False)
     for xm in np.arange(math.floor((rx - 1400) / 160) * 160, rx + 1400, 160): cv.path([(xm, gy + 34), (xm + 50, gy + 34)], P.LINE, 0.5, 2, smooth=False)
     cv.path([(1020, gy), (1020, gy + 140)], P.WARM, 0.7, 3, smooth=False)
+    cv.mode = 'fg'
     for k, x in enumerate((810, 890, 970)): figure(cv, x, gy, 250, 'stand', P.DIM * 2.4, 0.75, 1, hair='long' if k == 1 else 'short')
+    cv.mode = 'bg'
     u = (dtm / (4 * E8)) % 1
     y_b = -10 * abs(math.sin(math.pi * u * 2))
+    cv.instant = True
     figure(cv, rx, gy - 8 + y_b, 360, run_pose(u), P.SOFT, 1.0, 1, heart=1.4 * (1 + 0.15 * pulse(t, quarter(t), 0.25)), P=P, rim=(-1, 0))
+    cv.instant = False
     for k in range(12):
         y = 620 + k * 22; L = 320 + 90 * math.sin(k * 1.7 + t * 6)
         cv.path([(rx - 100 - L, y), (rx - 140, y - 4)], P.GOLD, 0.85 - 0.06 * k, 1.8 - 0.08 * k, smooth=False)
@@ -277,23 +314,26 @@ def road_scene(t, n, tx):
     if n >= 214: s = lerp(1.7, 1.4, eio(ramp(n, 214, 226)))
     head = (430 - 0.01 * 760 * -1, 1130 - 0.47 * 760 - 0.45 * 760)
     cx = lerp(960, head[0] + 330, eio(ramp(n, 176, 186))); cy = lerp(540, head[1] + 130, eio(ramp(n, 176, 186)))
-    cam = Cam(s * (1 + 0.01 * pulse(t, quarter(t), 0.3)), cx, cy)
-    sh = Shot(cam, t, T(128) + 0.05, 0.003, 0.45); cv = sh.cv
-    stars_live(cv, P, t, 90, 560, 11, 0.6, 4)
+    ds, dx, dy = drift(t, T(128), 0.6)
+    cam = Cam(s * ds * (1 + 0.01 * pulse(t, quarter(t), 0.3)), cx + dx, cy + dy)
+    sh = Shot(cam, t, T(128), 'road', 3.0, T(176) - T(128), 1.1); cv = sh.cv
     vp = (1000, 600)
     for xb in (-300, 300, 2220, 1620): cv.path([vp, (xb, 1080)], P.LINE, 0.55, 1.4, smooth=False)
     for k in range(1, 9):
         u = (k / 9) ** 2; y = lerp(vp[1], 1080, u)
         cv.path([(lerp(vp[0], 920, u), y), (lerp(vp[0], 1080, u), y + 30 * u)], P.LINE, 0.4, 2, smooth=False)
     lamp(cv, 1060, 610, 120, P, 0.85 * (0.85 + 0.15 * math.sin(t * 13) ** 2), -1)
+    stars_live(cv, P, t, 90, 560, 11, 0.6, 4)
     # the one who leaves: walks toward the vanishing point
     w = ramp(n, 140, 168)
     if w < 1:
         fx = lerp(1015, 1000, w); fy = lerp(612, 602, w); fh = lerp(80, 30, w)
         figure(cv, fx, fy, fh, walk_pose((t / (4 * E8)) % 1), P.LINE, 0.75 * (1 - ramp(n, 160, 168)), -1, hair='long', dress=True)
+    cv.mode = 'fg'
     beat = pulse(t, quarter(t), 0.25)
     hs = 0.6 * (1 - 0.4 * ramp(n, 152, 158))
     f = figure(cv, 430, 1130, 760, 'lookback', P.SOFT, 1.0, -1, heart=hs * (1 + 0.15 * beat), P=P, rim=(1, -0.2))
+    cv.mode = 'bg'
     # armour: arcs grow around him, then crack and leak light
     if n >= 182:
         g = eio(ramp(n, 182, 190)); crack = ramp(n, 204, 210)
@@ -323,7 +363,23 @@ def road_scene(t, n, tx):
     return sh, P, 0.6, 0.14 * pulse(t, T(128), 0.3) + 0.12 * pulse(t, T(152), 0.4) + 0.1 * pulse(t, T(204), 0.4)
 
 
+def _count():
+    for key, fn, tt in (('drop', drop_scene, T(79)), ('run', run_scene, T(127)), ('road', road_scene, T(225))):
+        _COUNTS[key] = (10 ** 6, 10 ** 6)
+        tx = Text(PF); sh = None
+        import builtins
+        orig = Shot.__init__
+        cnt = {}
+        def spy(self, *a, **k):
+            orig(self, *a, **k); cnt['cv'] = self.cv
+        Shot.__init__ = spy
+        try: fn(tt, tt / E8, tx)
+        finally: Shot.__init__ = orig
+        c = cnt['cv'].cnt; _COUNTS[key] = (c['bg'], c['fg'])
+
+
 def frame(t):
+    if not _COUNTS: _count()
     n = t / E8; tx = Text(PF)
     if n < DROP: sh, P, glow, flash = hook(t, n, tx)
     elif n < 80: sh, P, glow, flash = drop_scene(t, n, tx)
