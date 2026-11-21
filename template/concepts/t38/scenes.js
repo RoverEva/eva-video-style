@@ -9,12 +9,13 @@
     bg: '#120c18',
     win: { x: 1200, y: 150, w: 520, h: 520, r: 260, o: 1, s: 1.15 },
     ring: t => ({ color: CY, width: 6, glow: 'rgba(63,240,255,.7)', shadow: .5 }),
+    port: { box: [100, 80, 1000, 820] },
     captions: [{ t0: .5, t1: 3.4, cn: '下班了？来一碗热汤面', en: 'Off work? Grab a hot bowl of noodles' },
                { t0: 3.5, t1: 6.6, cn: '我们营业到凌晨两点', en: "We're open until 2 a.m." },
                { t0: 6.7, t1: 9.7, cn: '就在街角，等你来', en: 'Right around the corner' }],
     build(L) { const s = {};
-      el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'linear-gradient(rgba(0,0,0,.55) 3px, transparent 3px), linear-gradient(90deg, rgba(0,0,0,.45) 3px, transparent 3px)', backgroundSize: '120px 54px, 120px 108px', backgroundColor: '#2a1a24' });
-      s.vig = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'radial-gradient(ellipse at 35% 40%, rgba(255,63,164,.16), rgba(0,0,0,.75) 70%)' });
+      M.bg(el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'linear-gradient(rgba(0,0,0,.55) 3px, transparent 3px), linear-gradient(90deg, rgba(0,0,0,.45) 3px, transparent 3px)', backgroundSize: '120px 54px, 120px 108px', backgroundColor: '#2a1a24' }));
+      s.vig = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', background: 'radial-gradient(ellipse at 35% 40%, rgba(255,63,164,.16), rgba(0,0,0,.75) 70%)' }); M.bg(s.vig);
       s.open = M.box(L, 110, 90, { font: `400 120px Anton, sans-serif`, color: '#ffe9f5', letterSpacing: '.08em', textShadow: glow(PK) }, 'OPEN LATE');
       s.name = M.box(L, 110, 250, { font: `900 120px ${CN}`, color: '#eaffff', textShadow: glow(CY) }, '深夜食堂');
       s.hrs = M.box(L, 110, 440, { font: `900 60px ${CN}`, color: '#fffbe0', padding: '14px 30px', border: `5px solid #fffbe0`, borderRadius: '16px', textShadow: glow(YL), boxShadow: `${glow(YL)}, inset 0 0 18px ${YL}` }, '营业到凌晨两点');

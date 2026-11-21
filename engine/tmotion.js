@@ -62,14 +62,31 @@
   M.win = (W0, extra, end) => { const k = [{ t: 0, d: 0, L: M.FULL }, { t: .35, d: .62, L: W0 }].concat(extra || []); if (end !== false) k.push({ t: (end || 9.2), d: .6, L: M.FULL }); return k; };
   /* bilingual captions (CN on top), caption band from y≈840; crossfade + 14px rise */
   M.captions = (L, list) => { const box = el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', pointerEvents: 'none' });
-    el(box, 'div', 'abs', { left: 0, top: (C.H - 260) + 'px', width: C.W + 'px', height: '260px', background: 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.5))' });
-    const items = list.map(c => { const d = el(box, 'div', 'abs', { left: 0, width: C.W + 'px', top: (C.H - 190) + 'px', textAlign: 'center' });
+    const cy = C.portrait ? 1392 : C.H - 190;   /* 9:16: below the presenter, above the platform caption/buttons zone */
+    el(box, 'div', 'abs', { left: 0, top: (cy - 70) + 'px', width: C.W + 'px', height: (C.portrait ? 300 : 260) + 'px', background: C.portrait ? 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.45) 40%, rgba(0,0,0,0))' : 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.5))' });
+    const items = list.map(c => { const d = el(box, 'div', 'abs', { left: 0, width: C.W + 'px', top: cy + 'px', textAlign: 'center' });
       el(d, 'div', '', { font: "700 48px 'Noto Sans CJK SC', sans-serif", color: '#ffffff', textShadow: '0 2px 12px rgba(0,0,0,.65), 0 0 2px rgba(0,0,0,.9)' }, c.cn);
       el(d, 'div', '', { font: "600 30px Inter, sans-serif", color: '#f2f2f5', marginTop: '6px', textShadow: '0 2px 10px rgba(0,0,0,.65)' }, c.en); return { d, c }; });
     return t => items.forEach(({ d, c }) => { const v = M.env(t, c.t0, c.t1, .25, .18); d.style.opacity = v.a.toFixed(3); d.style.transform = `translateY(${(14 * (1 - M.o3((t - c.t0) / .25))).toFixed(1)}px)`; }); };
   /* common setup for a 10 s concept sample on the Eva raw clip */
+  /* 9:16: the graphics scene keeps its 16:9 drawing; the content box (o.port.box) is scaled into the top zone (y≈200–900),
+     the presenter window sits below it (circle stays a circle, rounded square keeps its shape), captions below that.
+     Opening/closing "full" = a full-width 1080 square (1080p footage, never upscaled). M.bg(e) = full-frame texture → cover;
+     M.att(e) = decoration drawn around the 16:9 window → follows the portrait window. */
+  M.FULLP = { x: 0, y: 250, w: 1080, h: 1080, r: 0, o: 1, s: 1 };
+  M.pwin = L => { const y0 = C.remap.bottom + 40, y1 = 1360, d = Math.max(300, Math.min(520, y1 - y0)), yc = y0 + Math.max(0, (y1 - y0 - d) / 2);
+    if (L.r >= Math.min(L.w, L.h) / 2 - 2) return { x: (1080 - d) / 2, y: yc, w: d, h: d, r: d / 2, o: 1, s: L.s };
+    const w = Math.min(960, d * L.w / L.h); return { x: (1080 - w) / 2, y: yc, w, h: d, r: L.r * d / L.h, o: 1, s: L.s }; };
+  M.bg = e => C.portCover ? C.portCover(e) : e;
+  M.att = e => { if (!C.portrait || !C.remap) return e; const A = M._w16, B = M._wp, k = B.h / A.h; let r = e.parentNode;
+    while (r && r.parentNode && !r.parentNode.classList.contains('layer')) r = r.parentNode;
+    const w = el(null, 'div', '', { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0', transform: `translate(${(B.x + B.w / 2 - (A.x + A.w / 2) * k).toFixed(2)}px,${(B.y - A.y * k).toFixed(2)}px) scale(${k.toFixed(5)})` });
+    r.parentNode.appendChild(w); w.appendChild(e); return e; };
   M.setup = (o) => { C.src0 = 0; C.end = 10; C.evaDir = '../../sample10/media/eva'; C.src = { w: 1280, h: 720 }; C.face = { x: .52, y: .3, h: .34 };
-    C.evaKeys = M.win(o.win, o.keys, o.end); C.ringFn = o.ring || (() => ({ color: '#fff', width: 0, shadow: .35 }));
+    C.evaKeys = M.win(o.win, o.keys, o.end);
+    if (C.portrait) { const pp = o.port || {}; M._w16 = o.win;
+      C.portLayout({ box: pp.box || [90, 60, 1100, 760], top: pp.top ?? 200, maxH: pp.maxH ?? 700, keep: [1], eva: L => L.w >= 1900 ? M.FULLP : (pp.win || M.pwin(L)) });
+      M._wp = C.evaKeys[1].L; } C.ringFn = o.ring || (() => ({ color: '#fff', width: 0, shadow: .35 }));
     C.scene({ t0: 0, t1: 10.05, bg: o.bg, cls: o.cls || '', quiet: true, build: o.build, update: (lt, s, t) => o.update(s, t) });
     C.scene({ t0: 0, t1: 10.05, z: 70, quiet: true, build: L => M.captions(L, o.captions), update: (lt, f, t) => f(t) }); };
 })();

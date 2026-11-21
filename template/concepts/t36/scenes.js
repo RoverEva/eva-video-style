@@ -6,13 +6,14 @@
     bg: '#1b1638',
     win: { x: 1220, y: 170, w: 520, h: 520, r: 18, o: 1, s: 1.15 },
     ring: () => ({ color: '#ffffff', width: 8, shadow: .5 }),
+    port: { box: [100, 80, 1060, 720] },
     captions: [{ t0: .5, t1: 3.4, cn: '剪辑升级之路：第三关', en: 'Editing quest: level three' },
                { t0: 3.5, t1: 6.6, cn: '任务：给视频加上字幕', en: 'Mission: add captions to the video' },
                { t0: 6.7, t1: 9.7, cn: '完成！经验值满格', en: 'Cleared! XP bar full' }],
     build(L) { const s = {};
-      el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.05) 2px, transparent 2px)', backgroundSize: '40px 40px' });
-      s.stars = Array.from({ length: 26 }, (_, i) => M.box(L, (i * 397) % 1880, (i * 211) % 760, { width: '8px', height: '8px', background: i % 3 ? '#8c86c9' : Y }));
-      s.border = M.box(L, 1196, 146, { width: '568px', height: '568px', border: `8px solid ${PK}`, borderRadius: '6px', boxSizing: 'border-box', boxShadow: `8px 8px 0 ${DK}` });
+      M.bg(el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.05) 2px, transparent 2px)', backgroundSize: '40px 40px' }));
+      s.stars = Array.from({ length: 26 }, (_, i) => M.box(L, (i * 397) % 1880, (i * 211) % 760, { width: '8px', height: '8px', background: i % 3 ? '#8c86c9' : Y })); s.stars.forEach(M.bg);
+      s.border = M.box(L, 1196, 146, { width: '568px', height: '568px', border: `8px solid ${PK}`, borderRadius: '6px', boxSizing: 'border-box', boxShadow: `8px 8px 0 ${DK}` }); M.att(s.border);
       s.lv = M.pix(L, 'LV 3', 110, 90, 8, Y, DK);
       s.xpb = M.box(L, 110, 210, { width: '620px', height: '48px', border: '6px solid #fff', background: DK, boxSizing: 'border-box' });
       s.xpf = el(s.xpb, 'div', '', { height: '100%', width: '0%', background: G });

@@ -7,13 +7,14 @@
     bg: '#0b3a6e',
     win: { x: 1240, y: 150, w: 520, h: 520, r: 260, o: 1, s: 1.15 },
     ring: () => ({ color: CY, width: 6, glow: 'rgba(127,208,255,.45)', shadow: .4 }),
+    port: { box: [90, 80, 1080, 720] },
     captions: [{ t0: .5, t1: 3.4, cn: '三步，从原始素材到成片', en: 'Three steps from raw clip to final cut' },
                { t0: 3.5, t1: 6.6, cn: '上传、选风格、导出', en: 'Upload, pick a style, export' },
                { t0: 6.7, t1: 9.7, cn: '每一步都清清楚楚', en: 'Every step, crystal clear' }],
     build(L) { const s = {};
-      s.grid = el(L, 'div', 'abs', { left: '-96px', top: '-96px', width: (C.W + 192) + 'px', height: (C.H + 192) + 'px',
+      s.grid = M.bg(el(L, 'div', 'abs', { left: '-96px', top: '-96px', width: (C.W + 192) + 'px', height: (C.H + 192) + 'px',
         backgroundImage: 'linear-gradient(rgba(140,200,255,.17) 2px, transparent 2px), linear-gradient(90deg, rgba(140,200,255,.17) 2px, transparent 2px), linear-gradient(rgba(140,200,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,200,255,.07) 1px, transparent 1px)',
-        backgroundSize: '96px 96px, 96px 96px, 24px 24px, 24px 24px' });
+        backgroundSize: '96px 96px, 96px 96px, 24px 24px, 24px 24px' }));
       s.ghost = M.box(L, 96, 380, { font: `900 230px Inter, sans-serif`, color: 'transparent', WebkitTextStroke: '2px rgba(127,208,255,.35)', letterSpacing: '-.02em', whiteSpace: 'nowrap' }, 'BLUEPRINT');
       s.cue = M.box(L, 110, 92, { font: `700 26px ${MONO}`, color: CY, letterSpacing: '.14em' }, 'SHEET 01 / HOW IT WORKS');
       s.hero = M.box(L, 106, 134, { font: `900 104px ${CN}`, color: '#f5faff', letterSpacing: '-.01em', whiteSpace: 'nowrap' }, '三步完成剪辑');
@@ -32,7 +33,7 @@
       s.labels = [['01', '上传', 'UPLOAD'], ['02', '选风格', 'STYLE'], ['03', '导出', 'EXPORT']].map(([n, cn, en], i) => { const g = M.box(L, 110 + 380 * i + 26, 382, {});
         el(g, 'div', '', { font: `700 22px ${MONO}`, color: YEL }, n); el(g, 'div', '', { font: `900 54px ${CN}`, color: '#ffffff', lineHeight: 1.15 }, cn); el(g, 'div', '', { font: `700 20px ${MONO}`, color: CY, letterSpacing: '.12em' }, en); return g; });
       s.dl = M.box(L, 520, 610, { font: `700 26px ${CN}`, color: YEL, background: '#0b3a6e', padding: '0 14px' }, '每一步 · 都清楚');
-      s.mark = M.svg(L, 1210, 120, 580, 580, `<g stroke="${YEL}" stroke-width="3"><path d="M290 0v30M290 550v30M0 290h30M550 290h30"/></g><text x="420" y="36" font-family="Space Mono, monospace" font-size="22" fill="${CY}">Ø 520</text>`);
+      s.mark = M.att(M.svg(L, 1210, 120, 580, 580, `<g stroke="${YEL}" stroke-width="3"><path d="M290 0v30M290 550v30M0 290h30M550 290h30"/></g><text x="420" y="36" font-family="Space Mono, monospace" font-size="22" fill="${CY}">Ø 520</text>`));
       return s; },
     update(s, t) {
       s.grid.style.transform = `translate(${(-t * 6).toFixed(1)}px, ${(-t * 3).toFixed(1)}px)`;   /* slow drift: depth, not subject */

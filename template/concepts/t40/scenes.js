@@ -8,12 +8,13 @@
     bg: '#e9efe4',
     win: { x: 1330, y: 120, w: 470, h: 560, r: 30, o: 1, s: 1.15 },
     ring: () => ({ color: '#ffffff', width: 10, shadow: .4 }),
+    port: { box: [120, 80, 1100, 700] },
     captions: [{ t0: .5, t1: 3.4, cn: '一条视频的旅程', en: 'The journey of one video' },
                { t0: 3.5, t1: 6.6, cn: '从拍摄到剪辑，一站接一站', en: 'From shooting to editing, stop by stop' },
                { t0: 6.7, t1: 9.7, cn: '终点：发布上线', en: 'Final stop: publish' }],
     build(L) { const s = {};
       s.map = M.svg(L, -80, -40, 2080, 1160, `<path d="M0 820 C 300 760, 600 900, 1000 820 S 1700 700, 2080 780 L2080 1160 L0 1160Z" fill="#cfe3ef"/><path d="M-20 200 C 300 260, 520 120, 900 180 S 1500 90, 2100 160" stroke="#fff" stroke-width="22" fill="none"/><path d="M700 -20 C 760 300, 640 600, 760 1180" stroke="#fff" stroke-width="16" fill="none"/>` +
-        Array.from({ length: 9 }, (_, i) => `<rect x="${120 + (i * 233) % 1700}" y="${300 + (i * 157) % 380}" width="${90 + (i % 3) * 30}" height="${70 + (i % 2) * 30}" rx="10" fill="#d6e2cc"/>`).join(''));
+        Array.from({ length: 9 }, (_, i) => `<rect x="${120 + (i * 233) % 1700}" y="${300 + (i * 157) % 380}" width="${90 + (i % 3) * 30}" height="${70 + (i % 2) * 30}" rx="10" fill="#d6e2cc"/>`).join('')); M.bg(s.map);
       s.route = M.svg(L, 0, 0, 1920, 1080, P.slice(1).map((b, i) => `<path class="sg" d="${seg(P[i], b)}" fill="none" stroke="${RD}" stroke-width="8" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1"/>`).join(''));
       s.sg = [...s.route.querySelectorAll('.sg')];
       s.pins = P.map(([x, y], i) => { const p = M.svg(L, x - 30, y - 76, 60, 80, `<path d="M30 78 C 30 78, 4 46, 4 30 A 26 26 0 1 1 56 30 C 56 46, 30 78, 30 78Z" fill="${i === 3 ? INK : RD}"/><circle cx="30" cy="30" r="10" fill="#fff"/>`, { transformOrigin: '50% 100%' });

@@ -7,13 +7,14 @@
     bg: '#f2ecdf',
     win: { x: 1150, y: 150, w: 540, h: 540, r: 270, o: 1, s: 1.15 },
     ring: () => ({ color: 'rgba(27,27,27,.82)', width: 5, shadow: .18 }),
+    port: { box: [120, 70, 940, 740] },
     captions: [{ t0: .5, t1: 3.4, cn: '山水之间，一杯好茶', en: 'Between mountains and water, a good tea' },
                { t0: 3.5, t1: 6.6, cn: '从采摘到冲泡，慢慢来', en: 'From picking to brewing, take it slow' },
                { t0: 6.7, t1: 9.7, cn: '慢下来，才尝得出味道', en: 'Slow down to taste it' }],
     build(L) { const s = {};
-      s.blooms = [[260, 300, 520], [520, 200, 340], [1400, 760, 700]].map(([x, y, r]) => M.box(L, x - r / 2, y - r / 2, { width: r + 'px', height: r + 'px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(25,25,25,.30), rgba(25,25,25,.12) 45%, rgba(25,25,25,0) 70%)', filter: 'blur(8px)' }));
-      s.far = M.svg(L, -100, 470, 2200, 420, `<path d="M0 260 C 160 150, 260 190, 380 110 C 480 40, 600 150, 720 100 C 840 50, 940 170, 1080 130 C 1240 90, 1360 200, 1520 140 C 1680 80, 1820 170, 2200 120 L2200 420 L0 420Z" fill="rgba(40,40,40,.13)"/>`);
-      s.near = M.svg(L, -100, 560, 2200, 360, `<path d="M0 230 C 150 160, 280 220, 420 170 C 540 130, 640 220, 800 190 C 980 160, 1120 240, 1300 200 C 1480 160, 1640 230, 2200 190 L2200 360 L0 360Z" fill="rgba(35,35,35,.22)"/>`);
+      s.blooms = [[260, 300, 520], [520, 200, 340], [1400, 760, 700]].map(([x, y, r]) => M.box(L, x - r / 2, y - r / 2, { width: r + 'px', height: r + 'px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(25,25,25,.30), rgba(25,25,25,.12) 45%, rgba(25,25,25,0) 70%)', filter: 'blur(8px)' })); s.blooms.forEach(M.bg);
+      s.far = M.bg(M.svg(L, -100, 470, 2200, 420, `<path d="M0 260 C 160 150, 260 190, 380 110 C 480 40, 600 150, 720 100 C 840 50, 940 170, 1080 130 C 1240 90, 1360 200, 1520 140 C 1680 80, 1820 170, 2200 120 L2200 420 L0 420Z" fill="rgba(40,40,40,.13)"/>`));
+      s.near = M.bg(M.svg(L, -100, 560, 2200, 360, `<path d="M0 230 C 150 160, 280 220, 420 170 C 540 130, 640 220, 800 190 C 980 160, 1120 240, 1300 200 C 1480 160, 1640 230, 2200 190 L2200 360 L0 360Z" fill="rgba(35,35,35,.22)"/>`));
       s.ghost = M.box(L, 520, 40, { font: `900 560px ${SERIF}`, color: 'transparent', WebkitTextStroke: '3px rgba(27,27,27,.10)', lineHeight: 1 }, '茶');
       s.chars = [...'山水之间'].map((ch, i) => M.box(L, 150, 90 + i * 150, { font: `900 136px ${SERIF}`, color: INK, lineHeight: 1 }, ch));
       s.sub = [...'一杯好茶的来历'].map((ch, i) => M.box(L, 335, 110 + i * 56, { font: `600 40px ${SERIF}`, color: '#3f3f3f', lineHeight: 1 }, ch));

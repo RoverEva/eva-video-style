@@ -9,14 +9,15 @@
     bg: '#d9c3a0',
     win: { x: 150, y: 150, w: 520, h: 540, r: 6, o: 1, s: 1.15 },
     ring: () => ({ color: '#fffdf7', width: 0, shadow: .0 }),
+    port: { box: [800, 90, 1040, 700] },
     captions: [{ t0: .5, t1: 3.4, cn: '周末，给自己放个假', en: 'Weekend — time off for me' },
                { t0: 3.5, t1: 6.6, cn: '第一天看海，第二天爬山', en: 'Day one the sea, day two the hills' },
                { t0: 6.7, t1: 9.7, cn: '把好日子都记下来', en: 'Keep the good days on paper' }],
     build(L) { const s = {};
-      s.paper = el(L, 'div', 'abs', { left: '-60px', top: '-40px', width: (C.W + 120) + 'px', height: (C.H + 80) + 'px', backgroundImage: 'radial-gradient(rgba(120,85,45,.18) 1.4px, transparent 1.8px), linear-gradient(rgba(255,255,255,.08), rgba(0,0,0,.06))', backgroundSize: '18px 18px, 100% 100%' });
+      s.paper = el(L, 'div', 'abs', { left: '-60px', top: '-40px', width: (C.W + 120) + 'px', height: (C.H + 80) + 'px', backgroundImage: 'radial-gradient(rgba(120,85,45,.18) 1.4px, transparent 1.8px), linear-gradient(rgba(255,255,255,.08), rgba(0,0,0,.06))', backgroundSize: '18px 18px, 100% 100%' }); M.bg(s.paper);
       s.frame = M.box(L, 120, 120, { width: '580px', height: '700px', background: '#fffdf7', boxShadow: '0 18px 40px rgba(60,40,15,.35)', transformOrigin: '50% 50%' });
-      el(s.frame, 'div', 'abs', { left: 0, top: '600px', width: '580px', textAlign: 'center', font: `700 46px ${CN}`, color: INK }, '今天的我');
-      s.tape = M.box(L, 350, 100, { width: '130px', height: '40px', background: 'rgba(255,230,150,.75)', transform: 'rotate(-5deg)' });
+      el(s.frame, 'div', 'abs', { left: 0, top: '600px', width: '580px', textAlign: 'center', font: `700 46px ${CN}`, color: INK }, '今天的我'); M.att(s.frame);
+      s.tape = M.box(L, 350, 100, { width: '130px', height: '40px', background: 'rgba(255,230,150,.75)', transform: 'rotate(-5deg)' }); M.att(s.tape);
       s.title = M.box(L, 820, 110, { font: `italic 900 96px ${HAND}`, color: INK, whiteSpace: 'nowrap' }, 'Weekend diary');
       s.cn = M.box(L, 826, 230, { font: `900 64px ${CN}`, color: '#b5452b' }, '周末旅行日记');
       s.ul = M.svg(L, 826, 312, 520, 30, `<path d="M4 16 C 120 4, 260 26, 510 10" stroke="#b5452b" stroke-width="6" stroke-linecap="round" fill="none" pathLength="1" stroke-dasharray="1 1"/>`).querySelector('path');

@@ -7,11 +7,12 @@
     bg: '#0c0f1f',
     win: { x: 1180, y: 140, w: 560, h: 560, r: 280, o: 1, s: 1.15 },
     ring: () => ({ color: 'rgba(255,255,255,.75)', width: 4, glow: 'rgba(160,140,255,.55)', shadow: .5 }),
+    port: { box: [100, 110, 1000, 640] },
     captions: [{ t0: .5, t1: 3.4, cn: '一键生成你的品牌视频', en: 'Your brand video, in one click' },
                { t0: 3.5, t1: 6.6, cn: '更快、更稳、更好看', en: 'Faster, steadier, better-looking' },
                { t0: 6.7, t1: 9.7, cn: '现在就试试', en: 'Try it now' }],
     build(L) { const s = {};
-      s.orbs = [['#6c5cff', 300, 260, 620], ['#ff4fa3', 1500, 820, 700], ['#2fd1ff', 900, 120, 460]].map(([c, x, y, r]) => M.box(L, x - r / 2, y - r / 2, { width: r + 'px', height: r + 'px', borderRadius: '50%', background: c, filter: 'blur(110px)', opacity: .55 }));
+      s.orbs = [['#6c5cff', 300, 260, 620], ['#ff4fa3', 1500, 820, 700], ['#2fd1ff', 900, 120, 460]].map(([c, x, y, r]) => M.box(L, x - r / 2, y - r / 2, { width: r + 'px', height: r + 'px', borderRadius: '50%', background: c, filter: 'blur(110px)', opacity: .55 })); s.orbs.forEach(M.bg);
       s.card = M.box(L, 110, 120, Object.assign({ width: '960px', height: '300px', borderRadius: '36px', padding: '44px 54px', boxSizing: 'border-box' }, glass));
       el(s.card, 'div', '', { font: `700 26px Inter, sans-serif`, color: '#c9c3ff', letterSpacing: '.14em' }, 'EVA STUDIO');
       el(s.card, 'div', '', { font: `900 84px ${CN}`, color: '#fff', marginTop: '10px', whiteSpace: 'nowrap' }, '一键生成品牌视频');

@@ -6,11 +6,12 @@
     bg: 'linear-gradient(180deg, #0a1730, #0d2148)',
     win: { x: 1250, y: 170, w: 540, h: 540, r: 30, o: 1, s: 1.15 },
     ring: () => ({ color: GOLD, width: 5, shadow: .45 }),
+    port: { box: [0, 100, 1180, 740] },
     captions: [{ t0: .5, t1: 3.4, cn: '本周数据，一分钟看懂', en: "This week's numbers in a minute" },
                { t0: 3.5, t1: 6.6, cn: '增长来自三个方向', en: 'Growth came from three places' },
                { t0: 6.7, t1: 9.7, cn: '关注我，每周更新', en: 'Follow for weekly updates' }],
     build(L) { const s = {};
-      s.band = M.box(L, 0, 0, { width: C.W + 'px', height: '64px', background: '#06101f', borderBottom: `2px solid ${GOLD}`, overflow: 'hidden' });
+      s.band = M.box(L, 0, 0, { width: C.W + 'px', height: '64px', background: '#06101f', borderBottom: `2px solid ${GOLD}`, overflow: 'hidden' }); M.bg(s.band);
       s.tape = el(s.band, 'div', 'abs', { left: 0, top: '14px', whiteSpace: 'nowrap', font: `700 28px 'Space Mono', monospace`, color: '#cfd8ea' });
       const it = [['ALPHA', '+2.4%', UP], ['BETA', '-0.8%', DN], ['GAMMA', '+1.1%', UP], ['DELTA', '+3.6%', UP], ['OMEGA', '-1.2%', DN]];
       s.tape.innerHTML = Array(4).fill(it.map(([n, v, c]) => `${n} <span style="color:${c}">${v}</span>`).join(' &nbsp;·&nbsp; ')).join(' &nbsp;·&nbsp; ');

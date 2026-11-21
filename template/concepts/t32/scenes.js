@@ -13,6 +13,7 @@
     bg: 'linear-gradient(160deg, #eef3fb, #dfe7f5)',
     win: { x: 150, y: 170, w: 500, h: 500, r: 250, o: 1, s: 1.15 },
     ring: () => ({ color: '#ffffff', width: 12, shadow: .28 }),
+    port: { box: [800, 40, 1000, 700] },
     captions: [{ t0: .5, t1: 3.4, cn: '朋友问我：剪视频要多久？', en: 'A friend asked: how long does editing take?' },
                { t0: 3.5, t1: 6.6, cn: '我说：上传就好，几分钟', en: 'Me: just upload, a few minutes' },
                { t0: 6.7, t1: 9.7, cn: '字幕？中英双语，自动加', en: 'Captions? Bilingual, automatic' }],

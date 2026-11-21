@@ -10,11 +10,12 @@
     bg: '#c9a072',
     win: { x: 100, y: 130, w: 560, h: 640, r: 36, o: 1, s: 1.2 },
     ring: () => ({ color: '#ffffff', width: 16, shadow: .42 }),
+    port: { box: [740, 50, 1100, 720] },
     captions: [{ t0: .5, t1: 3.4, cn: '剪视频的三个小技巧', en: 'Three quick editing tips' },
                { t0: 3.5, t1: 6.6, cn: '一条一个点，别贪多', en: "One idea each — don't cram" },
                { t0: 6.7, t1: 9.7, cn: '记住了吗？收藏起来', en: 'Got it? Save this for later' }],
     build(L) { const s = {};
-      el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'radial-gradient(rgba(90,55,25,.35) 2px, transparent 2.4px), radial-gradient(rgba(255,240,215,.22) 1.4px, transparent 1.8px)', backgroundSize: '22px 22px, 15px 15px', backgroundPosition: '0 0, 8px 9px' });
+      M.bg(el(L, 'div', 'abs', { left: 0, top: 0, width: C.W + 'px', height: C.H + 'px', backgroundImage: 'radial-gradient(rgba(90,55,25,.35) 2px, transparent 2.4px), radial-gradient(rgba(255,240,215,.22) 1.4px, transparent 1.8px)', backgroundSize: '22px 22px, 15px 15px', backgroundPosition: '0 0, 8px 9px' }));
       s.title = M.box(L, 760, 70, { font: `900 74px ${CN}`, color: INK, background: '#fbf6ea', padding: '10px 26px', transformOrigin: '0 50%', boxShadow: '0 6px 14px rgba(60,35,10,.3)' }, '剪辑 3 个小技巧');
       s.notes = [note(L, 770, 250, -4, '#ffe45c', '先写开头', 'hook first'), note(L, 1130, 280, 3, '#ff9ec7', '一条一个点', 'one idea each'), note(L, 1480, 230, -2, '#8fd3ff', '越长越好？', 'longer = better?')];
       s.strike = M.svg(L, 1500, 300, 280, 200, `<path d="M14 30 L262 168" stroke="#e5262f" stroke-width="12" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1"/><path d="M262 26 L18 176" stroke="#e5262f" stroke-width="12" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1"/>`);
