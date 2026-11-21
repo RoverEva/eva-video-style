@@ -132,18 +132,26 @@ class Canvas:
         x0, x1 = int(max(0, q[0] - 3 * R)), int(min(W, q[0] + 3 * R))
         y0, y1 = int(max(0, q[1] - 3 * R)), int(min(H, q[1] + 3 * R))
         if x1 <= x0 or y1 <= y0: return
+        cw = np.asarray(col, np.float32) * a
+        if R > 24:   # big soft glows: evaluate on a 4x coarser grid and upsample (they are blurred anyway)
+            st = 4
+            gx = np.exp(-((np.arange(x0, x1, st, dtype=np.float32) - q[0]) ** 2) / (R * R))
+            gy = np.exp(-((np.arange(y0, y1, st, dtype=np.float32) - q[1]) ** 2) / (R * R))
+            g = cv2.resize(np.outer(gy, gx).astype(np.float32), (x1 - x0, y1 - y0), interpolation=cv2.INTER_LINEAR)
+            s.F[y0:y1, x0:x1] += g[..., None] * cw
+            return
         gx = np.exp(-((np.arange(x0, x1, dtype=np.float32) - q[0]) ** 2) / (R * R))
         gy = np.exp(-((np.arange(y0, y1, dtype=np.float32) - q[1]) ** 2) / (R * R))
-        s.F[y0:y1, x0:x1] += (gy[:, None, None] * gx[None, :, None]) * (np.asarray(col, np.float32) * a)
+        s.F[y0:y1, x0:x1] += (gy[:, None, None] * gx[None, :, None]) * cw
 
-    def composite(s, BG, flash=0.0, flash_col=(0.6, 0.9, 1.0)):
+    def composite(s, BG, flash=0.0, flash_col=(0.6, 0.9, 1.0), glow=1.0):
         # all blurs at half / quarter resolution, summed small and upscaled once (same look as the full-res version)
         L, Fl = s.L, s.F
         hl = cv2.resize(L, (W // 2, H // 2), interpolation=cv2.INTER_AREA)
         hf = cv2.resize(Fl, (W // 2, H // 2), interpolation=cv2.INTER_AREA)
         small = cv2.resize(hl + hf, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
-        gq = cv2.addWeighted(cv2.GaussianBlur(small, (0, 0), 6), 1.6, cv2.GaussianBlur(small, (0, 0), 22), 1.1, 0)
-        gh = cv2.addWeighted(cv2.GaussianBlur(hl, (0, 0), 1.75), 1.3, cv2.GaussianBlur(hf, (0, 0), 1.0), 0.6, 0)
+        gq = cv2.addWeighted(cv2.GaussianBlur(small, (0, 0), 6), 1.6 * glow, cv2.GaussianBlur(small, (0, 0), 22), 1.1 * glow * glow, 0)
+        gh = cv2.addWeighted(cv2.GaussianBlur(hl, (0, 0), 1.75), 1.3 * (0.4 + 0.6 * glow), cv2.GaussianBlur(hf, (0, 0), 1.0), 0.6, 0)
         gh += cv2.resize(gq, (W // 2, H // 2), interpolation=cv2.INTER_LINEAR)
         img = cv2.resize(gh, (W, H), interpolation=cv2.INTER_LINEAR)
         img += BG; cv2.scaleAdd(L, 0.95, img, img)
