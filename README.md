@@ -126,6 +126,198 @@ All 23 templates are MIT-licensed, Free and independently installable. Download 
 
 T08, T25 and T28 are excluded. T18 and T22 are retired and their IDs are not reused.
 
+## Concept Templates T30–T200 | 概念模板
+
+**162 more templates, free and MIT-licensed**, kept as source in [`template/concepts/`](template/concepts/). Each one is a 10-second, silent concept with bilingual captions (Chinese on top) that renders in both **16:9 and 9:16**. T101–T200 are grouped by industry (teacher, science, finance, medical, legal, tech, vlog, beauty, food, travel, appliances, business, founder, engineering, gaming, fitness, home, cars, workplace, brand intros/outros). Each is a three-scene story with real transitions between the scenes (push, rise, zoom, iris, wipe, flip, shutter, blur, slide), and the presenter window morphs from one scene to the next. Templates marked *logo/text only* need no presenter footage.
+
+另有 **162 套免费开源（MIT）概念模板**，源码在 [`template/concepts/`](template/concepts/)：每套 10 秒、无声、中英双语字幕（中文在上），同时支持 **16:9 和 9:16**。T101–T200 按行业分组，每套是三段式故事，场景之间是真实转场，人物窗口随场景变形。标注 *logo/text only* 的模板不需要人物素材。
+
+Presenter footage is **not bundled**. Point the renderer at your own frame sequence (`f_00000.jpg`, `f_00001.jpg`, …):
+
+```bash
+node scripts/render.mjs template/concepts/t150/index.html --query "eva=/path/to/frames&srcw=1920&srch=1080" --out out/T150_16x9.mp4
+node scripts/render.mjs template/concepts/t150/index.html --ar 9:16 --query "eva=/path/to/frames&srcw=1920&srch=1080" --out out/T150_9x16.mp4
+```
+
+All sample copy and numbers in these concepts are illustrative (marked *示例 / sample* on screen). Not every ID between T30 and T200 is used.
+
+<details><summary>T30–T100 (71 templates)</summary>
+
+| ID | Template / 模板 |
+|---|---|
+| [T30](template/concepts/t30/) | Blueprint 蓝图工程 |
+| [T31](template/concepts/t31/) | Sticky Notes Board 便利贴墙 |
+| [T32](template/concepts/t32/) | Chat Bubbles 聊天对话 |
+| [T33](template/concepts/t33/) | Ink Wash 水墨国风 |
+| [T34](template/concepts/t34/) | Finance Ticker 财经快讯 |
+| [T35](template/concepts/t35/) | Polaroid Scrapbook 拍立得手账 |
+| [T36](template/concepts/t36/) | Pixel Game 像素游戏 |
+| [T37](template/concepts/t37/) | Magazine Cover 杂志封面 |
+| [T38](template/concepts/t38/) | Neon Night 霓虹夜店 |
+| [T39](template/concepts/t39/) | Split Before/After 对比分屏 |
+| [T40](template/concepts/t40/) | Route Map 路线地图 |
+| [T41](template/concepts/t41/) | Glass Product 玻璃拟态 |
+| [T42](template/concepts/t42/) | Swiss Grid 瑞士网格 |
+| [T43](template/concepts/t43/) | Whiteboard 白板手绘 |
+| [T44](template/concepts/t44/) | Chalkboard 黑板粉笔 |
+| [T45](template/concepts/t45/) | Receipt 购物小票 |
+| [T46](template/concepts/t46/) | Boarding Pass 登机牌 |
+| [T47](template/concepts/t47/) | Film Strip 胶片放映 |
+| [T48](template/concepts/t48/) | Synthwave 80s 合成波 |
+| [T49](template/concepts/t49/) | Y2K Chrome 千禧金属 |
+| [T50](template/concepts/t50/) | Brutalist 粗野大字 |
+| [T51](template/concepts/t51/) | Bauhaus 包豪斯几何 |
+| [T52](template/concepts/t52/) | Memphis 孟菲斯波普 |
+| [T53](template/concepts/t53/) | Risograph 孔版印刷 |
+| [T54](template/concepts/t54/) | Watercolor 水彩晕染 |
+| [T55](template/concepts/t55/) | Origami 折纸 |
+| [T56](template/concepts/t56/) | Soft Clay 黏土软萌 |
+| [T57](template/concepts/t57/) | Scoreboard 体育比分 |
+| [T58](template/concepts/t58/) | Weather 天气预报 |
+| [T59](template/concepts/t59/) | Recipe Card 菜谱卡 |
+| [T60](template/concepts/t60/) | Workout Timer 健身计时 |
+| [T61](template/concepts/t61/) | Quiz Show 问答竞猜 |
+| [T62](template/concepts/t62/) | Live Poll 投票条 |
+| [T63](template/concepts/t63/) | Unboxing 开箱 |
+| [T64](template/concepts/t64/) | Price Tag 电商促销 |
+| [T65](template/concepts/t65/) | Live Shopping 直播带货 |
+| [T66](template/concepts/t66/) | Podcast 播客 |
+| [T67](template/concepts/t67/) | Documentary 纪录片 |
+| [T68](template/concepts/t68/) | Timeline 时间轴 |
+| [T69](template/concepts/t69/) | Mind Map 思维导图 |
+| [T70](template/concepts/t70/) | Checklist 清单打钩 |
+| [T71](template/concepts/t71/) | Spec Table 参数对比表 |
+| [T72](template/concepts/t72/) | Leaderboard 排行榜 |
+| [T73](template/concepts/t73/) | Highlighter 荧光笔标注 |
+| [T74](template/concepts/t74/) | Spotlight Stage 聚光舞台 |
+| [T75](template/concepts/t75/) | Crayon Kids 童趣蜡笔 |
+| [T76](template/concepts/t76/) | Lunar New Year 新春红金 |
+| [T77](template/concepts/t77/) | Clinic Clean 医疗健康 |
+| [T78](template/concepts/t78/) | Notebook 作业本红笔 |
+| [T79](template/concepts/t79/) | Glitch 故障风 |
+| [T80](template/concepts/t80/) | Isometric Town 等距小城 |
+| [T81](template/concepts/t81/) | Galaxy 星空宇宙 |
+| [T82](template/concepts/t82/) | Vinyl 黑胶唱片 |
+| [T83](template/concepts/t83/) | Logo Particles 粒子汇聚 |
+| [T84](template/concepts/t84/) | Logo Line Draw 描边生成 |
+| [T85](template/concepts/t85/) | Logo Liquid 液体溅落 |
+| [T86](template/concepts/t86/) | Logo Light Sweep 金属扫光 |
+| [T87](template/concepts/t87/) | Logo Shatter 碎片重组 |
+| [T88](template/concepts/t88/) | Logo Ink Drop 墨滴晕开 |
+| [T89](template/concepts/t89/) | Logo 3D Flip 立体翻转 |
+| [T90](template/concepts/t90/) | Logo Stamp 印章盖印 |
+| [T91](template/concepts/t91/) | Icon Grid 图标矩阵 |
+| [T92](template/concepts/t92/) | Quote Card 金句 |
+| [T93](template/concepts/t93/) | Photo Slideshow 照片轮播 |
+| [T94](template/concepts/t94/) | Packshot 产品转台 |
+| [T95](template/concepts/t95/) | Phone Mockup 手机演示 |
+| [T96](template/concepts/t96/) | Stats Highlights 数据亮点 |
+| [T97](template/concepts/t97/) | Event Invite 活动邀请 |
+| [T98](template/concepts/t98/) | Store Locator 门店地址 |
+| [T99](template/concepts/t99/) | Announcement 公告 |
+| [T100](template/concepts/t100/) | End Card 关注结尾卡 |
+
+</details>
+
+<details><summary>T101–T200 (91 templates)</summary>
+
+| ID | Template / 模板 |
+|---|---|
+| [T101](template/concepts/t101/) | 课堂纸雕 Papercut Lesson |
+| [T103](template/concepts/t103/) | 展墙历史课 Gallery Lesson |
+| [T104](template/concepts/t104/) | 汉字小剧场 Glyph Theater |
+| [T105](template/concepts/t105/) | 三种解法 Three Solutions |
+| [T106](template/concepts/t106/) | 光谱实验 Spectrum |
+| [T107](template/concepts/t107/) | 深海压强 Depth |
+| [T108](template/concepts/t108/) | 影子几何 Shadow Geometry |
+| [T109](template/concepts/t109/) | 火星蓝暮 Blue Dusk |
+| [T110](template/concepts/t110/) | 声音拐弯 Sound Lines |
+| [T111](template/concepts/t111/) | 三栏账本 Ledger Trio. All amounts are SAMPLE figure |
+| [T112](template/concepts/t112/) | 决策剧场 Decision Theater |
+| [T113](template/concepts/t113/) | 黑金早报 Black Gold (logo/text only). |
+| [T115](template/concepts/t115/) | 信息卡堆叠 Card Stack (finance). Figures are SAMPL |
+| [T117](template/concepts/t117/) | 热成像体温 Thermal (general health info; not medic |
+| [T118](template/concepts/t118/) | 门诊排队 Clinic Queue (illustrative). |
+| [T119](template/concepts/t119/) | 皮肤分层 Skin Layers (general skincare info). Moist |
+| [T120](template/concepts/t120/) | 健康问答 Health Q&A (general wellness; not medical |
+| [T121](template/concepts/t121/) | 维权三步 Three Steps (legal info, not legal advice) |
+| [T122](template/concepts/t122/) | 条款放大镜 Clause Lens (illustrative contract; not |
+| [T123](template/concepts/t123/) | 案卷剪报 Case Clippings (illustrative evidence boar |
+| [T124](template/concepts/t124/) | 证据图示 Evidence Icons |
+| [T125](template/concepts/t125/) | 正反论证 Argument |
+| [T127](template/concepts/t127/) | 线框都市 Wireframe City |
+| [T128](template/concepts/t128/) | 激光扫描 Laser Scan (logo/text only) |
+| [T129](template/concepts/t129/) | 芯片之旅 Chip Journey |
+| [T130](template/concepts/t130/) | 数字光场 Light Field |
+| [T131](template/concepts/t131/) | 一日旅程 Day Story (vlog). Photos are frames of the |
+| [T132](template/concepts/t132/) | 撕纸回忆 Torn Memories. Photos = frames of the pres |
+| [T133](template/concepts/t133/) | 拍摄手记 BTS Notes |
+| [T134](template/concepts/t134/) | 无限画布 Infinite Canvas |
+| [T136](template/concepts/t136/) | 成分表 Ingredient Label (general skincare info; samp |
+| [T137](template/concepts/t137/) | 网点人像 Halftone Portrait |
+| [T138](template/concepts/t138/) | 窗口叠影 Window Overlay (beauty / mood) |
+| [T139](template/concepts/t139/) | 笔触妆效 Brush Repaint |
+| [T140](template/concepts/t140/) | 万花筒色盘 Kaleidoscope palette (beauty colours). |
+| [T141](template/concepts/t141/) | 排队值不值 Queue Meter (food review). Scores are S |
+| [T142](template/concepts/t142/) | 火候 Heat & Timing |
+| [T143](template/concepts/t143/) | 咖啡旅程 Coffee Journey |
+| [T145](template/concepts/t145/) | 宣纸菜谱 Scroll Recipe |
+| [T146](template/concepts/t146/) | 一镜横移 One-Take Pan |
+| [T147](template/concepts/t147/) | 双景城市 Day & Night |
+| [T148](template/concepts/t148/) | 霓虹雨夜 Neon Rain |
+| [T149](template/concepts/t149/) | 冰原档案 Polar Archive |
+| [T150](template/concepts/t150/) | 空间画廊 Gallery Walk |
+| [T151](template/concepts/t151/) | 三步扁平 Flat Product (logo/text only) |
+| [T152](template/concepts/t152/) | 爆炸图 Exploded View (logo/text only) |
+| [T153](template/concepts/t153/) | 储能面板 Power Panel (logo/text only) |
+| [T154](template/concepts/t154/) | 键帽微距 Keycap Macro (logo/text only) |
+| [T155](template/concepts/t155/) | 产品舞台 Product Stage (logo/text only) |
+| [T156](template/concepts/t156/) | 拼贴开场 Collage Open |
+| [T158](template/concepts/t158/) | 模块拼贴 Bento |
+| [T159](template/concepts/t159/) | 明暗快切 Flash Cut |
+| [T160](template/concepts/t160/) | 发布会 Keynote |
+| [T161](template/concepts/t161/) | 深境舞台 Deep Stage |
+| [T162](template/concepts/t162/) | 机芯咬合 Gear Train (logo/text only) |
+| [T163](template/concepts/t163/) | 一条线 One Line (logo/text only) |
+| [T165](template/concepts/t165/) | 破框而出 Frame Break |
+| [T166](template/concepts/t166/) | 工业管线 Pipeline |
+| [T167](template/concepts/t167/) | 时基对齐 Timebase |
+| [T168](template/concepts/t168/) | 蓝图剖面 Section View |
+| [T169](template/concepts/t169/) | 轴测线稿 Axonometric |
+| [T170](template/concepts/t170/) | 能流传导 Current |
+| [T171](template/concepts/t171/) | 像素闯关 Pixel Run (game commentary) |
+| [T172](template/concepts/t172/) | 赛博像素 Cyber Pixel (game) |
+| [T173](template/concepts/t173/) | 信号故障 Glitch Highlight (game clips) |
+| [T174](template/concepts/t174/) | 牌桌战术 Card Tactics |
+| [T175](template/concepts/t175/) | 粒子变形 Particle Morph (logo/text only) |
+| [T176](template/concepts/t176/) | 体能仪表 Fitness HUD |
+| [T177](template/concepts/t177/) | 潮玩撞色 Sticker Pop (logo/text only) |
+| [T178](template/concepts/t178/) | 恢复循环 Recovery Loop |
+| [T179](template/concepts/t179/) | 城市夜跑 Night Run |
+| [T180](template/concepts/t180/) | 习惯档案 Habit Grid |
+| [T181](template/concepts/t181/) | 等距户型 Iso Floor (home) |
+| [T182](template/concepts/t182/) | 马赛克揭幕 Mosaic Reveal |
+| [T183](template/concepts/t183/) | 黏土小屋 Clay House |
+| [T184](template/concepts/t184/) | 点阵手账 Dot Journal |
+| [T185](template/concepts/t185/) | 阳台菜园 Balcony Garden |
+| [T186](template/concepts/t186/) | 养车四笔账 Car Costs |
+| [T187](template/concepts/t187/) | 夜城驾驶 Night Drive |
+| [T188](template/concepts/t188/) | 自驾线路 Road Trip Lines |
+| [T189](template/concepts/t189/) | 光带车名 Light Ribbon (logo/text only) |
+| [T190](template/concepts/t190/) | 换不换车 Upgrade or Keep |
+| [T191](template/concepts/t191/) | 三行汇报 Three Lines |
+| [T192](template/concepts/t192/) | 桌面口播 Desktop Talk |
+| [T193](template/concepts/t193/) | 快讯台 News Desk |
+| [T194](template/concepts/t194/) | 取景器 Viewfinder |
+| [T195](template/concepts/t195/) | 现代图文 Modern Editorial |
+| [T197](template/concepts/t197/) | 涂鸦片头 Doodle Opener (logo/text only) |
+| [T198](template/concepts/t198/) | 擦除转场包 Wipe Pack |
+| [T199](template/concepts/t199/) | 粒子 logo Particle Logo (logo/text only) |
+| [T200](template/concepts/t200/) | 关注结尾卡 Follow Card (logo/text only) |
+
+</details>
+
+
 ## Installation | 安装指南
 
 **Requirements / 系统要求**

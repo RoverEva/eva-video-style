@@ -1,0 +1,14 @@
+/* T151 三步扁平 Flat Product (logo/text only): a flat appliance, three tappable steps. Sample product. */
+(function () { const M = K.T.mo, X = M.X, B = '#5b8def', INK = '#1d2a4a';
+  const dev = (c, x, y) => { const g = M.box(c, x, y, { width: '360px', height: '540px', borderRadius: '60px', background: B, transformOrigin: '50% 100%' }); g.d = M.box(g, 60, 70, { width: '240px', height: '240px', borderRadius: '50%', background: '#cfe0ff' }); g.btn = M.box(g, 150, 380, { width: '60px', height: '60px', borderRadius: '50%', background: '#ffcf3f' }); return g; };
+  M.story({ noface: true, bg: '#e9f2ff', sbg: ['#e9f2ff', '#dfeaff', '#e9f2ff'], tr: ['slide', 'iris'],
+    caps: [['一台机器，三步出杯', 'One machine, three steps'], ['加水、按下、等 30 秒', 'Fill, press, wait 30 s'], ['就这么简单（示例产品）', 'That simple (sample product)']], port: { box: [200, 80, 1520, 860] },
+    scenes: [
+      [c => ({ d: dev(c, 780, 220), t: X(c, 260, 120, 80, INK, '三步出杯', 900), sh: M.box(c, 760, 770, { width: '400px', height: '30px', borderRadius: '50%', background: 'rgba(29,42,74,.15)' }) }),
+       (s, t, a) => { M.pop(s.d, t, a + .1, 99, { from: .3 }); s.d.style.transform += ` translateY(${(-12 * Math.abs(Math.sin(t * 2))).toFixed(1)}px)`; M.rise(s.sh, t, a + .1, 99); M.hero(s.t, t, a + .4, 99); }],
+      [c => ({ d: dev(c, 280, 220), st: ['① 加水', '② 按下', '③ 30 秒出杯'].map((n, i) => M.box(c, 860, 250 + i * 160, { width: '640px', height: '110px', borderRadius: '24px', background: '#fff', boxShadow: '0 10px 24px rgba(29,42,74,.1)', font: M.f(900, 54), color: INK, display: 'flex', alignItems: 'center', paddingLeft: '36px', boxSizing: 'border-box' }, n)) }),
+       (s, t, a) => { M.slide(s.d, t, a - .15, 99, { dx: -200 }); const k = Math.floor((t - a - .3) / .7); s.d.btn.style.transform = `scale(${k === 1 ? 1 - .2 * Math.abs(Math.sin((t - a) * 8)) : 1})`; s.d.d.style.background = k >= 2 ? '#ffe9a8' : '#cfe0ff'; s.st.forEach((e, i) => { M.slide(e, t, a + i * .7, 99, { dx: 160 }); e.style.outline = k === i ? `6px solid ${B}` : 'none'; }); }],
+      [c => ({ cup: M.svg(c, 760, 260, 400, 440, `<path d="M60 80 H340 L310 400 Q 305 430 270 430 H130 Q 95 430 90 400Z" fill="#fff" stroke="${INK}" stroke-width="10"/><path d="M340 140 Q 400 140 400 210 Q 400 280 330 280" fill="none" stroke="${INK}" stroke-width="10"/><rect class="f" x="80" y="120" width="250" height="300" fill="${B}" opacity=".85"/>`, { transformOrigin: '50% 100%' }), t: X(c, 220, 380, 100, INK, '就这么简单', 900), sm: X(c, 226, 520, 30, '#7a8aa8', 'SAMPLE PRODUCT 示例', 700) }),
+       (s, t, a) => { M.pop(s.cup, t, a - .1, 99, { from: .5 }); const u = M.o3((t - a - .2) / 1.4); s.cup.querySelector('.f').setAttribute('y', 420 - 300 * u); s.cup.querySelector('.f').setAttribute('height', 300 * u); M.hero(s.t, t, a + .4, 99); M.rise(s.sm, t, a + .8, 99); }]
+    ] });
+})();

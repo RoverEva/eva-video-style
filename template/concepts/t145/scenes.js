@@ -1,0 +1,15 @@
+/* T145 宣纸菜谱 Scroll Recipe: a handscroll unrolls into a vertical recipe (红烧肉, a home classic). */
+(function () { const M = K.T.mo, X = M.X, SER = M.SERIF, INK = '#2a1a10', R = '#b8292f';
+  M.story({ bg: '#2a2420', sbg: ['#2a2420', '#f3ead6', '#2a2420'], tr: ['wipe', 'zoom'], ring: () => ({ color: '#f3ead6', width: 6, shadow: .5 }),
+    wins: [M.c(1480, 120, 340), M.c(110, 170, 380), M.c(1440, 140, 380)],
+    caps: [['今天做一道家常红烧肉', 'Today: home-style braised pork'], ['五花肉、冰糖、生抽', 'Pork belly, rock sugar, soy sauce'], ['小火慢炖，一个小时', 'Simmer slowly for an hour']], port: { box: [100, 40, 1820, 820] },
+    scenes: [
+      [c => ({ paper: M.box(c, 240, 140, { width: '1000px', height: '620px', background: '#f3ead6', boxShadow: '0 20px 40px rgba(0,0,0,.4)', transformOrigin: '50% 50%' }), rL: M.box(c, 220, 120, { width: '36px', height: '660px', background: 'linear-gradient(90deg,#5a3a22,#8a5a35,#5a3a22)', borderRadius: '18px' }), rR: M.box(c, 1224, 120, { width: '36px', height: '660px', background: 'linear-gradient(90deg,#5a3a22,#8a5a35,#5a3a22)', borderRadius: '18px' }), t: X(c, 600, 200, 200, INK, '红<br>烧<br>肉', 900, SER, { lineHeight: 1.05 }) }),
+       (s, t, a) => { const u = M.io((t - a - .2) / 1.2); s.paper.style.clipPath = `inset(0 ${(50 - 50 * u).toFixed(1)}% 0 ${(50 - 50 * u).toFixed(1)}%)`; s.rL.style.transform = `translateX(${(500 * (1 - u)).toFixed(1)}px)`; s.rR.style.transform = `translateX(${(-500 * (1 - u)).toFixed(1)}px)`; s.t.style.opacity = u > .6 ? M.o3((u - .6) / .4) : 0; s.t.style.transform = 'translateY(-20px)'; }],
+      [c => ({ ing: [['五花肉', '一斤'], ['冰糖', '少许'], ['生抽', '两勺'], ['姜片', '三片']].map(([n, v], i) => { const g = M.box(c, 1380 - i * 180, 160, {}); X(g, 0, 0, 72, INK, n.split('').join('<br>'), 900, SER, { lineHeight: 1.1 }); X(g, 90, 10, 34, '#7a5a3a', v.split('').join('<br>'), 700, SER, { lineHeight: 1.2 }); return g; }), seal: M.box(c, 680, 600, { width: '110px', height: '110px', background: R, color: '#f3ead6', font: M.f(900, 40, SER), display: 'flex', alignItems: 'center', justifyContent: 'center' }, '家常') }),
+       (s, t, a) => { s.ing.forEach((g, i) => M.rise(g, t, a - .15 + i * .2, 99, { dy: -60 })); M.pop(s.seal, t, a + 1.0, 99, { from: 1.6, base: 'rotate(-6deg)' }); }],
+      [c => ({ pot: M.svg(c, 640, 360, 520, 360, '<path d="M40 100 H480 V280 Q 480 340 420 340 H100 Q 40 340 40 280Z" fill="#3a2a22"/><rect x="20" y="80" width="480" height="30" rx="15" fill="#5a3a22"/><path d="M0 120 H40 M480 120 H520" stroke="#5a3a22" stroke-width="20"/>'),
+          flame: [0, 1, 2, 3].map(i => M.path(c, 720 + i * 100, 720, 60, 90, 'M30 85 C 0 60, 20 30, 30 0 C 40 30, 60 60, 30 85Z', '#ff8c3a', 6)), t: X(c, 160, 220, 90, '#f3ead6', '小火慢炖', 900, SER), t2: X(c, 164, 360, 60, '#d9b48a', '一个小时', 900, SER) }),
+       (s, t, a) => { M.rise(s.pot, t, a - .1, 99, { dy: 80 }); s.flame.forEach((p, i) => { M.draw(p, t, a + .2 + i * .08, .4, 99); p.parentNode.style.transform = `scaleY(${(.8 + .2 * Math.sin(t * 9 + i)).toFixed(2)})`; p.parentNode.style.transformOrigin = '50% 100%'; }); M.hero(s.t, t, a + .3, 99); M.hero(s.t2, t, a + .6, 99); }]
+    ] });
+})();

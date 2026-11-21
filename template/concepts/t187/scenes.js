@@ -1,0 +1,16 @@
+/* T187 夜城驾驶 Night Drive: vector road rushes toward camera, neon lane dashes, speed readout. */
+(function () { const M = K.T.mo, X = M.X, CY = '#3ff0ff', PK = '#ff2bd6', Y = '#ffd23f';
+  const road = c => { const s = M.svg(c, 0, 0, 1920, 1080, `<path d="M960 420 L0 1080 M960 420 L1920 1080" stroke="${CY}" stroke-width="6"/><g class="d"></g><path d="M0 420 H1920" stroke="${PK}" stroke-width="2" opacity=".6"/>`); s.d = s.querySelector('.d'); return s; };
+  const roll = (s, t, sp) => { s.d.innerHTML = Array.from({ length: 10 }, (_, i) => { const u = ((i / 10 + t * sp) % 1), z = u * u, y = 420 + 660 * z, h = 10 + 80 * z; return [-1, 1].map(k => `<line x1="${960 + k * 330 * z}" y1="${y}" x2="${960 + k * 330 * (z + .04)}" y2="${y + h}" stroke="${Y}" stroke-width="${(2 + 10 * z).toFixed(1)}"/>`).join('') + `<line x1="${960 - 1100 * z}" y1="${y}" x2="${960 - 1150 * z}" y2="${y + 4}" stroke="${PK}" stroke-width="${(1 + 6 * z).toFixed(1)}" opacity=".7"/><line x1="${960 + 1100 * z}" y1="${y}" x2="${960 + 1150 * z}" y2="${y + 4}" stroke="${PK}" stroke-width="${(1 + 6 * z).toFixed(1)}" opacity=".7"/>`; }).join(''); };
+  const sun = c => M.box(c, 760, 160, { width: '400px', height: '260px', borderRadius: '200px 200px 0 0', background: `linear-gradient(${Y},${PK})`, maskImage: 'repeating-linear-gradient(transparent 0 18px,#000 18px 34px)', WebkitMaskImage: 'linear-gradient(#000 40%, transparent), repeating-linear-gradient(#000 0 22px, transparent 22px 30px)' });
+  M.story({ bg: '#07071a', sbg: ['linear-gradient(#07071a,#1c0b33 60%,#07071a)', '#07071a', 'linear-gradient(#07071a,#2a0b33 60%,#07071a)'], tr: ['zoom', 'blur'], ring: () => ({ color: PK, width: 5, glow: 'rgba(255,43,214,.5)', shadow: .5 }),
+    wins: [M.c(1460, 80, 320), M.q(120, 120, 380, 440, 16), M.c(1460, 80, 320)],
+    caps: [['夜里开车，城市是另一种样子', 'At night the city looks different'], ['时速 80，刚刚好（示例）', '80 km/h feels right (sample)'], ['今晚，开去海边', 'Tonight, to the seaside']], port: { box: [0, 40, 1920, 1000] },
+    scenes: [
+      [c => ({ sn: sun(c), r: road(c), t: X(c, 100, 90, 90, '#fff', 'NIGHT DRIVE', 300, M.INTER, { letterSpacing: '.06em' }) }), (s, t, a) => { M.rise(s.sn, t, a, 99, { dy: 120 }); roll(s.r, t, .6); s.r.style.opacity = M.env(t, a, 99).a; M.hero(s.t, t, a + .4, 99); }],
+      [c => ({ r: road(c), g: M.svg(c, 700, 160, 520, 300, `<path d="M40 280 A 220 220 0 0 1 480 280" fill="none" stroke="#2a2a44" stroke-width="30"/><path class="p" d="M40 280 A 220 220 0 0 1 480 280" fill="none" stroke="${CY}" stroke-width="30" pathLength="1" stroke-dasharray="1 1"/>`), n: X(c, 840, 300, 120, '#fff', '0', 400, M.AN), u: X(c, 1100, 360, 34, CY, 'km/h', 700, M.MONO) }),
+       (s, t, a) => { roll(s.r, t, 1.1); s.r.style.opacity = 1; M.pop(s.g, t, a - .1, 99, { from: .7 }); s.g.querySelector('.p').setAttribute('stroke-dashoffset', (1 - .6 * M.o3((t - a) / 1.4)).toFixed(3)); M.rise(s.n, t, a, 99); M.count(s.n, 80, t, a, 1.4); M.rise(s.u, t, a + .3, 99); }],
+      [c => ({ sn: sun(c), sea: M.box(c, 0, 420, { width: '1920px', height: '660px', background: 'repeating-linear-gradient(#0c1a3a 0 14px,#16295a 14px 18px)' }), r: road(c), t: X(c, 100, 120, 80, '#fff', '开去海边 →', 900) }),
+       (s, t, a) => { s.sn.style.opacity = 1; s.sea.style.opacity = M.env(t, a, 99).a * .6; roll(s.r, t, .4); s.r.style.opacity = 1; M.hero(s.t, t, a + .4, 99); }]
+    ] });
+})();

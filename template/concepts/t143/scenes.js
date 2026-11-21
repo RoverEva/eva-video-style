@@ -1,0 +1,15 @@
+/* T143 咖啡旅程 Coffee Journey: origin → roast → extraction (sample data). */
+(function () { const M = K.T.mo, X = M.X, CA = '#d9a25a', CR = '#f5deb3';
+  const bean = (c, x, y, s) => M.svg(c, x, y, 80 * s, 110 * s, `<ellipse cx="${40 * s}" cy="${55 * s}" rx="${36 * s}" ry="${52 * s}" fill="#6b4226"/><path d="M${40 * s} ${8 * s} C ${20 * s} ${40 * s}, ${60 * s} ${70 * s}, ${40 * s} ${102 * s}" stroke="#2a1a12" stroke-width="${5 * s}" fill="none"/>`, { transformOrigin: '50% 50%' });
+  M.story({ bg: '#2a1a12', sbg: ['linear-gradient(#3b6b3a,#1e3b1e)', '#2a1a12', '#1d120c'], tr: ['push', 'iris'], ring: () => ({ color: CA, width: 5, shadow: .5 }),
+    wins: [M.c(1440, 140, 380), M.q(110, 160, 400, 480, 24), M.c(1440, 150, 360)],
+    caps: [['一杯咖啡，从山上开始', 'A cup of coffee starts on a mountain'], ['烘焙，决定它的味道', 'Roasting decides the flavour'], ['92°C 的水，25 秒萃取（示例）', '92 °C water, 25 s extraction (sample)']], port: { box: [100, 40, 1820, 820] },
+    scenes: [
+      [c => ({ hills: M.svg(c, -100, 500, 2200, 600, '<path d="M0 300 C 400 100, 700 260, 1100 120 S 1800 60, 2200 200 V600 H0Z" fill="#2f5b2f"/><path d="M0 420 C 600 300, 1200 460, 2200 340 V600 H0Z" fill="#244a24"/>'), b: Array.from({ length: 8 }, (_, i) => bean(c, 200 + i * 140, 520 + (i % 2) * 60, .9)), t: X(c, 160, 150, 90, '#f1f7e8', '产地') }),
+       (s, t, a) => { M.drift(s.hills, t, 10); s.b.forEach((e, i) => M.pop(e, t, a + .4 + i * .1, 99, { from: 0, base: `rotate(${i * 20}deg)` })); M.hero(s.t, t, a + .2, 99); }],
+      [c => ({ dr: M.box(c, 640, 200, { width: '560px', height: '560px', borderRadius: '50%', border: `14px solid #5a3a22`, background: 'radial-gradient(circle,#4a2c18,#2a1a12)' }), b: Array.from({ length: 14 }, (_, i) => bean(c, 0, 0, .7)), t: X(c, 1260, 300, 90, CR, '烘焙'), e: X(c, 1264, 420, 40, CA, 'ROAST', 700, M.MONO) }),
+       (s, t, a) => { M.pop(s.dr, t, a - .15, 99, { from: .6 }); s.b.forEach((e, i) => { const ang = i / 14 * 6.283 + t * 2; e.style.opacity = M.env(t, a + i * .03, 99).a; e.style.transform = `translate(${(890 + Math.cos(ang) * 180).toFixed(1)}px, ${(450 + Math.sin(ang) * 180).toFixed(1)}px) rotate(${(ang * 57).toFixed(0)}deg)`; }); M.hero(s.t, t, a + .3, 99); M.rise(s.e, t, a + .5, 99); }],
+      [c => ({ dn: M.svg(c, 160, 200, 420, 420, `<circle cx="210" cy="210" r="170" fill="none" stroke="#4a3022" stroke-width="44"/><circle class="p" cx="210" cy="210" r="170" fill="none" stroke="${CA}" stroke-width="44" pathLength="1" stroke-dasharray="1 1" transform="rotate(-90 210 210)"/>`), d: [['92°C', '水温'], ['25 s', '萃取'], ['18 g', '粉量']].map(([v, k], i) => { const g = M.box(c, 700, 200 + i * 150, {}); X(g, 0, 0, 90, CA, v, 400, M.AN); X(g, 260, 30, 40, CR, k); return g; }), sm: X(c, 704, 660, 26, '#8a6a52', 'SAMPLE DATA 示例') }),
+       (s, t, a) => { M.pop(s.dn, t, a - .1, 99, { from: .6 }); const p = s.dn.querySelector('.p'); p.setAttribute('stroke-dashoffset', (1 - .7 * M.o3((t - a) / 1.4)).toFixed(3)); s.d.forEach((g, i) => M.slide(g, t, a + .2 + i * .2, 99, { dx: 60 })); M.rise(s.sm, t, a + .9, 99); }]
+    ] });
+})();

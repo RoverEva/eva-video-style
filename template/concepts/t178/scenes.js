@@ -1,0 +1,15 @@
+/* T178 恢复循环 Recovery Loop: five-step dashed orbit around the window, an active marker travels it. */
+(function () { const M = K.T.mo, X = M.X, TL = '#3fd1c4', BG = '#0f3a36';
+  const ST = ['训练', '拉伸', '补给', '睡眠', '再出发'];
+  const orbit = (c, cx, cy, R) => { const o = M.svg(c, cx - R - 10, cy - R - 10, 2 * R + 20, 2 * R + 20, `<circle cx="${R + 10}" cy="${R + 10}" r="${R}" fill="none" stroke="${TL}" stroke-width="6" stroke-dasharray="26 18"/>`, { transformOrigin: '50% 50%' }); o.n = ST.map((n, i) => { const an = -1.5708 + i / 5 * 6.2832; return M.box(c, cx + Math.cos(an) * R - 60, cy + Math.sin(an) * R - 60, { width: '120px', height: '120px', borderRadius: '50%', background: BG, border: `5px solid ${TL}`, boxSizing: 'border-box', color: '#e6fffb', font: M.f(900, 30), display: 'flex', alignItems: 'center', justifyContent: 'center' }, n); }); o.dot = M.box(c, 0, 0, { width: '34px', height: '34px', borderRadius: '50%', background: '#ffd23f', boxShadow: '0 0 20px #ffd23f' }); o.cx = cx; o.cy = cy; o.R = R; return o; };
+  const run = (o, t, a, sp) => { const an = -1.5708 + (t - a) * sp; o.dot.style.transform = `translate(${(o.cx + Math.cos(an) * o.R - 17).toFixed(1)}px, ${(o.cy + Math.sin(an) * o.R - 17).toFixed(1)}px)`; const k = Math.floor(((an + 1.5708) / 6.2832 * 5 + .5)) % 5; o.n.forEach((e, i) => { e.style.background = i === k ? TL : BG; e.style.color = i === k ? BG : '#e6fffb'; }); };
+  M.story({ bg: BG, sbg: [BG, '#0c302c', BG], tr: ['iris', 'push'], ring: () => ({ color: TL, width: 6, shadow: .4 }),
+    wins: [M.c(780, 300, 360), M.q(1360, 200, 420, 480, 20), M.c(780, 300, 360)],
+    caps: [['练完，才是开始', 'Training is just the start'], ['睡眠，是最好的恢复', 'Sleep is the best recovery'], ['五步，一个循环', 'Five steps, one loop']], port: { box: [200, 40, 1520, 960] },
+    scenes: [
+      [c => ({ o: orbit(c, 960, 480, 340) }), (s, t, a) => { M.pop(s.o, t, a, 99, { from: .6 }); s.o.style.transform += ` rotate(${(t * 10).toFixed(1)}deg)`; s.o.n.forEach((e, i) => M.pop(e, t, a + .3 + i * .15, 99, { from: 0 })); run(s.o, t, a + 1, 1); s.o.dot.style.opacity = t > a + 1 ? 1 : 0; }],
+      [c => ({ moon: M.box(c, 200, 220, { width: '260px', height: '260px', borderRadius: '50%', boxShadow: 'inset -60px -10px 0 #ffd27a', transform: 'rotate(-20deg)' }), z: [0, 1, 2].map(i => X(c, 500 + i * 80, 300 - i * 70, 60 + i * 20, '#e6fffb', 'Z', 900, M.INTER)), n: X(c, 220, 620, 140, TL, '8 h', 400, M.AN), t: X(c, 226, 800, 40, '#a8d8d2', '睡够，才恢复', 900) }),
+       (s, t, a) => { M.pop(s.moon, t, a - .1, 99, { from: .5, base: 'rotate(-20deg)' }); s.z.forEach((e, i) => { e.style.opacity = M.env(t, a + .3 + i * .2, 99).a; e.style.transform = `translateY(${(-20 * Math.sin(t * 2 + i)).toFixed(0)}px)`; }); M.hero(s.n, t, a + .4, 99); M.count(s.n, 8, t, a + .4, .8, v => v + ' h'); M.rise(s.t, t, a + .8, 99); }],
+      [c => ({ o: orbit(c, 960, 480, 340) }), (s, t, a) => { s.o.style.opacity = 1; s.o.style.transform = `rotate(${(t * 10).toFixed(1)}deg)`; s.o.n.forEach(e => { e.style.opacity = 1; }); run(s.o, t, a, 2.2); }]
+    ] });
+})();
