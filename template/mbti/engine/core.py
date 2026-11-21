@@ -22,18 +22,23 @@ def pop(t, t0, d=0.15):
     return 1 + 0.6 * math.sin(k * math.pi) * (1 - k) if k < 1 else 1.
 
 
+_BASIS = {}
+def _basis(n):
+    if n not in _BASIS:
+        S = np.linspace(0, 1, n, endpoint=False)
+        _BASIS[n] = 0.5 * np.stack([-S + 2 * S ** 2 - S ** 3, 2 - 5 * S ** 2 + 3 * S ** 3, S + 4 * S ** 2 - 3 * S ** 3, -S ** 2 + S ** 3], 1)
+    return _BASIS[n]
+
+
 def spline(pts, n=12, closed=False):
-    P = np.array(pts, float)
+    """Catmull-Rom through pts (vectorised)"""
+    P = np.asarray(pts, float)
     if len(P) < 3: return P
     P = np.vstack([P[-1], P, P[0], P[1]]) if closed else np.vstack([P[0], P, P[-1]])
-    out = []
-    for i in range(1, len(P) - 2):
-        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
-        for s in np.linspace(0, 1, n, endpoint=False):
-            out.append(0.5 * ((2 * p1) + (-p0 + p2) * s + (2 * p0 - 5 * p1 + 4 * p2 - p3) * s * s
-                              + (-p0 + 3 * p1 - 3 * p2 + p3) * s ** 3))
-    out.append(P[-2])
-    return np.array(out)
+    m = len(P) - 3
+    G = np.stack([P[0:m], P[1:m + 1], P[2:m + 2], P[3:m + 3]], 1)          # (m, 4, 2)
+    out = np.einsum('sk,mkd->msd', _basis(n), G).reshape(-1, 2)
+    return np.vstack([out, P[-2:-1]])
 
 
 def mir(pts): return [(W - x, y) for x, y in pts]
@@ -127,19 +132,24 @@ class Canvas:
         x0, x1 = int(max(0, q[0] - 3 * R)), int(min(W, q[0] + 3 * R))
         y0, y1 = int(max(0, q[1] - 3 * R)), int(min(H, q[1] + 3 * R))
         if x1 <= x0 or y1 <= y0: return
-        yy, xx = np.mgrid[y0:y1, x0:x1]
-        s.F[y0:y1, x0:x1] += (np.exp(-((xx - q[0]) ** 2 + (yy - q[1]) ** 2) / (R * R))[..., None] * col * a).astype(np.float32)
+        gx = np.exp(-((np.arange(x0, x1, dtype=np.float32) - q[0]) ** 2) / (R * R))
+        gy = np.exp(-((np.arange(y0, y1, dtype=np.float32) - q[1]) ** 2) / (R * R))
+        s.F[y0:y1, x0:x1] += (gy[:, None, None] * gx[None, :, None]) * (np.asarray(col, np.float32) * a)
 
     def composite(s, BG, flash=0.0, flash_col=(0.6, 0.9, 1.0)):
+        # all blurs at half / quarter resolution, summed small and upscaled once (same look as the full-res version)
         L, Fl = s.L, s.F
-        g1 = cv2.GaussianBlur(L, (0, 0), 3.5)
-        small = cv2.resize(L + Fl, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
-        g2 = cv2.resize(cv2.GaussianBlur(small, (0, 0), 6), (W, H))
-        g3 = cv2.resize(cv2.GaussianBlur(small, (0, 0), 22), (W, H))
-        img = BG + L * 0.95 + g1 * 1.3 + g2 * 1.6 + g3 * 1.1 + cv2.GaussianBlur(Fl, (0, 0), 2) * 0.6
-        if flash > 0: img = img + flash * np.array(flash_col, np.float32)
-        return 1 - np.exp(-img * 1.15)     # soft tonemap
-
+        hl = cv2.resize(L, (W // 2, H // 2), interpolation=cv2.INTER_AREA)
+        hf = cv2.resize(Fl, (W // 2, H // 2), interpolation=cv2.INTER_AREA)
+        small = cv2.resize(hl + hf, (W // 4, H // 4), interpolation=cv2.INTER_AREA)
+        gq = cv2.addWeighted(cv2.GaussianBlur(small, (0, 0), 6), 1.6, cv2.GaussianBlur(small, (0, 0), 22), 1.1, 0)
+        gh = cv2.addWeighted(cv2.GaussianBlur(hl, (0, 0), 1.75), 1.3, cv2.GaussianBlur(hf, (0, 0), 1.0), 0.6, 0)
+        gh += cv2.resize(gq, (W // 2, H // 2), interpolation=cv2.INTER_LINEAR)
+        img = cv2.resize(gh, (W, H), interpolation=cv2.INTER_LINEAR)
+        img += BG; cv2.scaleAdd(L, 0.95, img, img)
+        if flash > 0: img += flash * np.array(flash_col, np.float32)
+        img *= -1.15; cv2.exp(img, img)
+        return 1 - img     # soft tonemap
 
 def flame(cv, x, y, h, col, a, layer=None, lean=0.):
     w = h * 0.36
@@ -199,12 +209,16 @@ class Text:
         s.d.text((x0 + bw + 10, y - 2), word, font=f, fill=tuple(s.P.TAG) + (al,), anchor='ls')
 
     def blend(s, img):
-        ta = np.asarray(s.img, np.float32) / 255.0
-        if ta[..., 3].max() <= 0: return img
+        bb = s.img.getbbox()
+        if bb is None: return img
+        x0, y0 = max(0, bb[0] - 40), max(0, bb[1] - 40); x1, y1 = min(img.shape[1], bb[2] + 40), min(img.shape[0], bb[3] + 40)
+        ta = np.asarray(s.img.crop((x0, y0, x1, y1)), np.float32) / 255.0
         rgb = ta[..., [2, 1, 0]]; al = ta[..., 3:4]
+        sub = img[y0:y1, x0:x1]
         shade = cv2.GaussianBlur(al[..., 0], (0, 0), 12)[..., None]        # soft dark backing for legibility
-        img = img * (1 - 0.6 * np.clip(shade * 1.6, 0, 1))
-        return img * (1 - al) + rgb * al + cv2.GaussianBlur(rgb * al, (0, 0), 5) * 0.25
+        sub = sub * (1 - 0.6 * np.clip(shade * 1.6, 0, 1))
+        img[y0:y1, x0:x1] = sub * (1 - al) + rgb * al + cv2.GaussianBlur(rgb * al, (0, 0), 5) * 0.25
+        return img
 
 
 def gold_idx(line, word):

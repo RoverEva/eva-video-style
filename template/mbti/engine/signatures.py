@@ -15,6 +15,9 @@ SIG_CAM = {
     'blueprint': (120, 640, 1.7), 'tree': (120, 560, 1.7), 'formation': (0, 700, 1.45), 'morph': (-160, 520, 1.7),
     'lanterns': (100, 540, 1.6), 'bloom': (120, 540, 1.7), 'lightlink': (0, 700, 1.45), 'fireworks': (-160, 500, 1.6),
     'checklist': (180, 600, 1.6), 'shield': (60, 700, 1.5), 'pillars': (0, 680, 1.45), 'circle': (-60, 720, 1.45),
+    'garden': (60, 700, 1.4), 'harvest': (0, 700, 1.4), 'summit': (200, 540, 1.3),
+    'planes': (100, 430, 1.4), 'balance': (0, 430, 1.5), 'ripples': (100, 690, 1.4),
+    'moonrise': (0, 420, 1.55), 'phoenix': (0, 520, 1.4), 'school': (0, 540, 1.35),
     'ignite': (0, 690, 1.35), 'sunburst': (0, 470, 1.55), 'arrows': (180, 470, 1.4),
     'gears': (160, 600, 1.6), 'brush': (120, 520, 1.7), 'target': (140, 640, 1.5), 'spotlight': (-120, 600, 1.5),
 }
@@ -286,6 +289,158 @@ def spotlight(gs, cv, tx, t, i, b, A, heads, face):
             cv.circle((x, y), 3, (P.GOLD, P.SOFT, P.WARM)[k % 3], A * 0.9, fill=True)
 
 
+# ------------------------------------------------------------------ earth signs
+def garden(gs, cv, tx, t, i, b, A, heads, face):
+    """Taurus: a flower grows and blooms on each beat"""
+    T, P = gs.T, gs.P; X = gs.XS[i]
+    for k, dx in enumerate((-160, 180, -300, 320, -60, 120, -420)):
+        tf = T(b + 1 + k)
+        if t < tf: continue
+        g = eo(ramp(t, tf, tf + 0.25)); x = X + dx; h = (150 + 40 * (k % 3)) * g; top = (x + 10 * math.sin(t + k), GY - h)
+        cv.path([(x, GY), (x + 14, GY - h * 0.5), top], P.LINE, A, 2)
+        cv.path([(x + 6, GY - h * 0.4), (x + 34, GY - h * 0.5), (x + 10, GY - h * 0.33)], P.LINE, A * 0.8, 1.6)
+        bl = pop(t, tf + 0.15, 0.2)
+        for j in range(5):
+            q = j * 2 * math.pi / 5 + t * 0.3; cv.circle((top[0] + 16 * bl * math.cos(q), top[1] + 16 * bl * math.sin(q)), 11 * bl, P.SOFT, A, 1.6)
+        cv.circle(top, 6 * bl, P.WARM, A, fill=True); cv.glow(top, 34, P.GOLD, A * (0.4 + pulse(t, tf + 0.15, 0.3)))
+
+
+def harvest(gs, cv, tx, t, i, b, A, heads, face):
+    """Virgo: a row of wheat rises on each beat"""
+    T, P = gs.T, gs.P; X = gs.XS[i]
+    for row in range(6):
+        tf = T(b + 1 + row)
+        if t < tf: continue
+        g = eo(ramp(t, tf, tf + 0.2)); y0 = GY + 140 - row * 24; sc = 1 - row * 0.09
+        for c in range(9):
+            x = X + (c - 4) * 70 * sc + (row % 2) * 30; h = 120 * sc * g; sway = 8 * math.sin(t * 2 + c + row)
+            top = (x + sway, y0 - h); cv.path([(x, y0), top], P.GOLD, A * 0.9, 1.4, smooth=False)
+            for j in range(4):
+                p = (lerp(x, top[0], 0.7 + j * 0.08), lerp(y0, top[1], 0.7 + j * 0.08))
+                cv.path([(p[0] - 5 * sc, p[1] + 5 * sc), p, (p[0] + 5 * sc, p[1] + 5 * sc)], P.WARM, A, 1.3, smooth=False)
+        cv.glow((X, y0 - 60), 200, P.GOLD, 0.12 * A * pulse(t, tf, 0.3))
+
+
+def summit(gs, cv, tx, t, i, b, A, heads, face):
+    """Capricorn: a mountain behind; the path to the peak lights one step per beat, then a flag"""
+    T, P = gs.T, gs.P; X = gs.XS[i] + 260; peak = (X, 240)
+    a0 = eo(ramp(t, T(b), T(b + 1)))
+    cv.path([(X - 380, GY), peak, (X + 380, GY)], P.LINE, A * a0, 2.2, a0, smooth=False)
+    cv.path([(X - 140, 560), (X - 40, 470), (X + 20, 520), (X + 150, 420)], P.LINE, A * a0 * 0.4, 1.2, smooth=False)
+    path = [(X - 300, GY - 10), (X - 120, 800), (X - 220, 690), (X - 40, 580), (X - 130, 470), (X + 20, 380), (X - 30, 300), peak]
+    for k in range(len(path) - 1):
+        tf = T(b + 1 + k)
+        if t < tf: continue
+        fr = eo(ramp(t, tf, tf + 0.15))
+        cv.path([path[k], path[k + 1]], P.GOLD, A, 2.6, fr, smooth=False); cv.path([path[k], path[k + 1]], P.GOLD, A * 0.3, 10, fr, smooth=False, layer=cv.F)
+        cv.circle(path[k + 1], 5, P.WARM, A * fr, fill=True); cv.glow(path[k + 1], 26, P.GOLD, A * pulse(t, tf + 0.15, 0.3) * 1.5)
+    tf = T(b + len(path))
+    if t >= tf - 0.2:
+        g = eo(ramp(t, tf - 0.2, tf)); cv.path([peak, (peak[0], peak[1] - 90 * g)], P.SOFT, A, 2, smooth=False)
+        if g >= 1:
+            fl = [(peak[0], peak[1] - 90), (peak[0] + 60, peak[1] - 78 + 6 * math.sin(t * 4)), (peak[0], peak[1] - 60)]
+            cv.path(fl + [fl[0]], P.GOLD, A, 2, smooth=False); cv.glow(peak, 80, P.GOLD, A * (0.4 + pulse(t, tf, 0.4)))
+
+
+# ------------------------------------------------------------------ air signs
+def planes(gs, cv, tx, t, i, b, A, heads, face):
+    """Gemini: a paper plane launches on each beat and loops across the sky"""
+    T, P = gs.T, gs.P; X = gs.XS[i]
+    for k in range(6):
+        tf = T(b + 1 + k)
+        if t < tf: continue
+        u = t - tf; side = 1 if k % 2 == 0 else -1
+        def pos(u_):
+            return (X + side * (60 + 260 * u_), 470 - 160 * u_ - 60 * math.sin(u_ * 3 + k) - k * 18)
+        p, p2 = np.array(pos(u)), np.array(pos(u + 0.05)); d = p2 - p; d /= (np.linalg.norm(d) + 1e-6); n = np.array([-d[1], d[0]])
+        nose = p + d * 24; wl = p - d * 18 + n * 14; wr = p - d * 18 - n * 14; mid = p - d * 10
+        cv.path([tuple(wl), tuple(nose), tuple(wr), tuple(mid), tuple(wl)], P.SOFT, A, 1.8, smooth=False)
+        trail = [pos(max(0, u - s)) for s in np.linspace(0, 0.6, 10)]
+        for j in range(0, 9, 2): cv.path([trail[j], trail[j + 1]], P.GOLD, A * (1 - j / 10) * 0.8, 1.4, smooth=False)
+
+
+def balance(gs, cv, tx, t, i, b, A, heads, face):
+    """Libra: great scales in the sky tip on each beat, smaller each time, then settle level and glow"""
+    T, P = gs.T, gs.P; c = (gs.XS[i], 250)
+    a0 = eo(ramp(t, T(b), T(b + 1)))
+    if a0 <= 0: return
+    n = math.floor(cl((t - T(b + 1)) / gs.e8, 0, 6)); amp = 0.22 * (1 - n / 6)
+    tilt = amp * (1 if n % 2 == 0 else -1) * eo(cl((t - T(b + 1 + n)) * 6)) if t >= T(b + 1) else 0
+    L, R = (c[0] - 260 * math.cos(tilt), c[1] - 260 * math.sin(tilt)), (c[0] + 260 * math.cos(tilt), c[1] + 260 * math.sin(tilt))
+    cv.path([(c[0], c[1] + 300), c], P.WARM, A * a0, 2.4, smooth=False); cv.path([L, R], P.WARM, A * a0, 3, smooth=False)
+    cv.circle(c, 10, P.GOLD, A * a0, fill=True)
+    for e in (L, R):
+        py = e[1] + 120
+        cv.path([e, (e[0] - 60, py)], P.SOFT, A * a0 * 0.8, 1.4, smooth=False); cv.path([e, (e[0] + 60, py)], P.SOFT, A * a0 * 0.8, 1.4, smooth=False)
+        cv.path([(e[0] - 70, py), (e[0] - 46, py + 24), (e[0] + 46, py + 24), (e[0] + 70, py)], P.GOLD, A * a0, 2.4, smooth=False)
+    if t >= T(b + 7): cv.glow(c, 200, P.GOLD, A * (0.3 + 1.2 * pulse(t, T(b + 7), 0.5)))
+
+
+def ripples(gs, cv, tx, t, i, b, A, heads, face):
+    """Aquarius: a drop falls on each beat and rings spread across the ground; bubbles rise"""
+    T, P = gs.T, gs.P; X = gs.XS[i]
+    for k in range(6):
+        tf = T(b + 1 + k); x = X + (k - 2.5) * 110
+        if t < tf - 0.2: continue
+        if t < tf:
+            y = lerp(380, GY, eo(ramp(t, tf - 0.2, tf))); cv.circle((x, y), 6, P.SOFT, A, fill=True); continue
+        for j in range(3):
+            kk = cl((t - tf) / 1.4 - j * 0.15)
+            if 0 < kk < 1:
+                cv.path([(x + (20 + 260 * kk) * math.cos(q), GY + 20 + (5 + 40 * kk) * math.sin(q)) for q in np.linspace(0, 2 * math.pi, 80)],
+                        P.SOFT if j else P.GOLD, A * (1 - kk), 1.8, smooth=False)
+        cv.glow((x, GY), 40, P.LINE, A * pulse(t, tf, 0.3))
+    for k in range(24):
+        y = GY - ((t - T(b)) * (60 + k * 5) + k * 37) % 600; x = X + ((k * 53) % 600) - 300
+        if t > T(b + 1): cv.circle((x, y), 3 + k % 3, P.SOFT, A * 0.6, 1.2)
+
+
+# ------------------------------------------------------------------ water signs
+def moonrise(gs, cv, tx, t, i, b, A, heads, face):
+    """Cancer: the moon above waxes one phase per beat to full"""
+    T, P = gs.T, gs.P; c = (gs.XS[i], 170); R = 70
+    a0 = eo(ramp(t, T(b), T(b + 1)))
+    if a0 <= 0: return
+    ph = cl((t - T(b + 1)) / (6 * gs.e8)); step = math.floor(ph * 6) / 6 + eo(cl((ph * 6 % 1) * 4)) / 6 if ph < 1 else 1.0
+    outer = [(c[0] + R * math.cos(q), c[1] + R * math.sin(q)) for q in np.linspace(-math.pi / 2, math.pi / 2, 30)]
+    w = R * math.cos(step * math.pi)
+    inner = [(c[0] + w * math.cos(q), c[1] + R * math.sin(q)) for q in np.linspace(math.pi / 2, -math.pi / 2, 30)]
+    lit = outer + inner
+    cv.circle(c, R, P.LINE, A * a0 * 0.35, 1.2); cv.path(lit + [lit[0]], P.WARM, A * a0, 2.4, smooth=False)
+    cv.poly(lit, P.GOLD * 0.35, A * a0, layer=cv.F); cv.glow(c, R * (1 + step), P.GOLD, A * a0 * (0.2 + 0.5 * step))
+    if ph >= 1: cv.glow(c, 220, P.GOLD, A * 0.8 * pulse(t, T(b + 7), 0.5))
+
+
+def phoenix(gs, cv, tx, t, i, b, A, heads, face):
+    """Scorpio: phoenix wings open behind him, one feather pair per beat"""
+    T, P = gs.T, gs.P; c = np.array([gs.XS[i], face[i][1] + 120.])
+    for k in range(7):
+        tf = T(b + 1 + k)
+        if t < tf: continue
+        g = eo(ramp(t, tf, tf + 0.2)); q = math.radians(200 + k * 16); L = (170 + k * 30) * g
+        for sx in (-1, 1):
+            d = np.array([sx * -math.cos(q), math.sin(q)]); n = np.array([-d[1], d[0]])
+            base = c + np.array([sx * 30, -20]); tip = base + d * L
+            pts = [tuple(base), tuple(base + d * L * 0.5 + n * 18 * sx), tuple(tip), tuple(base + d * L * 0.5 - n * 10 * sx), tuple(base)]
+            cv.path(pts, P.GOLD if k % 2 == 0 else P.WARM, A, 2, smooth=False); cv.poly(pts, P.GOLD * 0.12, A, layer=cv.F)
+        cv.glow(tuple(c), 120 + 30 * k, P.GOLD, A * 0.25 * pulse(t, tf, 0.3))
+
+
+def school(gs, cv, tx, t, i, b, A, heads, face):
+    """Pisces: fish swim in a ring around him, one more fish per beat"""
+    T, P = gs.T, gs.P; c = (gs.XS[i], 520)
+    for k in range(8):
+        tf = T(b + 1 + k * 0.75)
+        if t < tf: continue
+        q = (t - T(b)) * 0.9 + k * 2 * math.pi / 8; c2 = (c[0] + 300 * math.cos(q), c[1] + 150 * math.sin(q)); d = q + math.pi / 2
+        s = 0.8 * pop(t, tf, 0.15)
+        body = [(c2[0] + 50 * s * math.cos(u) * math.cos(d) - 20 * s * math.sin(u) * math.sin(d), c2[1] + 50 * s * math.cos(u) * math.sin(d) + 20 * s * math.sin(u) * math.cos(d)) for u in np.linspace(0, 2 * math.pi, 24)]
+        tb = (c2[0] - 50 * s * math.cos(d), c2[1] - 50 * s * math.sin(d))
+        tl = [(tb[0] - 28 * s * math.cos(d) - 18 * s * math.sin(d), tb[1] - 28 * s * math.sin(d) + 18 * s * math.cos(d)), (tb[0] - 28 * s * math.cos(d) + 18 * s * math.sin(d), tb[1] - 28 * s * math.sin(d) - 18 * s * math.cos(d))]
+        cv.path(body, P.SOFT, A, 1.8, smooth=False); cv.path([tl[0], tb, tl[1], tl[0]], P.SOFT, A, 1.6, smooth=False)
+        cv.glow(c2, 30, P.GOLD, A * (0.3 + pulse(t, tf, 0.3)))
+
+
 # ------------------------------------------------------------------ fire signs
 def ignite(gs, cv, tx, t, i, b, A, heads, face):
     """Aries: fire pillars burst out along the ground, alternating left/right, one per beat"""
@@ -342,5 +497,5 @@ def arrows(gs, cv, tx, t, i, b, A, heads, face):
             cv.path([stars[k], stars[k + 1]], P.LINE, A * 0.6, 1.4, smooth=False)
 
 
-SIGS = {f.__name__: f for f in (ignite, sunburst, arrows, blueprint, tree, formation, morph, lanterns, bloom, lightlink, fireworks,
+SIGS = {f.__name__: f for f in (garden, harvest, summit, planes, balance, ripples, moonrise, phoenix, school, ignite, sunburst, arrows, blueprint, tree, formation, morph, lanterns, bloom, lightlink, fireworks,
                                   checklist, shield, pillars, circle, gears, brush, target, spotlight)}
