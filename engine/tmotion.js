@@ -93,7 +93,8 @@
     r.parentNode.appendChild(w); w.appendChild(e); return e; };
   M.setup = (o) => { C.src0 = 0; C.end = 10; C.evaDir = '../../sample10/media/eva'; C.src = { w: 1280, h: 720 }; C.face = { x: .52, y: .3, h: .34 };
     C.evaKeys = o.noface ? [{ t: 0, d: 0, L: { x: 0, y: 0, w: 4, h: 4, r: 0, o: 0, s: 1 } }] : M.win(o.win, o.keys, o.end);
-    if (C.portrait && o.noface) C.portLayout({ box: (o.port || {}).box || [90, 60, 1740, 760], top: 260, maxH: 1000, keep: [1], eva: false });
+    if (C.portrait && o.noface) { const bx = (o.port || {}).box || [90, 60, 1740, 760], sc = Math.min(984 / bx[2], 1000 / bx[3]);   /* centre the logo block between the top safe line and the captions */
+      C.portLayout({ box: bx, top: 200 + Math.max(0, (1150 - bx[3] * sc) / 2), maxH: 1000, keep: [1], eva: false }); }
     else if (C.portrait) { const pp = o.port || {}; M._w16 = o.win;
       C.portLayout({ box: pp.box || [90, 60, 1100, 760], top: pp.top ?? 200, maxH: pp.maxH ?? 700, keep: [1], eva: L => L.w >= 1900 ? M.FULLP : (pp.win || M.pwin(L)) });
       M._wp = C.evaKeys[1].L; } C.ringFn = o.ring || (() => ({ color: '#fff', width: 0, shadow: .35 }));
