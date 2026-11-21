@@ -12,9 +12,9 @@
   C.ringFn = () => ({ color: 'rgba(255,255,255,.9)', width: 4, shadow: .45 });
   const NM = { T38: ['NEON', 'Neon Night 霓虹夜店'], T48: ['RETRO', 'Synthwave 合成波'], T33: ['INK', 'Ink Wash 水墨国风'], T76: ['FESTIVE', 'Lunar New Year 新春红金'], T36: ['PIXEL', 'Pixel Game 像素游戏'], T79: ['GLITCH', 'Glitch 故障风'],
     T47: ['FILM', 'Film Strip 胶片放映'], T61: ['QUIZ', 'Quiz Show 问答竞猜'], T46: ['TRAVEL', 'Boarding Pass 登机牌'], T87: ['LOGO', 'Logo Shatter 碎片重组'], T81: ['COSMIC', 'Galaxy 星空宇宙'], T52: ['POP', 'Memphis 孟菲斯'],
-    T86: ['', 'Logo Light Sweep 金属扫光'], T74: ['', 'Spotlight Stage 聚光舞台'], T49: ['', 'Y2K Chrome 千禧金属'], T85: ['', 'Logo Liquid 液体溅落'], T37: ['', 'Magazine 杂志封面'] };
-  const BEAT = [5.13, 5.94, 6.66, 7.48, 8.17, 8.89, 9.71, 10.40, 11.59, 12.28, 12.86], BK = ['T38', 'T48', 'T33', 'T76', 'T36', 'T79', 'T47', 'T61', 'T46', 'T87', 'T81'];
-  const DIVE = [[16.02, 'T86'], [17.90, 'T74'], [19.78, 'T49'], [21.29, 'T85']], DROP = [15.33, 15.67, 16.02, 16.37, 16.6, 17.21, 17.55, 17.9, 18.25, 18.72, 19.06, 19.41, 19.78, 20.11, 20.36, 20.6, 20.94, 21.29, 21.64, 21.99];
+    T86: ['', 'Logo Light Sweep 金属扫光'], T32: ['CHAT', 'Chat Bubbles 聊天对话'], T39: ['VS', 'Before / After 对比分屏'], T56: ['CLAY', 'Soft Clay 黏土软萌'], T40: ['ROUTE', 'Route Map 路线地图'], T66: ['PODCAST', 'Podcast 播客'], T73: ['NOTES', 'Highlighter 荧光笔'], T74: ['STAGE', 'Spotlight Stage 聚光舞台'], T49: ['', 'Y2K Chrome 千禧金属'], T85: ['', 'Logo Liquid 液体溅落'], T37: ['', 'Magazine 杂志封面'] };
+  const BEAT = [5.13, 5.94, 6.66, 7.48, 8.17, 8.89, 9.71, 10.40, 11.59], BK = ['T32', 'T39', 'T56', 'T74', 'T33', 'T47', 'T40', 'T66', 'T73'];   /* Eva's picks, in her order */
+  const DIVE = [[16.02, 'T74'], [17.90, 'T47'], [19.78, 'T33'], [21.29, 'T56']], DROP = [15.33, 15.67, 16.02, 16.37, 16.6, 17.21, 17.55, 17.9, 18.25, 18.72, 19.06, 19.41, 19.78, 20.11, 20.36, 20.6, 20.94, 21.29, 21.64, 21.99];
   const TH = []; for (let i = 30; i <= 100; i++) TH.push(MED + 'th/T' + i + '.jpg');
   /* backgrounds in order; each grows as a circle from the orb at its start time */
   const BG = [[0, 'neb'], [5.13, 'white'], [8.17, 'neb'], [11.59, 'white'], [13.44, 'p12']];
@@ -101,7 +101,7 @@
       M.rise(s.sub, t, 3.3, 5.1); s.col.style.opacity = M.env(t, .5, 5.1, .5).a; s.colIn.style.transform = `rotateY(-20deg) rotateX(6deg) translateY(${(-t * 160).toFixed(1)}px)`;
       /* beat cards */
       s.cards.forEach((c, i) => { const b = BEAT[i], nb = BEAT[i + 1] || 13.44, on = t >= b && t < nb + .2, u = M.os((t - b) / .28), out = M.i2((t - nb) / .18);
-        c.style.display = on ? '' : 'none'; c.lb.style.display = on ? '' : 'none'; if (!on) return; const fi = Math.min(44, Math.floor((t - b) * 30)); C.setSrc(c.im, `${MED}clip/${c.k}/f_${String(fi).padStart(5, '0')}.jpg`);
+        c.style.display = on ? '' : 'none'; c.lb.style.display = on ? '' : 'none'; if (!on) return; const fi = Math.min(44, Math.floor((t - b) * 30 * Math.min(1, 1.45 / (nb + .2 - b))));   /* stretch a short clip over a long beat */ C.setSrc(c.im, `${MED}clip/${c.k}/f_${String(fi).padStart(5, '0')}.jpg`);
         const ry = (i % 2 ? 1 : -1) * 10; c.style.opacity = (1 - out).toFixed(3); c.style.transform = `perspective(1600px) rotateY(${(ry * (1 - .4 * u)).toFixed(2)}deg) scale(${(.12 + .88 * u).toFixed(4)}) translateX(${(out * (i % 2 ? -260 : 260)).toFixed(1)}px)`;
         c.lb.style.opacity = (clamp((t - b - .15) / .15) * (1 - out)).toFixed(3); c.lb.style.transform = `translateY(${(14 * (1 - M.o3((t - b - .15) / .25))).toFixed(1)}px)`; });
       s.kw.forEach((arr, i) => { const b = BEAT[i], nb = BEAT[i + 1] || 13.44; arr.forEach((e, j) => { const v = M.os((t - b - .03 * j) / .25), on = t >= b && t < nb; e.parentNode.style.display = on ? '' : 'none';
@@ -124,15 +124,15 @@
         c.style.opacity = (clamp((t - d - .08) / .1) * (1 - o)).toFixed(3); c.style.transform = `scale(${(.5 + .5 * u - .3 * o).toFixed(4)})`; C.setSrc(c.im, `${MED}clip/${c.k}/f_${String(Math.min(44, Math.floor((t - d) * 30) + 2)).padStart(5, '0')}.jpg`); });
       /* final pick */
       const fv = M.os((t - 22.5) / .4); s.fin.style.display = t > 22.45 ? '' : 'none'; s.fin.style.opacity = clamp((t - 22.5) / .12) * (1 - clamp((t - 24.1) / .3)); s.fin.style.transform = `scale(${(.5 + .5 * fv).toFixed(4)})`;
-      if (t > 22.45) C.setSrc(s.fin.im, `${MED}clip/T37/f_${String(Math.min(44, Math.floor((t - 22.45) * 22))).padStart(5, '0')}.jpg`);
+      if (t > 22.45) C.setSrc(s.fin.im, `${MED}clip/T32/f_${String(Math.min(44, Math.floor((t - 22.45) * 22))).padStart(5, '0')}.jpg`);
       M.pop(s.chk, t, 22.85, 24.15, { from: .2 }); M.hero(s.ft, t, 22.55, 24.15, { dx: 0, dy: 20, noclip: true }); M.pop(s.try, t, 22.95, 24.15, { from: .6 }); M.rise(s.url, t, 23.15, 24.15);
       /* chrome */
       const chc = isBlue ? '#fff' : '#18181A'; s.chL.style.color = s.chR.style.color = chc; const cA = 1 - clamp((t - 24.0) / .3); s.chL.style.opacity = s.chR.style.opacity = cA;
-      let n = 1; BEAT.forEach((b, i) => { if (t >= b) n = [38, 48, 33, 76, 36, 79, 47, 61, 46, 87, 81][i]; }); s.cnt.textContent = `${String(n).padStart(2, '0')} / 100 ↗`; s.cnt.style.opacity = (t < 13.44 ? clamp((t - .6) / .3) : 0).toFixed(3);
+      let n = 1; BEAT.forEach((b, i) => { if (t >= b) n = +BK[i].slice(1); }); s.cnt.textContent = `${String(n).padStart(2, '0')} / 100 ↗`; s.cnt.style.opacity = (t < 13.44 ? clamp((t - .6) / .3) : 0).toFixed(3);
       s.cnt.style.background = isBlue ? '#fff' : '#0b1440'; s.cnt.style.color = isBlue ? '#0a1a4a' : '#fff';
       s.pill.style.opacity = (clamp((t - 14.0) / .3) * (1 - dIn) * (1 - clamp((t - 22.3) / .2))).toFixed(3);
       /* orb + streak (blue) */
-      const orbOn = t > .3 && t < 14.0, os = orbOn ? (t < .6 ? M.os((t - .3) / .3) : t > 13.44 ? 1 - M.i2((t - 13.44) / .5) : 1) : 0, land = beatK(t, BEAT, .1);
+      const orbOn = t > .3 && t < 14.0, os = orbOn ? (t < .6 ? M.os((t - .3) / .3) : t > 13.44 ? 1 - M.i2((t - 13.44) / .5) : 1) : 0, land = beatK(t, BEAT.concat([12.28, 12.86]), .1);
       s.orb.style.opacity = os > 0 ? 1 : 0; s.orb.style.transform = `translate(${(ox - 23).toFixed(1)}px, ${(oy - 23).toFixed(1)}px) scale(${(os * (1 + .35 * land)).toFixed(3)})`;
       s.ghost.forEach((g, k) => { const [gx, gy] = orbAt(t - (k + 1) * .025); g.style.opacity = (orbOn && isBlue ? (.5 - k * .055) : 0).toFixed(3); g.style.transform = `translate(${(gx - 23).toFixed(1)}px, ${(gy - 23).toFixed(1)}px) scale(${(1.4 - k * .06).toFixed(3)})`; });
     } });
