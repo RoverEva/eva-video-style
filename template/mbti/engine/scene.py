@@ -74,6 +74,11 @@ class MBTIScene:
 
     def T(self, n): return self.off + n * self.e8
 
+    # hooks for derived series (zodiac): extra sky drawing and a custom title badge
+    custom_badge = False
+    def extra_sky(self, cv, t): pass
+    def title_badge(self, img, t): return img
+
     # ------------------------------------------------------------ captions
     def _build_text(self):
         T, c, L = self.T, self.cfg['captions'], self.L
@@ -295,6 +300,7 @@ class MBTIScene:
             cv.circle((x, yy), r, G if gold else LN, a * 0.5, fill=True, layer=cv.F); cv.circle((x, yy), r * 0.45, SO, a * 0.55, fill=True)
         if t < T(2.5):
             self.star_flare(cv, (960, 90), 60 * (1 + 0.3 * math.sin(t * 9)), (1 - ramp(t, T(1), T(2))) * eo(ramp(t, 0, 0.3)))
+        self.extra_sky(cv, t)
         hk = ramp(t, T(7), T(10))
         for k, hp in enumerate(HILLS): cv.path(hp, P.DIM, 0.5 * hk * amb * (1 - 0.3 * k), 1.4, hk, smooth=False)
 
@@ -504,7 +510,7 @@ class MBTIScene:
             wm = ramp(t, T(31), T(32)) * (1 - ramp(t, T(79), T(80)))
             ec = cv.cam; cv.cam = Cam(1.0)
             if wm > 0: self.eye_logo(cv, (70, 52), 0.42, 0.8 * wm)
-            if T(23) <= t < T(31.5):
+            if T(23) <= t < T(31.5) and not self.custom_badge:
                 self.eye_logo(cv, (1500, 545), 0.6, eo(ramp(t, T(23), T(24))) * (1 - ramp(t, T(31), T(31.5))), eo(ramp(t, T(23), T(24.5))))
             cv.cam = ec
 
@@ -516,8 +522,9 @@ class MBTIScene:
             if t >= T(81): img = self._put_logo(img, 960, 560, 170, 1.0, eo(ramp(t, T(81), T(82))))
             wm = ramp(t, T(31), T(32)) * (1 - ramp(t, T(79), T(80)))
             if wm > 0: img = self._put_logo(img, 70, 52, 34, 0.8 * wm)
-            if T(23) <= t < T(31.5):
+            if T(23) <= t < T(31.5) and not self.custom_badge:
                 img = self._put_logo(img, 1500, 545, 52, eo(ramp(t, T(23), T(24))) * (1 - ramp(t, T(31), T(31.5))), eo(ramp(t, T(23), T(24))))
+        img = self.title_badge(img, t)
         img = tx.blend(img)
         img *= 1 - ramp(t, self.duration - 0.35, self.duration - 0.05)
         return np.clip(img * 255, 0, 255).astype(np.uint8)
