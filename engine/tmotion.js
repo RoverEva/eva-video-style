@@ -68,6 +68,15 @@
       el(d, 'div', '', { font: "700 48px 'Noto Sans CJK SC', sans-serif", color: '#ffffff', textShadow: '0 2px 12px rgba(0,0,0,.65), 0 0 2px rgba(0,0,0,.9)' }, c.cn);
       el(d, 'div', '', { font: "600 30px Inter, sans-serif", color: '#f2f2f5', marginTop: '6px', textShadow: '0 2px 10px rgba(0,0,0,.65)' }, c.en); return { d, c }; });
     return t => items.forEach(({ d, c }) => { const v = M.env(t, c.t0, c.t1, .25, .18); d.style.opacity = v.a.toFixed(3); d.style.transform = `translateY(${(14 * (1 - M.o3((t - c.t0) / .25))).toFixed(1)}px)`; }); };
+  /* shorthands for T42+ */
+  M.CN = "'Noto Sans CJK SC', sans-serif"; M.SERIF = "'Noto Serif CJK SC', serif"; M.AN = 'Anton, sans-serif'; M.MONO = "'Space Mono', monospace"; M.INTER = 'Inter, sans-serif'; M.PF = "'Playfair Display', serif";
+  M.f = (w, px, fam) => `${w} ${px}px ${fam}`;
+  M.caps = a => a.map(([cn, en], i) => ({ t0: [.5, 3.5, 6.7][i], t1: [3.4, 6.6, 9.7][i], cn, en }));
+  M.txt = (p, x, y, font, color, txt, sty) => M.box(p, x, y, Object.assign({ font, color, whiteSpace: 'nowrap' }, sty || {}), txt);
+  M.path = (p, x, y, w, h, d, col, sw, ex) => M.svg(p, x, y, w, h, `<path d="${d}" fill="none" stroke="${col}" stroke-width="${sw || 6}" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" ${ex || ''}/>`).querySelector('path');
+  M.img = (p, x, y, w, h, f, sty) => { const i = el(p, 'img', 'abs', Object.assign({ left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px', objectFit: 'cover', objectPosition: '52% 30%' }, sty || {})); i.src = `../../sample10/media/eva/f_${String(f).padStart(5, '0')}.jpg`; return i; };
+  /* placeholder brand mark (the studio's own EVA monogram) for logo-only templates: .lr frame (drawable), .lt wordmark */
+  M.logo = (p, x, y, sz, col, fill) => M.svg(p, x, y, sz, sz, `<rect class="lr" x="${sz * .04}" y="${sz * .04}" width="${sz * .92}" height="${sz * .92}" rx="${sz * .24}" fill="${fill || 'none'}" stroke="${col}" stroke-width="${sz * .045}" pathLength="1" stroke-dasharray="1 1"/><text class="lt" x="${sz / 2}" y="${sz * .62}" text-anchor="middle" font-family="Anton, sans-serif" font-size="${sz * .36}" fill="${col}" letter-spacing="${sz * .012}">EVA</text>`, { transformOrigin: '50% 50%' });
   /* common setup for a 10 s concept sample on the Eva raw clip */
   /* 9:16: the graphics scene keeps its 16:9 drawing; the content box (o.port.box) is scaled into the top zone (y≈200–900),
      the presenter window sits below it (circle stays a circle, rounded square keeps its shape), captions below that.
@@ -83,8 +92,9 @@
     const w = el(null, 'div', '', { position: 'absolute', left: 0, top: 0, width: '1920px', height: '1080px', transformOrigin: '0 0', transform: `translate(${(B.x + B.w / 2 - (A.x + A.w / 2) * k).toFixed(2)}px,${(B.y - A.y * k).toFixed(2)}px) scale(${k.toFixed(5)})` });
     r.parentNode.appendChild(w); w.appendChild(e); return e; };
   M.setup = (o) => { C.src0 = 0; C.end = 10; C.evaDir = '../../sample10/media/eva'; C.src = { w: 1280, h: 720 }; C.face = { x: .52, y: .3, h: .34 };
-    C.evaKeys = M.win(o.win, o.keys, o.end);
-    if (C.portrait) { const pp = o.port || {}; M._w16 = o.win;
+    C.evaKeys = o.noface ? [{ t: 0, d: 0, L: { x: 0, y: 0, w: 4, h: 4, r: 0, o: 0, s: 1 } }] : M.win(o.win, o.keys, o.end);
+    if (C.portrait && o.noface) C.portLayout({ box: (o.port || {}).box || [90, 60, 1740, 760], top: 260, maxH: 1000, keep: [1], eva: false });
+    else if (C.portrait) { const pp = o.port || {}; M._w16 = o.win;
       C.portLayout({ box: pp.box || [90, 60, 1100, 760], top: pp.top ?? 200, maxH: pp.maxH ?? 700, keep: [1], eva: L => L.w >= 1900 ? M.FULLP : (pp.win || M.pwin(L)) });
       M._wp = C.evaKeys[1].L; } C.ringFn = o.ring || (() => ({ color: '#fff', width: 0, shadow: .35 }));
     C.scene({ t0: 0, t1: 10.05, bg: o.bg, cls: o.cls || '', quiet: true, build: o.build, update: (lt, s, t) => o.update(s, t) });
