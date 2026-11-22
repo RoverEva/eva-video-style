@@ -27,6 +27,7 @@ import sfx
 import render_long as R
 
 PA = Palette('azure')
+STYLE_FLAME = [True]
 FIRST_END = V.END            # 226
 CH_PAL = {'直': PF, '软': PF, '疼': PV, '冲': PF, '爱': PF, '独': PA, '赢': PF, '累': PV, '真': PF}
 
@@ -36,12 +37,15 @@ class Card:
     pass
 
 
-def parse(path):
+DUR = {1: 16, 2: 18, 3: 22, 4: 26}
+
+
+def parse(path, skip_ch=('燃',), first_end=None):
     cards, ch = [], None; skip = True
     for line in open(path, encoding='utf-8'):
         line = line.rstrip('\n')
         if line.startswith('# '):
-            ch = line[2:].split()[0]; skip = (ch == '燃'); continue
+            ch = line[2:].split()[0]; skip = (ch in skip_ch); continue
         if skip or not line.strip() or line.startswith(('//', 'H ', 'TITLE', 'SUBJ', 'Q ', 'B ', 'TAG', 'STYLE', 'MUSIC')): continue
         kind, motif = 'n', None
         if line[0] == '?': kind, line = 'q', line[1:]
@@ -60,9 +64,9 @@ def parse(path):
             lines.append(out); golds.append(tuple(g))
         c = Card(); c.ch, c.kind, c.motif, c.lines, c.golds = ch, kind, motif, lines, golds
         cards.append(c)
-    m = FIRST_END; prev = None
+    m = FIRST_END if first_end is None else first_end; prev = None
     for i, c in enumerate(cards):
-        n = len(c.lines); d = {1: 16, 2: 18, 3: 22, 4: 26}.get(n, 26)
+        n = len(c.lines); d = DUR.get(n, DUR[4])
         if c.kind == 'r': d += 10
         if c.kind == 'q': d += 2
         if i == len(cards) - 1: d += 14
@@ -798,11 +802,12 @@ def m_hourglass(C, sh, tx):
 def m_stairs(C, sh, tx):
     cv = sh.cv; P = C.P
     step = stairs(cv, C, 8, 300, 980, 150, 80)
-    k = C.lt / (E8 * 4); i = min(7, int(k)); f = k - int(k)
-    p0, p1 = step(max(0, i - 1)), step(i)
-    x = lerp(p0[0], p1[0], eio(f)); y = lerp(p0[1], p1[1], eio(f)) - 40 * math.sin(math.pi * f)
-    A(cv, C, x, y, 360, mix(pose('hero', mouth='grit'), pose('burst', mouth='grit'), 0.4 + 0.3 * math.sin(math.pi * f)), heart=0.7)
-    with inst(cv): flame(cv, x + 10, y - 260, 50 + 10 * math.sin(C.t * 8), P.GOLD, 0.5)
+    k = min(7.0, C.lt / (E8 * 4))                    # one step per beat-group, legs alternate, body glides up the diagonal
+    w = 0.5 - 0.5 * math.cos(math.pi * k)
+    p = mix(pose('climb'), mirror(pose('climb')), w)
+    x = 300 + (k + 0.35) * 150; y = 980 - k * 80 - 6 * abs(math.sin(math.pi * k))
+    A(cv, C, x, y, 360, p, heart=0.7)
+    with inst(cv): flame(cv, x + 10, y - 300, 50 + 10 * math.sin(C.t * 8), P.GOLD, 0.5) if STYLE_FLAME[0] else glint(cv, (x + 10, y - 300), 20, P.WARM, 0.8)
     return 'L'
 
 
@@ -997,13 +1002,13 @@ def build_audio(music, out, duration):
     g = np.ones_like(mus)
     def env(t0, t1, depth, fade=0.25):
         return depth * np.clip((tt - t0) / fade, 0, 1) * np.clip((t1 - tt) / fade, 0, 1)
-    g -= env(T(130), T(138), 0.75, 0.1) + env(T(156), T(178), 0.35, 0.3)
+    for (a_, b_, dep, fd) in getattr(V, 'DUCKS', [(130, 138, 0.75, 0.1), (156, 178, 0.35, 0.3)]): g -= env(T(a_), T(b_), dep, fd)
     for C in CARDS:
         if C.kind == 'q': g -= env(T(C.m0), T(C.m1), 0.45)
     g = np.clip(g, 0.15, 1); fo = np.clip((duration - tt) / 3.0, 0, 1); mus = mus * g * fo
     # first-minute effects + card effects
     V_cues = []
-    import first_minute_v4 as V2
+    V2 = V
     cues = []
     thump = lambda d=0.4: (np.sin(2 * np.pi * 55 * np.arange(int(d * sfx.SR)) / sfx.SR) * np.exp(-np.arange(int(d * sfx.SR)) / sfx.SR * 9)).astype(np.float32)
     for C in CARDS:

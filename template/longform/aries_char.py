@@ -13,6 +13,9 @@ from vis import heart_pts
 
 BLACK = np.zeros(3)
 
+# protagonist look; other signs swap this dict (long_taurus sets horns='bull', hair='curly', back=None, flower=True)
+STYLE = dict(horns='ram', hair='flame', back='sword', flower=False)
+
 
 def _sp(pts, n=8, closed=False): return [tuple(q) for q in spline(pts, n=n, closed=closed)]
 
@@ -42,13 +45,14 @@ def _limb(pts, widths, n=8):
 # ------------------------------------------------------------------ poses (degrees from straight down, + = toward facing side)
 POSE = {
     'hero':     dict(lean=0, head=0, uaF=10, faF=22, uaB=-10, faB=8, thF=7, shF=-2, thB=-7, shB=-5, hF='fist', hB='fist', mouth='smile', brow='calm', wind=(-0.25, 0.1), sword='back'),
-    'run':      dict(lean=18, head=8, uaF=55, faF=150, uaB=-60, faB=15, thF=75, shF=8, thB=-38, shB=-85, hF='fist', hB='fist', mouth='grit', brow='fierce', wind=(-1.0, -0.25), sword='back', air=True),
-    'burst':    dict(lean=35, head=15, uaF=35, faF=120, uaB=-80, faB=-40, thF=95, shF=40, thB=-30, shB=-30, hF='fist', hB='open', mouth='shout', brow='fierce', wind=(-1.2, -0.1), sword='back', air=True),
+    'run':      dict(lean=18, head=8, uaF=-60, faF=15, uaB=55, faB=150, thF=75, shF=8, thB=-38, shB=-85, hF='fist', hB='fist', mouth='grit', brow='fierce', wind=(-1.0, -0.25), sword='back', air=True),
+    'burst':    dict(lean=35, head=15, uaF=-80, faF=-40, uaB=35, faB=120, thF=95, shF=40, thB=-30, shB=-30, hF='open', hB='fist', mouth='shout', brow='fierce', wind=(-1.2, -0.1), sword='back', air=True),
     'leap':     dict(lean=10, head=-5, uaF=150, faF=175, uaB=-120, faB=-150, thF=90, shF=-10, thB=-60, shB=-120, hF='open', hB='open', mouth='open', brow='fierce', wind=(-0.6, 0.9), sword='back', air=True),
     'skid':     dict(lean=-18, head=-8, uaF=75, faF=95, uaB=-55, faB=-85, thF=45, shF=35, thB=-8, shB=-55, hF='open', hB='fist', mouth='grit', brow='fierce', wind=(0.9, -0.4), sword='back'),
     'point':    dict(lean=6, head=4, uaF=86, faF=88, uaB=-22, faB=35, thF=28, shF=12, thB=-28, shB=-18, hF='point', hB='fist', mouth='shout', brow='angry', wind=(-0.9, -0.15), sword='back'),
     'lookback': dict(lean=-2, head=0, uaF=6, faF=14, uaB=-6, faB=6, thF=10, shF=4, thB=-8, shB=-14, hF='open', hB='open', mouth='sad', brow='sad', wind=(0.3, 0.1), sword='back', turn=True),
     'stand_arm': dict(lean=-3, head=-6, uaF=12, faF=30, uaB=-12, faB=-25, thF=14, shF=4, thB=-14, shB=-6, hF='fist', hB='fist', mouth='flat', brow='fierce', wind=(-0.4, 0.05), sword='back'),
+    'climb':    dict(lean=14, head=4, uaF=-28, faF=-6, uaB=30, faB=70, thF=62, shF=4, thB=-12, shB=-20, hF='fist', hB='fist', mouth='grit', brow='fierce', wind=(-0.7, 0.0), sword='back'),
     'sit_hug':  dict(lean=22, head=40, uaF=60, faF=12, uaB=52, faB=8, thF=140, shF=14, thB=134, shB=10, hF='open', hB='open', mouth='sad', brow='sad', wind=(-0.1, 0.4), sword='back', sit=True),
 }
 
@@ -100,7 +104,7 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
     for k in (2, 4):
         cv.path(_sp([T(J['sc'] + right * (0.02 * h * (k - 3))), T(ctrl + right * 0.03 * h * (k - 3)), T(hem[k])], 6), P.LINE, 0.45 * a, thin)
     # ---------------- sword on the back: ring pommel over the shoulder ----------------
-    if p.get('sword') == 'back':
+    if p.get('sword') == 'back' and STYLE.get('back') == 'sword':
         bdir = (up * 0.9 - right * 0.45); bdir /= np.linalg.norm(bdir)
         hilt = J['sc'] - right * 0.02 * h + up * 0.06 * h; tip = hilt - bdir * 0.62 * h
         bw = np.array([-bdir[1], bdir[0]]) * 0.016 * h
@@ -194,7 +198,16 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
             tv /= np.linalg.norm(tv) + 1e-9; nv = np.array([-tv[1], tv[0]]); ww = (w0 + (w1 - w0) * k / 39) * r * 0.85
             cv.path([T(ax_[i] + nv * ww), T(ax_[i] - nv * ww)], G, 0.55 * alpha, thin * 0.8, smooth=False)
         cv.path(P_, G, 0.3 * alpha, th * 5, layer=cv.F)
-    horn(0.18, -0.68, 0.5, 0.14, 0.14, 0.04, -55, -330, 0.75 * a, False)
+    def bull_horn(pts, w0, alpha, near):
+        P_ = [R(px * r, py * r) for px, py in pts]
+        out, ax_ = _limb(P_, [w0 * r, w0 * 0.6 * r, 0.025 * r], n=8)
+        _solid(cv, out, G, alpha, th * (1.0 if near else 0.8), 0.14, Wm)
+        for k in (0.2, 0.35):
+            i = int(k * (len(ax_) - 1)); tv = ax_[i + 1] - ax_[i - 1]; tv /= np.linalg.norm(tv) + 1e-9; nv = np.array([-tv[1], tv[0]])
+            ww = w0 * r * (1 - k * 0.8); cv.path([T(ax_[i] + nv * ww), T(ax_[i] - nv * ww)], G, 0.6 * alpha, thin * 0.9, smooth=False)
+        cv.path(P_, G, 0.3 * alpha, th * 5, layer=cv.F)
+    if STYLE['horns'] == 'ram': horn(0.18, -0.68, 0.5, 0.14, 0.14, 0.04, -55, -330, 0.75 * a, False)
+    else: bull_horn([(0.3, -0.85), (0.62, -1.05), (0.85, -1.35), (0.8, -1.72)], 0.15, 0.75 * a, False)
     neck = [T(J['neck'] - right * 0.022 * h), T(J['neck'] + right * 0.022 * h), R(0.3 * r, 0.95 * r), R(-0.35 * r, 0.9 * r)]
     _solid(cv, neck, col, a, th)
     face = []
@@ -204,24 +217,46 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         if ex > r * 0.55 and -0.3 * r < ey < 0.2 * r: ex += r * 0.14 * math.cos((ey + 0.05 * r) / (0.25 * r) * math.pi / 2) ** 2
         face.append(R(ex, ey))
     _solid(cv, face, col, a, th, 0.04)
-    # spiky flame hair swept back
-    # flame hair: curved locks swept up and back like a fire
-    sw = p.get('wind', (0, 0))[0] * 0.25
-    base = [(0.72, -0.42), (0.55, -0.78), (0.25, -0.98), (-0.12, -1.02), (-0.48, -0.9), (-0.78, -0.62), (-0.95, -0.2), (-0.9, 0.18)]
-    tips = [(0.62, -1.18), (0.3, -1.45), (-0.12, -1.55), (-0.62, -1.4), (-1.05, -1.08), (-1.3, -0.55), (-1.25, -0.05)]
-    hp = [base[0]]
-    for i, (tx_, ty_) in enumerate(tips):
-        b0, b1 = np.array(base[i]), np.array(base[i + 1]); tp = np.array([tx_ + sw - 0.1, ty_])
-        m0 = (b0 + tp) / 2 + np.array([0.12, 0.0]); m1 = (b1 + tp) / 2 + np.array([0.06, 0.1])
-        for u in np.linspace(0, 1, 6)[1:]: hp.append(tuple((1 - u) ** 2 * b0 + 2 * u * (1 - u) * m0 + u * u * tp))
-        for u in np.linspace(0, 1, 6)[1:]: hp.append(tuple((1 - u) ** 2 * tp + 2 * u * (1 - u) * m1 + u * u * b1))
-    hp += [(-0.55, 0.05), (-0.2, -0.5), (0.4, -0.45)]
-    hp = [R(px * r, py * r) for px, py in hp]
-    cv.poly(hp, BLACK, 1.0); cv.poly(hp, Wm * 0.2, a); cv.path(hp + [hp[0]], col, a, th, smooth=False)
-    for i in range(len(tips)):   # inner lock lines
-        b0 = np.array(base[i]) * 0.55 + np.array(base[i + 1]) * 0.45; tp = np.array(tips[i]) * 0.8 + b0 * 0.2 + np.array([sw - 0.08, 0])
-        cv.path([R(*(b0 * r * 0.85)), R(*(((b0 + tp) / 2 + [0.08, 0]) * r)), R(*(tp * r))], col, 0.45 * a, thin)
-    horn(-0.3, -0.22, 0.56, 0.14, 0.17, 0.045, -75, -400, a, True)
+    if STYLE['hair'] == 'flame':
+        # spiky flame hair swept back
+        # flame hair: curved locks swept up and back like a fire
+        sw = p.get('wind', (0, 0))[0] * 0.25
+        base = [(0.72, -0.42), (0.55, -0.78), (0.25, -0.98), (-0.12, -1.02), (-0.48, -0.9), (-0.78, -0.62), (-0.95, -0.2), (-0.9, 0.18)]
+        tips = [(0.62, -1.18), (0.3, -1.45), (-0.12, -1.55), (-0.62, -1.4), (-1.05, -1.08), (-1.3, -0.55), (-1.25, -0.05)]
+        hp = [base[0]]
+        for i, (tx_, ty_) in enumerate(tips):
+            b0, b1 = np.array(base[i]), np.array(base[i + 1]); tp = np.array([tx_ + sw - 0.1, ty_])
+            m0 = (b0 + tp) / 2 + np.array([0.12, 0.0]); m1 = (b1 + tp) / 2 + np.array([0.06, 0.1])
+            for u in np.linspace(0, 1, 6)[1:]: hp.append(tuple((1 - u) ** 2 * b0 + 2 * u * (1 - u) * m0 + u * u * tp))
+            for u in np.linspace(0, 1, 6)[1:]: hp.append(tuple((1 - u) ** 2 * tp + 2 * u * (1 - u) * m1 + u * u * b1))
+        hp += [(-0.55, 0.05), (-0.2, -0.5), (0.4, -0.45)]
+        hp = [R(px * r, py * r) for px, py in hp]
+        cv.poly(hp, BLACK, 1.0); cv.poly(hp, Wm * 0.2, a); cv.path(hp + [hp[0]], col, a, th, smooth=False)
+        for i in range(len(tips)):   # inner lock lines
+            b0 = np.array(base[i]) * 0.55 + np.array(base[i + 1]) * 0.45; tp = np.array(tips[i]) * 0.8 + b0 * 0.2 + np.array([sw - 0.08, 0])
+            cv.path([R(*(b0 * r * 0.85)), R(*(((b0 + tp) / 2 + [0.08, 0]) * r)), R(*(tp * r))], col, 0.45 * a, thin)
+    else:
+        # soft curly hair: a cap of round curls
+        cb = [(0.8, -0.38), (0.7, -0.82), (0.4, -1.12), (0.0, -1.24), (-0.42, -1.16), (-0.8, -0.92), (-1.04, -0.54), (-1.1, -0.1), (-0.95, 0.3)]
+        hp = [cb[0]]
+        for i in range(len(cb) - 1):
+            b0, b1 = np.array(cb[i]), np.array(cb[i + 1]); mvec = (b0 + b1) / 2; dv = b1 - b0; nv = np.array([dv[1], -dv[0]])
+            nv = nv / (np.linalg.norm(nv) + 1e-9); L = np.linalg.norm(dv) / 2
+            for q in np.linspace(math.pi, 0, 7)[1:]: hp.append(tuple(mvec + (-dv / 2 / max(L, 1e-6)) * L * math.cos(q) + nv * L * 0.95 * math.sin(q)))
+        hp += [(-0.6, 0.1), (-0.25, -0.5), (0.4, -0.42)]
+        hp = [R(px * r, py * r) for px, py in hp]
+        cv.poly(hp, BLACK, 1.0); cv.poly(hp, Wm * 0.18, a); cv.path(hp + [hp[0]], col, a, th, smooth=False)
+        for (qx, qy) in ((0.3, -0.75), (-0.1, -0.85), (-0.5, -0.7), (-0.72, -0.3), (0.05, -0.55)):
+            cv.path([R((qx + 0.12 * math.cos(q)) * r, (qy + 0.12 * math.sin(q)) * r) for q in np.linspace(0.3, 5.2, 10)], col, 0.45 * a, thin)
+    if STYLE['horns'] == 'ram': horn(-0.3, -0.22, 0.56, 0.14, 0.17, 0.045, -75, -400, a, True)
+    else: bull_horn([(-0.35, -0.78), (-0.78, -0.95), (-1.12, -1.25), (-1.08, -1.66)], 0.19, a, True)
+    if STYLE.get('flower'):           # a small flower tucked above the ear
+        fc = np.array(R(-0.55 * r, -0.62 * r))
+        for j in range(5):
+            q = j / 5 * 2 * math.pi; pc = fc + np.array([math.cos(q), math.sin(q)]) * r * 0.13
+            cv.poly([T(pc + np.array([math.cos(t_), math.sin(t_)]) * r * 0.1) for t_ in np.linspace(0, 2 * math.pi, 10)], BLACK, 1.0)
+            cv.path([T(pc + np.array([math.cos(t_), math.sin(t_)]) * r * 0.1) for t_ in np.linspace(0, 2 * math.pi, 11)], Wm, a, thin * 1.2, smooth=False)
+        cv.circle(T(fc), r * 0.06, G, a, fill=True); cv.glow(T(fc), r * 0.3, G, 0.4 * a)
     # ear, brow, eye, mouth
     cv.path([R(-0.12 * r, -0.12 * r), R(-0.32 * r, -0.2 * r), R(-0.34 * r, 0.12 * r), R(-0.15 * r, 0.2 * r)], col, 0.7 * a, thin)
     brow = {'calm': (0.0, 0.0), 'fierce': (0.1, -0.06), 'angry': (0.16, -0.1), 'sad': (-0.12, 0.08)}[p.get('brow', 'calm')]

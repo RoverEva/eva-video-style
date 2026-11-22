@@ -89,7 +89,7 @@ def run_cycle(u, base='run'):
     return mix(p, mirror(p), w)
 
 
-WALK = dict(POSE['hero'], uaF=18, faF=26, uaB=-16, faB=-6, thF=18, shF=4, thB=-16, shB=-22, hF='open', hB='open', wind=(-0.5, 0.1))
+WALK = dict(POSE['hero'], uaF=-16, faF=-6, uaB=18, faB=26, thF=18, shF=4, thB=-16, shB=-22, hF='open', hB='open', wind=(-0.5, 0.1))
 
 
 def walk_cycle(u, **kw):
