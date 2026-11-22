@@ -1,123 +1,143 @@
-TITLE 白羊座的内心世界
+TITLE 白羊座的内心世界 || The Inner World of Aries
 SUBJ zodiac aries
-Q 有一种人/心里住着一团火
-B 一碰/就燃
-TAG 外表有多【倔强】/内心就有多【柔软】
+ELEMENT fire
+PAL fire
 STYLE v2
 MUSIC_START 24
-H 1 1 200 76 13 - 有一种人
-H 5 1 300 76 13 6 心里住着一团火
-H 14 1 250 80 19 - 一碰
-H 16 0.5 380 120 19 all 就燃
-H 20 1 200 76 32 4,5 可火的最中间
-H 26 0.5 300 76 32 4,5,6,7 藏着一颗很软很软的心
-H 33 0.5 250 80 38.5 - 他从不让人看见
-// hook (typed, pre-drop): 有一种人 / 心里住着一团火 / 一碰 就燃 / 可火的最中间 / 藏着一颗很软很软的心 / 他从不让人看见
+// first minute is first_minute_v4.py (chapter 燃 is acted out there); its captions are translated by the TR lines
+TR 他的心里 || Deep inside him
+TR 住着一团【火】 || lives a 【fire】
+TR 一碰 || One touch
+TR 【就燃】 || 【and it burns】
+TR 可火的最中间 || But at the very center
+TR 藏着一颗【很软很软】的心 || hides a 【very, very soft】 heart
+TR 他从不让人看见 || He never lets anyone see
+TR 别人还在犹豫 || Others are still hesitating
+TR 他已经【冲出去了】 || he's 【already gone】
+TR 想做的事 || What he wants to do
+TR 【今天】就要【开始】 || 【starts today】
+TR 不服的事 || What he won't accept
+TR 【当场】就要【说清】 || he 【says it right there】
+TR 可你知道吗 || But do you know
+TR 跑得最快的人 || what the fastest runner
+TR 最怕的是什么？ || fears the most?
+TR 不是输 || It's not losing
+TR 是【在乎的人转身】 || it's 【someone he loves turning away】
+TR 所以他把自己 || So he wraps himself
+TR 包装成【刀枪不入】 || in 【armor nothing can pierce】
+TR 越怕受伤 || The more he fears getting hurt
+TR 越要【装作不怕】 || the more he 【acts unafraid】
+TR 明天 || Tomorrow
+TR 今天 || Today
+TR “你可以的” || "You've got this"
+TR 在吗 || You there?
+TR 其实我 || Actually I
+TR 没事 || Never mind
 
 # 燃 ignite
-{flame}别人还在犹豫/他已经【冲出去了】
-{road}想做的事/【今天就要开始】
-{bolt}不服的事/【当场就要说清】
-?可你知道吗/跑得最快的人/最怕的是什么？
-*不是输/是【在乎的人转身】
-{mask}所以他把自己/包装成【刀枪不入】
-{shield}越怕受伤/越要【装作不怕】
+{flame}别人还在犹豫/他已经【冲出去了】 || Others are still hesitating/he's 【already gone】
+{road}想做的事/【今天就要开始】 || What he wants to do/【starts today】
+{bolt}不服的事/【当场就要说清】 || What he won't accept/he 【says it right there】
+?可你知道吗/跑得最快的人/最怕的是什么？ || But do you know/what the fastest runner/fears the most?
+*不是输/是【在乎的人转身】 || It's not losing/it's 【someone he loves turning away】
+{mask}所以他把自己/包装成【刀枪不入】 || So he wraps himself/in 【armor nothing can pierce】
+{shield}越怕受伤/越要【装作不怕】 || The more he fears getting hurt/the more he 【acts unafraid】
 
 # 直 messages
-{bubble}他说话/从来【不绕弯】
-{heart}喜欢就说/【喜欢】
-{bolt}不爽就说/【不爽】
-?那他为什么/会把一句话/【删了又删】？
-{phone}因为对面/是【那个人】
-{think}普通朋友/怎么说都行
-{letter}重要的人/一个字都怕【说错】
-*越在乎/越【不敢】
-{bubble}最后发出去的/只有一句【在吗】
-{clock}然后盯着屏幕/等了【一整晚】
+{bubble}他说话/从来【不绕弯】 || When he talks/he 【never beats around the bush】
+{heart}喜欢就说/【喜欢】 || If he likes you/he says 【I like you】
+{bolt}不爽就说/【不爽】 || If he's annoyed/he says 【I'm annoyed】
+?那他为什么/会把一句话/【删了又删】？ || So why does he/type one message/and 【delete it again and again】?
+{phone}因为对面/是【那个人】 || Because on the other side/is 【that person】
+{think}普通朋友/怎么说都行 || With ordinary friends/anything goes
+{letter}重要的人/一个字都怕【说错】 || With the one who matters/he's afraid of 【one wrong word】
+*越在乎/越【不敢】 || The more he cares/the 【less he dares】
+{bubble}最后发出去的/只有一句【在吗】 || In the end all he sends/is 【You there?】
+{clock}然后盯着屏幕/等了【一整晚】 || Then he stares at the screen/and waits 【all night】
 
 # 软 heart
-{cup}你随手递来的/一杯【热水】
-{clock}他会记/【很久很久】
-{spark}你一句/“你可以的”
-{pen}他会【抄进心里】
-?可他为什么/只回一句【谢谢】？
-{blush}因为他不会说/【我很感动】
-{gift}他只会/把好【加倍还给你】
-*火是给世界看的/软/是留给【你】的
-{umbrella}你难过的时候/他第一个【冲过来】
-{flame}比你还生气/比你还【着急】
+{cup}你随手递来的/一杯【热水】 || The 【cup of hot water】/you handed him without thinking
+{clock}他会记/【很久很久】 || he'll remember it/【for a very long time】
+{spark}你一句/“你可以的” || One line from you/"You've got this"
+{pen}他会【抄进心里】 || he 【copies into his heart】
+?可他为什么/只回一句【谢谢】？ || So why does he/only say 【thanks】?
+{blush}因为他不会说/【我很感动】 || Because he can't say/【that really moved me】
+{gift}他只会/把好【加倍还给你】 || He just/【pays your kindness back double】
+*火是给世界看的/软/是留给【你】的 || The fire is for the world/the softness/is only for 【you】
+{umbrella}你难过的时候/他第一个【冲过来】 || When you're sad/he's the first to 【rush over】
+{flame}比你还生气/比你还【着急】 || angrier than you/【more worried than you】
 
 # 疼 ripples
-?白羊会【哭】吗？
-{wall}会/但你【看不见】
-{tears}关上门/【一个人哭完】
-{smile}打开门/又是那个【没心没肺】的他
-{broken}他不怕被讨厌/怕被【误会】
-{mirror}掏出来的真心/被说成【冲动】
-{sigh}他会笑着说/“【算了】”
-*那个算了/是他/【最疼的一句话】
-{moon}深夜里/他也会想/【我是不是太冲了】
-{sprout}可第二天/他还是愿意/【再相信一次】
+?白羊会【哭】吗？ || Does an Aries 【cry】?
+{wall}会/但你【看不见】 || Yes/but 【you'll never see it】
+{tears}关上门/【一个人哭完】 || He closes the door/and 【cries it out alone】
+{smile}打开门/又是那个【没心没肺】的他 || He opens the door/【carefree】 again
+{broken}他不怕被讨厌/怕被【误会】 || He's not afraid of being disliked/he's afraid of being 【misunderstood】
+{mirror}掏出来的真心/被说成【冲动】 || When his honest heart/gets called 【reckless】
+{sigh}他会笑着说/“【算了】” || he smiles and says/"【Forget it】"
+*那个算了/是他/【最疼的一句话】 || That "forget it"/is the line/that 【hurts him most】
+{moon}深夜里/他也会想/【我是不是太冲了】 || Late at night/he wonders/【was I too much】
+{sprout}可第二天/他还是愿意/【再相信一次】 || But the next day/he's still willing/to 【trust again】
 
 # 冲 bolts
-{bolt}他的脾气/来得比【闪电还快】
-{chain}吵架时/专挑【最狠的话】
-?话说出口的那一秒/他在想什么？
-{think}他在想/【完了 说重了】
-{wall}可就是/【低不下头】
-{gift}第二天/默默给你带了【早餐】
-*这就是他的/【对不起】
-{feather}长大以后的白羊/学会了【先停三秒】
-{heart}温柔/比赢/更有【力量】
+{bolt}他的脾气/来得比【闪电还快】 || His temper/strikes 【faster than lightning】
+{chain}吵架时/专挑【最狠的话】 || In a fight/he picks 【the harshest words】
+?话说出口的那一秒/他在想什么？ || The second those words come out/what is he thinking?
+{think}他在想/【完了 说重了】 || He's thinking/【oh no, too far】
+{wall}可就是/【低不下头】 || But he just/【can't bow his head】
+{gift}第二天/默默给你带了【早餐】 || The next day/he quietly brings you 【breakfast】
+*这就是他的/【对不起】 || That's his/【I'm sorry】
+{feather}长大以后的白羊/学会了【先停三秒】 || The grown-up Aries/learns to 【pause for three seconds】
+{heart}温柔/比赢/更有【力量】 || Gentleness/is stronger/than 【winning】
 
 # 爱 bloom
-?白羊爱一个人/是什么样子？
-{people2}不是说/是【做】
-{umbrella}下雨了/伞【已经在你头顶】
-{road}你说想去的地方/他【记下了】
-{compass}他也需要/【自己的风】
-{chain}别把他【关起来】
-{rings}给他自由/他会【自己回来】
-*他的爱/是一句/【有我在呢】
-{tears}可他也会/在你面前/【突然掉眼泪】
-{people2}那是他/【最信任你】的时候
+?白羊爱一个人/是什么样子？ || When an Aries loves/what does it look like?
+{people2}不是说/是【做】 || Not words/but 【actions】
+{umbrella}下雨了/伞【已经在你头顶】 || It starts raining/the umbrella is 【already over you】
+{road}你说想去的地方/他【记下了】 || The places you want to go/he 【wrote them all down】
+{compass}他也需要/【自己的风】 || He also needs/【his own wind】
+{chain}别把他【关起来】 || Don't 【lock him up】
+{rings}给他自由/他会【自己回来】 || Set him free/and he'll 【come back on his own】
+*他的爱/是一句/【有我在呢】 || His love is/one sentence/【I've got you】
+{tears}可他也会/在你面前/【突然掉眼泪】 || But sometimes/in front of you/he 【suddenly cries】
+{people2}那是他/【最信任你】的时候 || That's when/he 【trusts you most】
 
 # 独 circle
-{crowd}他好像和谁/都【玩得来】
-{alone}可散场的路上/他会【突然安静】
-?他是不是/其实【很孤单】？
-{key}真正走进他心里的/【没几个】
-{door}他宁愿一个人/也不想【假装合群】
-*能留在他身边的/都是【真心换来的】
-{phone}半夜一个电话/他【马上出门】
-{cup}朋友失恋/他陪着【喝到天亮】
+{crowd}他好像和谁/都【玩得来】 || He seems to/【get along with everyone】
+{alone}可散场的路上/他会【突然安静】 || But on the way home/he 【goes quiet】
+?他是不是/其实【很孤单】？ || Is he/actually 【lonely】?
+{key}真正走进他心里的/【没几个】 || The ones who truly get in/are 【very few】
+{door}他宁愿一个人/也不想【假装合群】 || He'd rather be alone/than 【pretend to fit in】
+*能留在他身边的/都是【真心换来的】 || Everyone who stays by his side/【earned it with a true heart】
+{phone}半夜一个电话/他【马上出门】 || One call at midnight/and he's 【out the door】
+{cup}朋友失恋/他陪着【喝到天亮】 || A friend gets dumped/he stays 【up till dawn】 with them
 
 # 赢 summit
-{target}别人问/“能不能做？”
-{mountain}他问/“【从哪开始】？”
-{flame}越难/越【来劲】
-?可烧得最旺的火/会不会【烧尽】？
-{hourglass}会/热情会退
-{stairs}真正厉害的白羊/是火小了/还在【往上走】
-*冲得快是天赋/【走得远】才是本事
-{coins}钱对他来说/是【自由】
-{gift}想要的东西/【等一天再买】
+{target}别人问/“能不能做？” || Others ask/"Can it be done?"
+{mountain}他问/“【从哪开始】？” || He asks/"【Where do I start】?"
+{flame}越难/越【来劲】 || The harder it gets/the 【more fired up】 he is
+?可烧得最旺的火/会不会【烧尽】？ || But can the brightest fire/【burn out】?
+{hourglass}会/热情会退 || Yes/passion fades
+{stairs}真正厉害的白羊/是火小了/还在【往上走】 || The truly strong Aries/even when the fire is low/【keeps climbing】
+*冲得快是天赋/【走得远】才是本事 || Speed is a gift/【going the distance】 is the skill
+{coins}钱对他来说/是【自由】 || To him money/means 【freedom】
+{gift}想要的东西/【等一天再买】 || Something he wants/he 【waits a day to buy】
 
 # 累 moonrise
-{sweat}“我能行”/“【没事】”
-{moon}他把这两句话/说了【一千遍】
-?可谁问过他/【累不累】？
-{tears}其实他也想/有人说一句/“【歇一歇吧】”
-{cup}好好吃顿饭/睡个【好觉】
-*停下来/不是【输】
-{feather}偶尔慢下来/火才能【烧得更久】
+{sweat}“我能行”/“【没事】” || "I can do it"/"【I'm fine】"
+{moon}他把这两句话/说了【一千遍】 || He's said those two lines/【a thousand times】
+?可谁问过他/【累不累】？ || But who ever asked him/【if he's tired】?
+{tears}其实他也想/有人说一句/“【歇一歇吧】” || Deep down he wishes/someone would say/"【Take a break】"
+{cup}好好吃顿饭/睡个【好觉】 || Eat a good meal/【get some sleep】
+*停下来/不是【输】 || Stopping/isn't 【losing】
+{feather}偶尔慢下来/火才能【烧得更久】 || Slow down sometimes/so the fire 【burns longer】
 
 # 真 sunburst
-?所以/白羊到底是什么样的人？
-{flame}是一团/【不服输的火】
-{heart}也是一颗/【怕疼的心】
-{shield}他把锋芒/朝向世界
-{smile}把柔软/留给【在乎的人】
-{mirror}如果你身边有白羊/别只看见他的【火】
-{sun}也看看/火中间的那颗【心】
-*这就是白羊座/外表有【锋芒】/内心有【柔软】
+?所以/白羊到底是什么样的人？ || So/who is Aries, really?
+{flame}是一团/【不服输的火】 || A fire/【that never gives up】
+{heart}也是一颗/【怕疼的心】 || And a heart/【afraid of getting hurt】
+{shield}他把锋芒/朝向世界 || He points his sharp edges/at the world
+{smile}把柔软/留给【在乎的人】 || and saves his softness/for 【the ones he loves】
+{mirror}如果你身边有白羊/别只看见他的【火】 || If there's an Aries in your life/don't just see the 【fire】
+{sun}也看看/火中间的那颗【心】 || Look for/the 【heart】 inside it
+*这就是白羊座/外表有【锋芒】/内心有【柔软】 || This is Aries/【sharp】 on the outside/【soft】 on the inside

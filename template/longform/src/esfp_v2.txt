@@ -1,0 +1,59 @@
+TITLE ESFP的内心世界 || The Inner World of an ESFP
+SUBJ mbti ESFP
+ELEMENT fire
+PAL amber
+HOOK 他的心里/有一个【舞台】/灯一亮/【他就发光】/你以为他【没心没肺】/其实他【最怕冷场】/从不让你看见 || Deep inside him/there's 【a stage】/When the lights come on/【he shines】/You think he's 【carefree】/he 【fears the silence most】/He never lets you see
+
+# 亮 amber
+{crowd}他一出现/【全场都笑了】 || When he shows up/【everyone laughs】
+{smile}他的笑/【很有感染力】 || His smile/is 【contagious】
+{gift}他喜欢/【给人惊喜】 || He loves/【surprising people】
+?你以为他/【只会玩】？ || You think he/【only plays】?
+{heart}其实他是/【想让大家开心】 || He just/【wants everyone happy】
+{people2}你难过/他会【逗你笑】 || When you're sad/he'll 【make you laugh】
+*他的快乐/是【送给别人的】 || His joy/is 【a gift for others】
+{star}他活在/【当下】 || He lives/【in the moment】
+
+# 暗 violet
+{alone}灯灭了/他会【突然安静】 || When the lights go out/he 【goes quiet】
+{moon}深夜/他也会【怀疑自己】 || Late at night/he also 【doubts himself】
+{mask}第二天/又是【那个开心果】 || The next day/he's 【the life of the party】 again
+?他的快乐/是【装的】吗？ || Is his happiness/【fake】?
+{wave}不是/他只是【不想让你担心】 || No/he just 【doesn't want you to worry】
+*他把眼泪/【藏在笑声后面】 || He hides his tears/【behind the laughter】
+
+# 当下 amber
+{coins}钱/他【说花就花】 || Money/he 【spends on a whim】
+{clock}计划/他【总是赶不上】 || Plans/he 【never quite keeps】
+{list}他也知道/要【学会规划】 || He knows/he needs to 【learn to plan】
+?他是不是/【不想长大】？ || Does he/【not want to grow up】?
+{sprout}不是/他只是【太爱现在】 || No/he just 【loves now too much】
+*活在当下/也是一种【勇气】 || Living in the moment/is also 【courage】
+
+# 心 amber
+{tears}看到别人难过/他会【跟着哭】 || When others cry/he 【cries too】
+{umbrella}朋友有事/他【马上到】 || A friend in need/he's 【there right away】
+{cup}他照顾人/【很细心】 || He takes care of people/【so carefully】
+?他为什么/这么容易【共情】？ || Why does he/【feel for others】 so easily?
+{heart}因为他的心/【一直开着】 || Because his heart/is 【always open】
+*他的热闹/是一颗【很软的心】 || His noise/is 【a very soft heart】
+
+# 爱 amber
+?ESFP爱一个人/是什么样子？ || When an ESFP loves/what does it look like?
+{gift}他会给你/【每天都是节日】 || He'll make/【every day a holiday】
+{crowd}他会/【大声地爱你】 || He'll/【love you out loud】
+{blush}他也会/【害羞】 || He can also/be 【shy】
+{rings}他要的/是【被一直需要】 || What he wants/is to 【always be needed】
+{key}你接住他的安静/他会【只为你一个人表演】 || Hold his quiet side/and he'll 【perform only for you】
+*他的爱/是一句/【今天也要开心哦】 || His love sounds like/one sentence/【be happy today, okay?】
+{tears}可他也会/在你面前/【卸下所有表演】 || But sometimes/in front of you/he 【drops the whole act】
+
+# 真 amber
+?所以/ESFP到底是什么样的人？ || So/who is an ESFP, really?
+{star}是一个/【永远亮灯的舞台】 || A stage/【where the lights never go out】
+{heart}也是一颗/【怕冷场的心】 || And a heart/【afraid of the silence】
+{crowd}他把快乐/【给所有人】 || He gives joy/【to everyone】
+{smile}把眼泪/留给【在乎的人】 || and his tears/to 【the ones he loves】
+{mirror}如果你身边有ESFP/【别只看他的笑】 || If there's an ESFP in your life/【don't just see the smile】
+{sun}他会用一辈子/【让你开心】 || He'll spend his life/【making you happy】
+*这就是ESFP/外表很【闹】/内心很【软】 || This is an ESFP/【loud】 on the outside/【soft】 on the inside

@@ -1,0 +1,61 @@
+TITLE ESTJ的内心世界 || The Inner World of an ESTJ
+SUBJ mbti ESTJ
+ELEMENT earth
+PAL azure
+HOOK 他的心里/有一张【作战图】/每个人/【都有位置】/你以为他【爱管人】/其实他【怕大家出错】/从不解释 || Deep inside him/there's 【a battle plan】/Everyone/【has a place】/You think he 【likes bossing people】/he's 【afraid of anyone failing】/He never explains
+
+# 管 azure
+{list}他做事/【有条有理】 || He works/【in perfect order】
+{crowd}一群人里/他【负责安排】 || In any group/he's 【the organizer】
+{target}说好的目标/【必须完成】 || The goal/【must be met】
+?你以为他/【控制欲强】？ || You think he's/【controlling】?
+{shield}其实他是/【替大家兜底】 || He's actually/【everyone's safety net】
+{umbrella}出了问题/他【第一个顶上】 || When things go wrong/he 【steps up first】
+*他的管/是一种【负责】 || His control/is 【responsibility】
+{mountain}他想带大家/【走到山顶】 || He wants to lead everyone/【to the top】
+
+# 直 azure
+{bubble}他说话/【不留情面】 || He speaks/【bluntly】
+{bolt}他着急了/【嗓门很大】 || When he's stressed/he 【gets loud】
+{broken}有时候/【会伤到人】 || Sometimes/he 【hurts people】
+?他是不是/【不在乎别人感受】？ || Does he/【not care about feelings】?
+{think}他事后/会【一个人后悔】 || Afterward/he 【regrets it alone】
+{gift}他会用行动/【默默弥补】 || He makes up for it/【quietly, with actions】
+*他的凶/是【着急】 || His harshness/is 【worry】
+
+# 累 violet
+{sweat}他总说/“【交给我】” || He always says/"【Leave it to me】"
+{moon}深夜/他还在【处理事情】 || Late at night/he's still 【handling things】
+{hourglass}他觉得/【自己不能停】 || He feels/he 【can't stop】
+?谁见过/【他的累】？ || Who has seen/【his exhaustion】?
+{tears}他也会/【一个人发呆】 || He also/【stares into space alone】
+{cup}他也想/有人帮他【分担一点】 || He also wants/someone to 【share the load】
+*能扛的人/也想【被扛一次】 || Those who carry everything/want 【to be carried once】
+
+# 家 azure
+{home}他最在乎的/是【家】 || What he cares about most/is 【family】
+{coins}他努力/是为了【家人过得好】 || He works hard/so 【his family lives well】
+{calendar}家里的大事小事/他【都记得】 || Every family matter/he 【remembers】
+?他为什么/这么拼？ || Why does he/push so hard?
+{heart}因为他觉得/【家是他的责任】 || Because he believes/【family is his duty】
+*他的拼/是【爱】 || His drive/is 【love】
+
+# 爱 azure
+?ESTJ爱一个人/是什么样子？ || When an ESTJ loves/what does it look like?
+{list}他会把你/【安排进他的人生】 || He'll put you/【into his life plan】
+{home}他会给你/【稳稳的生活】 || He gives you/【a stable life】
+{umbrella}你有事/他【马上出现】 || When you need help/he 【shows up immediately】
+{rings}他要的/是【忠诚和信任】 || What he wants/is 【loyalty and trust】
+{key}你理解他的凶/他会【全心护你】 || Understand his bark/and he'll 【protect you completely】
+*他的爱/是一句/【一切有我】 || His love sounds like/one sentence/【I'll handle everything】
+{blush}可他也会/在你面前/【不好意思地温柔】 || But sometimes/in front of you/he's 【shyly tender】
+
+# 真 azure
+?所以/ESTJ到底是什么样的人？ || So/who is an ESTJ, really?
+{mountain}是一张/【可靠的作战图】 || A battle plan/【you can rely on】
+{heart}也是一颗/【怕大家受苦的心】 || And a heart/【afraid of anyone suffering】
+{shield}他把严格/【给世界】 || He gives discipline/【to the world】
+{smile}把柔软/留给【在乎的人】 || and his softness/to 【the ones he loves】
+{mirror}如果你身边有ESTJ/【别怕他的凶】 || If there's an ESTJ in your life/【don't fear his bark】
+{sun}他会用一辈子/【撑着你】 || He'll spend his life/【holding you up】
+*这就是ESTJ/外表很【严】/内心很【暖】 || This is an ESTJ/【strict】 on the outside/【warm】 on the inside

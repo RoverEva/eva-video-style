@@ -1,0 +1,68 @@
+TITLE INTP的内心世界 || The Inner World of an INTP
+SUBJ mbti INTP
+ELEMENT air
+PAL violet
+HOOK 他的心里/有一个【宇宙】/每天都在/【问为什么】/你以为他【心不在焉】/其实他【在想你想不到的】/从不说出来 || Deep inside him/there's 【a universe】/Every day/he 【asks why】/You think he's 【absent-minded】/he's 【thinking what you can't imagine】/He never says it out loud
+
+# 问 violet
+{think}他脑子里/【问题停不下来】 || In his head/【the questions never stop】
+{book}他会为一个问题/【查到凌晨】 || One question/keeps him 【researching till dawn】
+{star}他好奇/【宇宙怎么开始的】 || He wonders/【how the universe began】
+?你以为他/【在发呆】？ || You think he's/【spacing out】?
+{compass}其实他在/【脑子里旅行】 || He's actually/【traveling in his head】
+{letter}他的笔记/【只有他看得懂】 || His notes/【only he understands】
+*好奇心/是他的【心跳】 || Curiosity/is his 【heartbeat】
+{runroad}他的思路/【跑得比嘴快】 || His thoughts/【run faster than his mouth】
+
+# 慢 azure
+{clock}他做事/【总是拖】 || He/【always procrastinates】
+{list}他的计划/【停在脑子里】 || His plans/【stay in his head】
+{sweat}截止日到了/他才【开始冲】 || When the deadline hits/he 【finally sprints】
+?他是不是/【很懒】？ || Is he/【lazy】?
+{think}不是/他在等【想通】 || No/he's waiting to 【figure it out】
+*他慢/是因为他要【做对】 || He's slow/because he wants to 【get it right】
+
+# 冷 violet
+{shield}他看起来/【很冷淡】 || He seems/【distant】
+{bubble}他说话/【只说重点】 || He talks/【only the essentials】
+{alone}他最舒服的/是【一个人待着】 || He's most comfortable/【alone】
+?他是不是/【不在乎人】？ || Does he/【not care about people】?
+{heart}他在乎/只是【不会表现】 || He cares/he just 【doesn't show it】
+{gift}他会把你的问题/【当成自己的研究】 || He treats your problem/like 【his own research project】
+*他的关心/藏在【解决方案】里 || His care/hides inside 【solutions】
+
+# 孤 violet
+{moon}深夜/他会想/【有没有人懂我】 || Late at night/he wonders/【does anyone get me】
+{phone}他想分享一个发现/却【找不到人】 || He wants to share a discovery/but 【has no one to tell】
+{door}他的世界/【门很小】 || His world/has 【a tiny door】
+?被懂/对他有多重要？ || How much does being understood/mean to him?
+{key}遇到一个能聊的人/他会【兴奋到半夜】 || Meet someone he can talk to/and he's 【excited till midnight】
+*他不是冷/是【没遇到同频的人】 || He's not cold/he 【hasn't met his wavelength yet】
+
+# 爱 violet
+?INTP爱一个人/是什么样子？ || When an INTP loves/what does it look like?
+{think}他会/【研究你】 || He'll/【study you】
+{book}他会把你喜欢的东西/【全部查一遍】 || Everything you like/he'll 【research it all】
+{blush}他表白/可能【很笨拙】 || His confession/might be 【clumsy】
+{rings}他要的/是【能聊一辈子的人】 || What he wants/is 【someone to talk to forever】
+{key}你懂他的怪/他会【把宇宙给你】 || Accept his weirdness/and he'll 【give you the universe】
+*他的爱/是一句/【我想了很久 答案是你】 || His love sounds like/one sentence/【I thought for ages, the answer is you】
+{tears}可他也会/在你面前/【意外地感性】 || But sometimes/in front of you/he's 【surprisingly emotional】
+
+# 长 violet
+{stairs}他在学着/【把想法变成行动】 || He's learning/to 【turn ideas into action】
+{target}一个想法/【终于做完了】 || One idea/【finally finished】
+{sun}他发现/世界【需要他的脑子】 || He realizes/the world 【needs his mind】
+?他会变成/【另一个人】吗？ || Will he become/【someone else】?
+{sprout}不会/他只是【落地了】 || No/he's just 【landed】
+*想得远的人/也可以【走得远】 || Those who think far/can also 【go far】
+
+# 真 violet
+?所以/INTP到底是什么样的人？ || So/who is an INTP, really?
+{star}是一个/【问不完的宇宙】 || A universe/【of endless questions】
+{heart}也是一颗/【想被懂的心】 || And a heart/【that wants to be understood】
+{shield}他把冷静/【给世界】 || He gives calm/【to the world】
+{smile}把兴奋/留给【能聊的人】 || and his excitement/to 【the ones he can talk to】
+{mirror}如果你身边有INTP/【听他讲完】 || If there's an INTP in your life/【hear him out】
+{sun}他会把最好的答案/【留给你】 || He'll save his best answer/【for you】
+*这就是INTP/外表很【淡】/内心很【燃】 || This is an INTP/【calm】 on the outside/【on fire】 on the inside

@@ -1,0 +1,80 @@
+TITLE 处女座的内心世界 || The Inner World of Virgo
+SUBJ zodiac virgo
+ELEMENT earth
+PAL earth
+CONST 1150,200 1220,240 1300,250 1380,230 1460,280 | 1300,250 1320,340 | 1380,230 1400,160
+HOOK 他的心里/有一张【清单】/每一项/【都要做好】/你以为他【挑剔】/其实他【最怕让人失望】/从来不说 || Deep inside him/there's 【a list】/Every item/【must be done right】/You think he's 【picky】/he's 【terrified of letting you down】/He never says so
+
+# 细 earth
+{list}他做事/【一丝不苟】 || He does everything/【down to the last detail】
+{book}你随口一说/他【记了笔记】 || You mention something/he 【takes notes】
+{calendar}你的生日/他【早就准备好了】 || Your birthday/he 【planned it weeks ago】
+?你以为他/【太较真】？ || You think he's/【too serious】?
+{think}其实他在想/怎么才能【不出错】 || He's just thinking/how to 【get it right】
+{heart}他的认真/是一种【很笨的温柔】 || His seriousness/is 【a clumsy kind of tenderness】
+*细节里/藏着他的【爱】 || In the details/hides his 【love】
+{cup}你的杯子/永远是【刚好的温度】 || Your cup/is always 【the perfect temperature】
+
+# 挑 earth
+{mirror}他对自己/比对谁都【严格】 || He's harder on himself/【than anyone】
+{letter}一份作业/他能改【十遍】 || One assignment/he rewrites 【ten times】
+{sweat}别人说“差不多”/他说“【还差一点】” || Others say "good enough"/he says "【almost there】"
+?他为什么/这么【完美主义】？ || Why is he/such a 【perfectionist】?
+{broken}因为他怕/【不够好就不被爱】 || Because he fears/【not good enough means unloved】
+{tears}一句批评/他能【反复想一整晚】 || One criticism/he 【replays all night】
+*他挑剔世界/是因为他先【挑剔了自己】 || He's picky with the world/because he's 【pickier with himself】
+
+# 照顾 amber
+{food}你没吃饭/他会【唠叨】 || You skipped a meal/he'll 【nag】
+{umbrella}你出门/他提醒你【带伞】 || You head out/he reminds you 【to take an umbrella】
+{list}你的事/他【比你还上心】 || Your plans/he 【worries about more than you】
+?他是不是/【管太多】了？ || Is he/【too controlling】?
+{people2}他不是管你/是【放不下你】 || He's not controlling you/he 【can't stop caring】
+{heart}唠叨/是他【说爱的方式】 || Nagging/is his 【way of saying I love you】
+*他的爱/都在【小事里】 || His love/lives 【in the small things】
+
+# 冷 violet
+{wall}他不太会/【表达感情】 || He's not great/at 【showing feelings】
+{blush}你夸他/他会【不好意思地躲开】 || Compliment him/and he 【shyly looks away】
+{alone}他看起来/【有点冷】 || He seems/【a little cold】
+?可他真的/【不在乎】吗？ || But does he really/【not care】?
+{letter}他会写好一段话/又【删掉】 || He writes a whole message/then 【deletes it】
+{phone}最后只发了/【“早点睡”】 || In the end he just sends/【"Get some sleep"】
+*他的冷/是【害羞】 || His coldness/is 【shyness】
+
+# 焦虑 violet
+{moon}深夜里/他会【一遍遍复盘】 || Late at night/he 【replays everything】
+{clock}明天的事/他【今晚就开始担心】 || Tomorrow's problems/he 【starts worrying about tonight】
+{hourglass}他总觉得/时间【不够用】 || He always feels/there's 【not enough time】
+?他为什么/总是【放不下】？ || Why can't he/ever 【let go】?
+{chain}因为他觉得/一松手/就会【出问题】 || Because he feels/if he lets go/【things will fall apart】
+{feather}其实/【不完美也没关系】 || But really/【imperfect is okay】
+*他最需要听的一句话/是【你已经很好了】 || What he most needs to hear/is 【you're already enough】
+
+# 爱 amber
+?处女爱一个人/是什么样子？ || When a Virgo loves/what does it look like?
+{calendar}他会记住/你所有的【小习惯】 || He remembers/all your 【little habits】
+{home}他会把你的生活/【打理得井井有条】 || He keeps your life/【neat and in order】
+{gift}他不说/但【什么都替你想好了】 || He doesn't say it/but he's 【thought of everything】
+{rings}他要的/是一份【踏实】 || What he wants/is 【something steady】
+{key}你信任他/他会【把心交出来】 || Trust him/and he'll 【hand you his heart】
+*他的爱/是一句/【我都安排好了】 || His love sounds like/one sentence/【I've taken care of it】
+{tears}可他也会/在你面前/【卸下所有完美】 || But sometimes/in front of you/he can 【let go of being perfect】
+
+# 稳 earth
+{stairs}他做事/【一步一个脚印】 || He moves forward/【one solid step at a time】
+{target}他定的目标/【一定完成】 || Goals he sets/he 【always finishes】
+{seed}他像一棵树/【慢慢长】 || He's like a tree/【growing slowly】
+?可他会不会/【太累】？ || But does he/get 【too tired】?
+{sweat}会/只是【不说】 || Yes/he just 【won't say】
+*靠谱的人/也需要【被靠一下】 || Reliable people/need 【someone to lean on】 too
+
+# 真 earth
+?所以/处女到底是什么样的人？ || So/who is Virgo, really?
+{list}是一张/【写满细节的清单】 || A list/【full of details】
+{heart}也是一颗/【怕让人失望的心】 || And a heart/【afraid to let anyone down】
+{shield}他把挑剔/【留给自己】 || He keeps the strictness/【for himself】
+{smile}把细心/留给【在乎的人】 || and the care/for 【the people he loves】
+{mirror}如果你身边有处女/【别笑他较真】 || If there's a Virgo in your life/【don't laugh at his seriousness】
+{sun}那是他/【爱你的样子】 || That's how/【he loves you】
+*这就是处女座/外表很【挑剔】/内心很【温柔】 || This is Virgo/【picky】 on the outside/【gentle】 on the inside

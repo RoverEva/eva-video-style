@@ -17,6 +17,9 @@ BLACK = np.zeros(3)
 STYLE = dict(horns='ram', hair='flame', back='sword', flower=False)
 
 
+def sp_(pts, closed=False): return [tuple(q) for q in spline(pts, n=6, closed=closed)]
+
+
 def _sp(pts, n=8, closed=False): return [tuple(q) for q in spline(pts, n=n, closed=closed)]
 
 
@@ -113,6 +116,24 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         g = hilt - bdir * 0.06 * h; cv.path([T(g + bw * 3.2), T(g - bw * 3.2)], G, a, th, smooth=False)
         cv.path([T(g), T(hilt + bdir * 0.02 * h)], G, a, th * 1.2, smooth=False)
         cv.circle(T(hilt + bdir * 0.045 * h), 0.022 * h, G, a, th * 0.9)
+    ex_b = STYLE.get('extras', ())
+    if STYLE.get('back') == 'bow':
+        bdir = (up * 0.9 - right * 0.45); bdir /= np.linalg.norm(bdir); nb = np.array([-bdir[1], bdir[0]])
+        c0 = J['sc'] - right * 0.05 * h; p0, p1 = c0 + bdir * 0.32 * h, c0 - bdir * 0.32 * h
+        arc = [T(p0 + (p1 - p0) * u + nb * 0.12 * h * math.sin(math.pi * u)) for u in np.linspace(0, 1, 20)]
+        cv.path(arc, G, a, th * 1.1, smooth=False); cv.path([T(p0), T(p1)], P.SOFT, 0.7 * a, thin, smooth=False)
+        for k_ in range(3): q0 = c0 + right * (0.02 * k_ - 0.03) * h; cv.path([T(q0 - up * 0.05 * h), T(q0 + up * 0.22 * h)], Wm, a, thin * 1.2, smooth=False)
+    if 'shell' in ex_b:
+        c0 = J['sc'] - right * 0.06 * h - up * 0.06 * h
+        sh_ = [T(c0 + right * 0.09 * h * math.cos(q) + up * 0.15 * h * math.sin(q)) for q in np.linspace(0, 2 * math.pi, 40)]
+        _solid(cv, sh_, G, a, th, 0.1, Wm)
+        for k_ in range(3): cv.path([T(c0 + up * (0.1 - 0.1 * k_) * h - right * 0.08 * h), T(c0 + up * (0.12 - 0.1 * k_) * h + right * 0.02 * h)], G, 0.6 * a, thin, smooth=False)
+    if 'tail' in ex_b:
+        seg = [J['hip'] - right * 0.06 * h]; ang = math.pi * 0.8
+        for k_ in range(9):
+            ang -= 0.32; seg.append(seg[-1] + (-right * math.cos(ang) * 0.6 + up * math.sin(ang)) * 0.06 * h)
+        for k_ in range(len(seg) - 1): cv.circle(T(seg[k_]), 0.02 * h * (1 - k_ / 14), G, a, th * 0.8)
+        tip = seg[-1]; cv.path([T(tip), T(tip + right * 0.05 * h - up * 0.02 * h), T(tip + up * 0.03 * h)], Wm, a, th, smooth=False)
     # ---------------- back arm + back leg ----------------
     def hand(c, kind, dirv, colr):
         dirv = dirv / (np.linalg.norm(dirv) + 1e-9); nv = np.array([-dirv[1], dirv[0]])
@@ -206,8 +227,16 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
             i = int(k * (len(ax_) - 1)); tv = ax_[i + 1] - ax_[i - 1]; tv /= np.linalg.norm(tv) + 1e-9; nv = np.array([-tv[1], tv[0]])
             ww = w0 * r * (1 - k * 0.8); cv.path([T(ax_[i] + nv * ww), T(ax_[i] - nv * ww)], G, 0.6 * alpha, thin * 0.9, smooth=False)
         cv.path(P_, G, 0.3 * alpha, th * 5, layer=cv.F)
-    if STYLE['horns'] == 'ram': horn(0.18, -0.68, 0.5, 0.14, 0.14, 0.04, -55, -330, 0.75 * a, False)
-    else: bull_horn([(0.3, -0.85), (0.62, -1.05), (0.85, -1.35), (0.8, -1.72)], 0.15, 0.75 * a, False)
+    hz = STYLE['horns']
+    if hz == 'ram': horn(0.18, -0.68, 0.5, 0.14, 0.14, 0.04, -55, -330, 0.75 * a, False)
+    elif hz == 'bull': bull_horn([(0.3, -0.85), (0.62, -1.05), (0.85, -1.35), (0.8, -1.72)], 0.15, 0.75 * a, False)
+    elif hz == 'goat': bull_horn([(0.25, -0.9), (0.05, -1.35), (-0.4, -1.65), (-0.9, -1.6)], 0.12, 0.75 * a, False)
+    if STYLE['hair'] in ('long', 'wave'):          # hair that falls behind the neck, drawn before the face
+        L_ = 1.9 if STYLE['hair'] == 'long' else 1.2
+        bh = [(0.5, -0.7), (-0.4, -1.1), (-1.08, -0.55), (-1.25, 0.6), (-1.15, L_), (-0.75, L_ + 0.15), (-0.45, L_ - 0.1), (-0.4, 0.4), (0.2, -0.2)]
+        bh = [R(px * r, py * r) for px, py in sp_(bh)]
+        cv.poly(bh, BLACK, 1.0); cv.poly(bh, Wm * 0.14, a); cv.path(bh + [bh[0]], col, a, th, smooth=False)
+        for k_ in range(3): cv.path([R((-0.7 - 0.15 * k_) * r, -0.3 * r), R((-0.9 - 0.12 * k_ + 0.1 * math.sin(k_)) * r, 0.7 * r), R((-0.8 - 0.12 * k_) * r, (L_ - 0.1) * r)], col, 0.4 * a, thin)
     neck = [T(J['neck'] - right * 0.022 * h), T(J['neck'] + right * 0.022 * h), R(0.3 * r, 0.95 * r), R(-0.35 * r, 0.9 * r)]
     _solid(cv, neck, col, a, th)
     face = []
@@ -217,12 +246,15 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         if ex > r * 0.55 and -0.3 * r < ey < 0.2 * r: ex += r * 0.14 * math.cos((ey + 0.05 * r) / (0.25 * r) * math.pi / 2) ** 2
         face.append(R(ex, ey))
     _solid(cv, face, col, a, th, 0.04)
-    if STYLE['hair'] == 'flame':
+    if STYLE['hair'] in ('flame', 'mane'):
         # spiky flame hair swept back
         # flame hair: curved locks swept up and back like a fire
         sw = p.get('wind', (0, 0))[0] * 0.25
         base = [(0.72, -0.42), (0.55, -0.78), (0.25, -0.98), (-0.12, -1.02), (-0.48, -0.9), (-0.78, -0.62), (-0.95, -0.2), (-0.9, 0.18)]
         tips = [(0.62, -1.18), (0.3, -1.45), (-0.12, -1.55), (-0.62, -1.4), (-1.05, -1.08), (-1.3, -0.55), (-1.25, -0.05)]
+        if STYLE['hair'] == 'mane':     # lion: a bigger, fuller mane that wraps the jaw
+            base = base + [(-0.6, 0.6), (-0.1, 0.95)]
+            tips = [(x_ * 1.25, y_ * 1.2) for x_, y_ in tips] + [(-1.2, 0.75), (-0.5, 1.25)]
         hp = [base[0]]
         for i, (tx_, ty_) in enumerate(tips):
             b0, b1 = np.array(base[i]), np.array(base[i + 1]); tp = np.array([tx_ + sw - 0.1, ty_])
@@ -235,6 +267,12 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         for i in range(len(tips)):   # inner lock lines
             b0 = np.array(base[i]) * 0.55 + np.array(base[i + 1]) * 0.45; tp = np.array(tips[i]) * 0.8 + b0 * 0.2 + np.array([sw - 0.08, 0])
             cv.path([R(*(b0 * r * 0.85)), R(*(((b0 + tp) / 2 + [0.08, 0]) * r)), R(*(tp * r))], col, 0.45 * a, thin)
+    elif STYLE['hair'] in ('short', 'long', 'wave'):
+        # neat cap with a side-swept fringe
+        hp = [(0.85, -0.3), (0.78, -0.82), (0.35, -1.18), (-0.25, -1.22), (-0.8, -0.95), (-1.02, -0.4), (-0.95, 0.2), (-0.62, 0.05), (-0.45, -0.45), (0.1, -0.62), (0.55, -0.5)]
+        hp = [R(px * r, py * r) for px, py in sp_(hp, True)]
+        cv.poly(hp, BLACK, 1.0); cv.poly(hp, Wm * 0.16, a); cv.path(hp + [hp[0]], col, a, th, smooth=False)
+        for k_ in range(3): cv.path([R((0.6 - 0.35 * k_) * r, (-1.05 + 0.05 * k_) * r), R((0.2 - 0.3 * k_) * r, -0.72 * r), R((0.0 - 0.3 * k_) * r, -0.55 * r)], col, 0.45 * a, thin)
     else:
         # soft curly hair: a cap of round curls
         cb = [(0.8, -0.38), (0.7, -0.82), (0.4, -1.12), (0.0, -1.24), (-0.42, -1.16), (-0.8, -0.92), (-1.04, -0.54), (-1.1, -0.1), (-0.95, 0.3)]
@@ -248,8 +286,14 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         cv.poly(hp, BLACK, 1.0); cv.poly(hp, Wm * 0.18, a); cv.path(hp + [hp[0]], col, a, th, smooth=False)
         for (qx, qy) in ((0.3, -0.75), (-0.1, -0.85), (-0.5, -0.7), (-0.72, -0.3), (0.05, -0.55)):
             cv.path([R((qx + 0.12 * math.cos(q)) * r, (qy + 0.12 * math.sin(q)) * r) for q in np.linspace(0.3, 5.2, 10)], col, 0.45 * a, thin)
-    if STYLE['horns'] == 'ram': horn(-0.3, -0.22, 0.56, 0.14, 0.17, 0.045, -75, -400, a, True)
-    else: bull_horn([(-0.35, -0.78), (-0.78, -0.95), (-1.12, -1.25), (-1.08, -1.66)], 0.19, a, True)
+    if hz == 'ram': horn(-0.3, -0.22, 0.56, 0.14, 0.17, 0.045, -75, -400, a, True)
+    elif hz == 'bull': bull_horn([(-0.35, -0.78), (-0.78, -0.95), (-1.12, -1.25), (-1.08, -1.66)], 0.19, a, True)
+    elif hz == 'goat': bull_horn([(-0.1, -0.95), (-0.45, -1.4), (-1.0, -1.7), (-1.55, -1.55), (-1.75, -1.2)], 0.17, a, True)
+    ex_list = STYLE.get('extras', ())
+    if 'crown' in ex_list:
+        cw = [(-0.55, -1.12), (-0.6, -1.55), (-0.32, -1.32), (-0.05, -1.68), (0.2, -1.32), (0.48, -1.55), (0.45, -1.1)]
+        cw = [R(px * r, py * r) for px, py in cw]; cv.poly(cw, BLACK, 1.0); cv.poly(cw, G * 0.3, a); cv.path(cw + [cw[0]], G, a, th, smooth=False)
+        for q_ in (cw[1], cw[3], cw[5]): cv.circle(q_, r * 0.06, Wm, a, fill=True); cv.glow(q_, r * 0.3, G, 0.4 * a)
     if STYLE.get('flower'):           # a small flower tucked above the ear
         fc = np.array(R(-0.55 * r, -0.62 * r))
         for j in range(5):
@@ -257,6 +301,10 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
             cv.poly([T(pc + np.array([math.cos(t_), math.sin(t_)]) * r * 0.1) for t_ in np.linspace(0, 2 * math.pi, 10)], BLACK, 1.0)
             cv.path([T(pc + np.array([math.cos(t_), math.sin(t_)]) * r * 0.1) for t_ in np.linspace(0, 2 * math.pi, 11)], Wm, a, thin * 1.2, smooth=False)
         cv.circle(T(fc), r * 0.06, G, a, fill=True); cv.glow(T(fc), r * 0.3, G, 0.4 * a)
+    if 'glasses' in ex_list:
+        gc = np.array(R(0.48 * r, -0.08 * r))
+        cv.path([T(gc + np.array(R(0.2 * r * math.cos(q), 0.17 * r * math.sin(q))) - np.array(R(0, 0))) for q in np.linspace(0, 2 * math.pi, 24)], col, a, thin * 1.2, smooth=False)
+        cv.path([R(0.28 * r, -0.12 * r), R(-0.25 * r, -0.2 * r)], col, a, thin, smooth=False)
     # ear, brow, eye, mouth
     cv.path([R(-0.12 * r, -0.12 * r), R(-0.32 * r, -0.2 * r), R(-0.34 * r, 0.12 * r), R(-0.15 * r, 0.2 * r)], col, 0.7 * a, thin)
     brow = {'calm': (0.0, 0.0), 'fierce': (0.1, -0.06), 'angry': (0.16, -0.1), 'sad': (-0.12, 0.08)}[p.get('brow', 'calm')]
@@ -296,5 +344,44 @@ def draw_aries(cv, x, gy, h, p, d=1, P=None, col=None, a=1.0, th=2.4, heart=1.0,
         hpp = [(c[0] + s_ * u, c[1] + s_ * v) for u, v in heart_pts(0, 0, 1.0, 40)]
         cv.poly(hpp, Wm, 0.95 * a); cv.glow(T(c), s_ * 2.6, G, 0.55 * a)
         flame(cv, c[0], c[1] - s_ * 0.6, s_ * 2.2, G, 0.35 * a, layer=cv.F)
+    for em in ('fish', 'jar', 'scales', 'wheat', 'twinstar'):
+        if em in STYLE.get('extras', ()): emblem(cv, em, J['head'] - right * 0.2 * h - up * 0.05 * h, 0.06 * h, P, a, th)
     J['chest'] = sc - up * 0.075 * h
     return J
+
+
+def emblem(cv, kind, c, s, P, a=1.0, th=2.0):
+    G, Wm = P.GOLD, P.WARM; c = np.array(c, float); T = tuple
+    if kind == 'fish':
+        for k, sg in ((0, 1), (1, -1)):
+            o = c + np.array([0, sg * s * 0.7])
+            body = [T(o + np.array([sg * s * math.cos(q), s * 0.45 * math.sin(q)])) for q in np.linspace(0, 2 * math.pi, 24)]
+            cv.path(body, G, a, th * 0.8, smooth=False)
+            tl = o - np.array([sg * s, 0]); cv.path([T(tl), T(tl - np.array([sg * s * 0.5, s * 0.4])), T(tl - np.array([sg * s * 0.5, -s * 0.4])), T(tl)], G, a, th * 0.8, smooth=False)
+            cv.circle(T(o + np.array([sg * s * 0.5, -s * 0.1])), s * 0.08, Wm, a, fill=True)
+        cv.glow(T(c), s * 2.2, G, 0.3 * a)
+    elif kind == 'jar':
+        jar = [(-0.4, -1.0), (-0.3, -0.7), (-0.75, -0.2), (-0.6, 0.6), (0.6, 0.6), (0.75, -0.2), (0.3, -0.7), (0.4, -1.0)]
+        cv.path([T(c + np.array(q) * s) for q in sp_(jar)], G, a, th * 0.9, smooth=False)
+        for k in range(3):
+            cv.path([T(c + np.array([0.4 + 0.25 * k, -1.0 + 0.1 * k]) * s), T(c + np.array([0.9 + 0.3 * k, -0.3]) * s), T(c + np.array([1.0 + 0.3 * k, 0.9]) * s)], Wm, 0.7 * a, th * 0.6)
+        cv.glow(T(c), s * 2.2, G, 0.3 * a)
+    elif kind == 'scales':
+        cv.path([T(c + np.array([0, -1.0]) * s), T(c + np.array([0, 0.9]) * s)], G, a, th * 0.9, smooth=False)
+        cv.path([T(c + np.array([-1.1, -0.7]) * s), T(c + np.array([1.1, -0.7]) * s)], G, a, th * 0.9, smooth=False)
+        for sg in (-1, 1):
+            p0 = c + np.array([sg * 1.1, -0.7]) * s
+            cv.path([T(p0), T(p0 + np.array([-0.4, 0.8]) * s)], G, 0.7 * a, th * 0.6, smooth=False); cv.path([T(p0), T(p0 + np.array([0.4, 0.8]) * s)], G, 0.7 * a, th * 0.6, smooth=False)
+            cv.path([T(p0 + np.array([-0.5 + 0.1 * math.cos(q) * 5 * 0 + q / math.pi, 0.8 + 0.25 * math.sin(q)]) * s) for q in np.linspace(0, math.pi, 10)], G, a, th * 0.8, smooth=False)
+        cv.path([T(c + np.array([-0.5, 0.9]) * s), T(c + np.array([0.5, 0.9]) * s)], G, a, th, smooth=False)
+        cv.glow(T(c), s * 2.2, G, 0.3 * a)
+    elif kind == 'wheat':
+        cv.path([T(c + np.array([0.3, 1.2]) * s), T(c + np.array([0, -0.2]) * s), T(c + np.array([-0.1, -1.2]) * s)], G, a, th * 0.8)
+        for k in range(5):
+            p = c + np.array([-0.02 * k, -0.1 - 0.22 * k]) * s
+            for sg in (-1, 1): cv.path([T(p + np.array([sg * 0.05, 0]) * s), T(p + np.array([sg * 0.35, -0.25]) * s), T(p + np.array([sg * 0.1, -0.3]) * s), T(p)], Wm, a, th * 0.7, smooth=False)
+        cv.glow(T(c), s * 2.2, G, 0.3 * a)
+    elif kind == 'twinstar':
+        for sg in (-1, 1):
+            o = c + np.array([sg * 0.6 * s, 0]); cv.circle(T(o), s * 0.25, Wm, a, fill=True); cv.glow(T(o), s * 0.9, G, 0.6 * a)
+        cv.path([T(c + np.array([-0.6 * s, 0])), T(c + np.array([0.6 * s, 0]))], G, 0.5 * a, th * 0.6, smooth=False)

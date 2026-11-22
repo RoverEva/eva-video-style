@@ -1,0 +1,71 @@
+TITLE 射手座的内心世界 || The Inner World of Sagittarius
+SUBJ zodiac sagittarius
+ELEMENT fire
+PAL amber
+CONST 1200,300 1260,240 1340,240 1400,300 1340,340 1260,340 1200,300 | 1260,240 1300,180 1340,240
+HOOK 他的心里/有一支【箭】/永远指向/【远方】/你以为他【没心没肺】/其实他【只是怕被困住】/从不回头说 || Deep inside him/there's 【an arrow】/Always pointing/【far away】/You think he's 【carefree】/he's just 【afraid of being trapped】/He never looks back to say it
+
+# 远 amber
+{runroad}他总想/【去更远的地方】 || He always wants/to 【go further】
+{road}说走就走/【不用计划】 || Leave on a whim/【no plan needed】
+{star}没去过的地方/对他是【最大的诱惑】 || Places he's never been/are his 【greatest temptation】
+?你以为他/只是【贪玩】？ || You think he just/【wants to play】?
+{compass}其实他在找/【世界的答案】 || He's really searching/for 【the world's answers】
+{book}他读书 旅行/【问很多为什么】 || He reads, travels/and 【asks a lot of whys】
+*他的脚步/是他的【思考】 || His footsteps/are how he 【thinks】
+{target}他的箭/永远射向【下一个地方】 || His arrow/always flies to 【the next place】
+
+# 笑 fire
+{crowd}有他在/【笑声不断】 || When he's around/【the laughter never stops】
+{bubble}他说话/【直接又好笑】 || He talks/【blunt and funny】
+{smile}再糟的事/他也能【笑出来】 || Even on the worst day/he 【finds a laugh】
+?他真的/【没有烦恼】吗？ || Does he really/have 【no worries】?
+{mask}有/只是他【不想说】 || He does/he just 【doesn't want to say】
+{moon}夜里/他也会【一个人发呆】 || At night/he also 【stares into space alone】
+*他的乐观/是他【选择的勇气】 || His optimism/is 【courage he chooses】
+
+# 直 amber
+{bolt}他说话/【太直了】 || He speaks/【too bluntly】
+{broken}有时候/会【伤到人】 || Sometimes/it 【hurts people】
+{think}说完他才想/【是不是说重了】 || Afterward he wonders/【was that too much】
+?他为什么/【不会拐弯】？ || Why can't he/【soften his words】?
+{heart}因为他觉得/真话/才是【尊重】 || Because to him/the truth/is 【respect】
+{gift}伤了你/他会用行动【补回来】 || If he hurts you/he 【makes up for it with actions】
+*他的直/是【不会骗你】 || His bluntness/means 【he'll never lie to you】
+
+# 自由 fire
+{chain}他最怕/【被绑住】 || What he fears most/is 【being tied down】
+{clock}一样的日子/让他【坐立不安】 || The same old days/make him 【restless】
+{compass}他需要/【自己的风】 || He needs/【his own wind】
+?那他是不是/【不会定下来】？ || Does that mean/he 【can't settle down】?
+{rings}不是/他只是要【有一扇窗】 || No/he just needs 【a window】
+{key}给他自由/他会【选择留下】 || Give him freedom/and he'll 【choose to stay】
+*他的心/是【自由的】/才会是【你的】 || His heart/must be 【free】/to be 【yours】
+
+# 爱 amber
+?射手爱一个人/是什么样子？ || When a Sagittarius loves/what does it look like?
+{road}他会带你/【去看世界】 || He takes you/【to see the world】
+{star}他会和你/聊到【凌晨三点】 || He'll talk with you/【until 3 a.m.】
+{people2}他爱你/是【陪你一起疯】 || He loves you/by 【being wild with you】
+{blush}他不太会/【说甜言蜜语】 || He's not good/at 【sweet talk】
+{heart}可他的真心/【一点都不少】 || But his heart/is 【all in】
+*他的爱/是一句/【我们一起出发】 || His love sounds like/one sentence/【let's go together】
+{tears}可他也会/在你面前/【安静下来】 || But sometimes/in front of you/he can 【finally be still】
+
+# 累 violet
+{sweat}他总是/【满血复活】 || He always seems/【fully recharged】
+{alone}其实他也会/【累到不想说话】 || But sometimes/he's 【too tired to talk】
+?可谁见过/【不笑的他】？ || But who has seen him/【not smiling】?
+{tears}他也想/有人说一句/“【不用一直开心】” || He wishes/someone would say/"【You don't have to be happy all the time】"
+{home}累了的射手/也想有个【地方回】 || A tired Sagittarius/also wants 【a place to return to】
+*再远的箭/也想【落在一个人心里】 || Even the farthest arrow/wants to 【land in someone's heart】
+
+# 真 amber
+?所以/射手到底是什么样的人？ || So/who is Sagittarius, really?
+{runroad}是一支/【停不下的箭】 || An arrow/【that never stops】
+{heart}也是一颗/【怕被困住的心】 || And a heart/【afraid of being trapped】
+{smile}他把快乐/【给所有人】 || He gives joy/【to everyone】
+{people2}把真心/留给【懂他的人】 || and his heart/to 【the ones who get him】
+{mirror}如果你身边有射手/【别拴住他】 || If there's a Sagittarius in your life/【don't tie him down】
+{sun}他会走遍世界/再【回到你身边】 || He'll travel the world/and 【come back to you】
+*这就是射手座/外表很【自由】/内心很【真】 || This is Sagittarius/【free】 on the outside/【true】 on the inside

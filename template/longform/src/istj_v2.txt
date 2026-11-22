@@ -1,0 +1,61 @@
+TITLE ISTJ的内心世界 || The Inner World of an ISTJ
+SUBJ mbti ISTJ
+ELEMENT earth
+PAL azure
+HOOK 他的心里/有一座【时钟】/每一秒/【都很准】/你以为他【死板】/其实他【在守护秩序】/从不邀功 || Deep inside him/there's 【a clock】/Every second/【precise】/You think he's 【rigid】/he's 【guarding the order】/He never takes credit
+
+# 准 azure
+{clock}他从来/【不迟到】 || He's/【never late】
+{list}他的清单/【一项一项打勾】 || His checklist/【ticked one by one】
+{calendar}说好的事/他【一定记得】 || What he promised/he 【always remembers】
+?你以为他/【太死板】？ || You think he's/【too rigid】?
+{shield}其实他觉得/【规矩是保护】 || He believes/【rules protect people】
+{home}他想要的/是【每个人都安心】 || What he wants/is for 【everyone to feel safe】
+*他的准时/是对你的【尊重】 || His punctuality/is 【respect for you】
+{target}他说到的/【一定做到】 || What he says/he 【does】
+
+# 稳 azure
+{mountain}出了事/他【最冷静】 || In a crisis/he's 【the calmest】
+{tug}再乱/他也【稳得住】 || However chaotic/he 【holds steady】
+{stairs}他做事/【一步一个脚印】 || He works/【one step at a time】
+?他心里/真的【不慌】吗？ || Is he really/【not panicking】 inside?
+{moon}慌/只是他【夜里一个人慌】 || He is/he just 【panics alone at night】
+{letter}然后/把对策【写得清清楚楚】 || Then/he 【writes out the plan clearly】
+*他的稳/是【不让你看见他的慌】 || His steadiness/is 【hiding his panic from you】
+
+# 冷 violet
+{bubble}他话不多/【说的都是实话】 || He doesn't say much/but 【it's all true】
+{shield}他不擅长/【表达感情】 || He's not good/at 【showing feelings】
+{gift}他关心你/是【帮你修好东西】 || He cares/by 【fixing things for you】
+?他是不是/【不懂浪漫】？ || Is he/【unromantic】?
+{calendar}他记得/你们的【每一个日子】 || He remembers/【every one of your dates】
+*他的浪漫/是【十年如一日】 || His romance/is 【the same devotion for ten years】
+
+# 累 violet
+{sweat}他总是/【把责任扛在身上】 || He always/【carries the responsibility】
+{alone}别人偷懒/他【默默补上】 || When others slack/he 【quietly covers】
+{hourglass}他很少/【为自己停下来】 || He rarely/【stops for himself】
+?谁看见过/【他的累】？ || Who has seen/【how tired he is】?
+{tears}他也会/【想被说一句谢谢】 || He also/【wants to hear thank you】
+{cup}一杯热茶/就能让他【暖很久】 || One warm cup of tea/【warms him for a long time】
+*靠谱的人/也需要【被感谢】 || Reliable people/need 【thanks】 too
+
+# 爱 azure
+?ISTJ爱一个人/是什么样子？ || When an ISTJ loves/what does it look like?
+{home}他会给你/【一个踏实的家】 || He gives you/【a solid home】
+{coins}他会/【认真存钱】 || He'll/【save carefully】
+{umbrella}下雨了/他【一定来接你】 || When it rains/he 【always picks you up】
+{rings}他要的/是【一辈子的承诺】 || What he wants/is 【a lifelong promise】
+{key}你信任他/他【永远不会让你失望】 || Trust him/and he'll 【never let you down】
+*他的爱/是一句/【我会一直在】 || His love sounds like/one sentence/【I'll always be here】
+{blush}可他也会/在你面前/【笨拙地害羞】 || But sometimes/in front of you/he's 【clumsily shy】
+
+# 真 azure
+?所以/ISTJ到底是什么样的人？ || So/who is an ISTJ, really?
+{clock}是一座/【从不出错的钟】 || A clock/【that never errs】
+{heart}也是一颗/【默默付出的心】 || And a heart/【that gives quietly】
+{shield}他把规矩/【给世界】 || He gives order/【to the world】
+{smile}把温柔/留给【在乎的人】 || and his tenderness/to 【the ones he loves】
+{mirror}如果你身边有ISTJ/【记得谢谢他】 || If there's an ISTJ in your life/【remember to thank him】
+{sun}他会用一辈子/【守着承诺】 || He'll spend his life/【keeping his promise】
+*这就是ISTJ/外表很【严谨】/内心很【深情】 || This is an ISTJ/【strict】 on the outside/【devoted】 on the inside

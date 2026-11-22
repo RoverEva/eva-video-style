@@ -1,0 +1,52 @@
+TITLE ISTP的内心世界 || The Inner World of an ISTP
+SUBJ mbti ISTP
+ELEMENT fire
+PAL amber
+HOOK 他的心里/有一个【工具箱】/什么坏了/【都能修】/你以为他【冷漠】/其实他【用双手关心你】/从不说出来 || Deep inside him/there's 【a toolbox】/Whatever breaks/【he can fix】/You think he's 【indifferent】/he 【cares with his hands】/He never says it
+
+# 手 amber
+{list}东西坏了/他【三下两下修好】 || Something breaks/he 【fixes it in no time】
+{book}他学东西/【靠动手】 || He learns/【by doing】
+{target}关键时刻/他【最冷静】 || In a crisis/he's 【the calmest】
+?你以为他/【话少就是冷】？ || You think quiet/【means cold】?
+{gift}其实他/【用行动说话】 || He actually/【speaks with actions】
+{umbrella}你遇到麻烦/他【不问就来了】 || When you're in trouble/he 【shows up without asking】
+*他的关心/在【手上】 || His care/is 【in his hands】
+{runroad}他喜欢/【自由地走】 || He loves/to 【roam free】
+
+# 静 violet
+{alone}他需要/【很多独处】 || He needs/【lots of alone time】
+{bubble}他说话/【只说必要的】 || He says/【only what's necessary】
+{wall}他的情绪/【藏得很深】 || His feelings/are 【buried deep】
+?他是不是/【没感情】？ || Does he/【have no feelings】?
+{heart}有/只是【不习惯表达】 || He does/he's just 【not used to showing them】
+{moon}夜里/他也会【想起谁】 || At night/he also 【thinks of someone】
+*他的安静/是【不想打扰】 || His silence/is 【not wanting to intrude】
+
+# 自由 amber
+{chain}他最怕/【被管着】 || What he fears most/is being 【controlled】
+{compass}他要/【按自己的节奏】 || He wants/【his own pace】
+{star}说走就走/【不用解释】 || He leaves on a whim/【no explanation】
+?他会不会/【太独】？ || Is he/【too independent】?
+{key}给他空间/他会【自己回来】 || Give him space/and he'll 【come back on his own】
+*他的自由/不是不爱/是【需要呼吸】 || His freedom/isn't not loving/it's 【needing to breathe】
+
+# 爱 amber
+?ISTP爱一个人/是什么样子？ || When an ISTP loves/what does it look like?
+{gift}他会/【默默帮你修好一切】 || He'll/【quietly fix everything for you】
+{runroad}他会带你/【去兜风】 || He'll take you/【for a ride】
+{blush}他说喜欢/【很难】 || Saying "I like you"/is 【hard for him】
+{rings}他要的/是【不黏人的陪伴】 || What he wants/is 【company without clinging】
+{key}你懂他的沉默/他会【一直在】 || Understand his silence/and he'll 【always be there】
+*他的爱/是一句/【坏了吗 我来修】 || His love sounds like/one sentence/【broken? I'll fix it】
+{tears}可他也会/在你面前/【意外地脆弱】 || But sometimes/in front of you/he's 【surprisingly fragile】
+
+# 真 amber
+?所以/ISTP到底是什么样的人？ || So/who is an ISTP, really?
+{shield}是一个/【什么都能修的工具箱】 || A toolbox/【that can fix anything】
+{heart}也是一颗/【不会说的心】 || And a heart/【that can't find the words】
+{alone}他把沉默/【给世界】 || He gives silence/【to the world】
+{smile}把行动/留给【在乎的人】 || and his actions/to 【the ones he loves】
+{mirror}如果你身边有ISTP/【看他做了什么】 || If there's an ISTP in your life/【watch what he does】
+{sun}他会用双手/【守护你】 || He'll use his hands/to 【protect you】
+*这就是ISTP/外表很【酷】/内心很【实在】 || This is an ISTP/【cool】 on the outside/【solid】 on the inside

@@ -1,0 +1,71 @@
+TITLE 双鱼座的内心世界 || The Inner World of Pisces
+SUBJ zodiac pisces
+ELEMENT water
+PAL water
+CONST 1150,320 1250,270 1350,230 1450,200 1480,160 | 1350,230 1300,170
+HOOK 他的心里/有一片【温柔的海】/谁靠近/【都会被抱住】/你以为他【太天真】/其实他【什么都懂】/只是选择温柔 || Deep inside him/there's 【a gentle sea】/Anyone who comes close/【gets held】/You think he's 【naive】/he 【understands everything】/He just chooses kindness
+
+# 柔 water
+{heart}他对谁/都【很温柔】 || He's 【gentle】/with everyone
+{tears}看电影/他会【先哭】 || At the movies/he 【cries first】
+{people2}你难过/他会【陪着你难过】 || When you're sad/he's 【sad with you】
+?你以为他/【太脆弱】？ || You think he's/【too fragile】?
+{wave}其实他能感受到/【别人感受不到的】 || He just feels/【what others can't】
+{blush}你没说出口的/他【已经懂了】 || What you didn't say/he 【already knows】
+*他的眼泪/是一种【超能力】 || His tears/are 【a superpower】
+{cup}他递给你的/永远是【刚好的温暖】 || What he hands you/is always 【just the right warmth】
+
+# 梦 violet
+{star}他总在/【做梦】 || He's always/【dreaming】
+{moon}夜里/他想象【另一个世界】 || At night/he imagines 【another world】
+{book}他写诗 画画/【把心事藏进去】 || He writes, he paints/【hides his heart in it】
+?他是不是/【不切实际】？ || Is he/【unrealistic】?
+{think}他只是觉得/现实【太硬了】 || He just feels/reality is 【too harsh】
+{feather}梦/是他【休息的地方】 || Dreams/are where he 【rests】
+*没有梦的世界/他会【透不过气】 || In a world without dreams/he 【can't breathe】
+
+# 给 amber
+{gift}他总是/【先给别人】 || He always/【gives first】
+{umbrella}你需要他/他【随叫随到】 || When you need him/he's 【there in a heartbeat】
+{food}他会为你/【做一桌饭】 || He'll cook you/【a whole meal】
+?他为什么/总是【付出】？ || Why does he/always 【give】?
+{heart}因为他觉得/【爱就是给】 || Because to him/【love is giving】
+{broken}可给得太多/他也会【被掏空】 || But give too much/and he 【runs empty】
+*温柔的人/也要学会【留一点给自己】 || Gentle people/must learn to 【save some for themselves】
+
+# 伤 violet
+{tears}他很容易/【受伤】 || He gets/【hurt easily】
+{wall}被伤了/他会【躲起来】 || When he's hurt/he 【hides】
+{wave}他会沉到/【情绪的海底】 || He sinks/to 【the bottom of his feelings】
+?他会不会/【一直沉下去】？ || Will he/【keep sinking】?
+{sun}不会/他总会【游回来】 || No/he always 【swims back】
+{sprout}而且/【更温柔了】 || And/he's 【even gentler】
+*他的温柔/是【受过伤还选择相信】 || His gentleness/is 【choosing to trust after being hurt】
+
+# 爱 amber
+?双鱼爱一个人/是什么样子？ || When a Pisces loves/what does it look like?
+{heart}他会/【全心全意】 || He loves/【with his whole heart】
+{letter}他会给你/写【很长很长的信】 || He writes you/【long, long letters】
+{calendar}他会记得/【每一个小浪漫】 || He remembers/【every little romance】
+{rings}他要的/是一个【把他放在心上】的人 || What he wants/is someone who 【keeps him in their heart】
+{key}你对他好一点/他【还你一片海】 || Be a little kind to him/he'll 【give you an ocean】
+*他的爱/是一句/【我会一直在】 || His love sounds like/one sentence/【I'll always be here】
+{tears}可他也会/在你面前/【哭得一塌糊涂】 || But sometimes/in front of you/he 【cries his heart out】
+
+# 软 water
+{mask}他也会装/【很坚强】 || He can pretend/to be 【strong】
+{sweat}他说/“【我没事】” || He says/"【I'm fine】"
+?可谁看见过/他【一个人的时候】？ || But who has seen him/【when he's alone】?
+{moon}他会抱着枕头/【发呆很久】 || He hugs a pillow/and 【stares for a long time】
+{people2}他也想/有人【抱抱他】 || He wishes/someone would 【hold him】
+*最会安慰人的人/最需要【被安慰】 || The best comforters/most need 【comfort】
+
+# 真 water
+?所以/双鱼到底是什么样的人？ || So/who is Pisces, really?
+{wave}是一片/【温柔的海】 || A sea/【that's always gentle】
+{heart}也是一颗/【很容易疼的心】 || And a heart/【that hurts easily】
+{shield}他把天真/【给世界】 || He shows innocence/【to the world】
+{smile}把深情/留给【在乎的人】 || and his deepest love/to 【the ones he cares about】
+{mirror}如果你身边有双鱼/【别笑他爱哭】 || If there's a Pisces in your life/【don't laugh at his tears】
+{sun}他会用一辈子/【温柔待你】 || He'll spend his life/【being gentle with you】
+*这就是双鱼座/外表很【软】/内心很【强】 || This is Pisces/【soft】 on the outside/【strong】 on the inside

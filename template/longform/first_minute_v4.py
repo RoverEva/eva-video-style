@@ -636,6 +636,19 @@ def _count():
         c = box['cv'].cnt; _COUNTS[key] = (c['bg'], max(c['fg'], 1))
 
 
+def base(t, tx):
+    if not _COUNTS: _count()
+    n = t / E8
+    for m0, m1, fn, key in SCENES:
+        if n < m1 or fn is s_end: break
+    sh, P, glow, flash = fn(t, n, tx)
+    img = sh.cv.composite(P.BG * 0.6, flash, glow=glow) * P.VIG
+    img = img + cv2.GaussianBlur(sh.fg, (0, 0), 9) * 0.9
+    if sh.roll:
+        M = cv2.getRotationMatrix2D((W / 2, H / 2), sh.roll, 1.06); img = cv2.warpAffine(img, M, (W, H), borderMode=cv2.BORDER_REFLECT)
+    return np.clip(img, 0, 1.6).astype(np.float32), ramp(t, 0, 0.15)
+
+
 def frame(t):
     if not _COUNTS: _count()
     n = t / E8; tx = Text(PF)

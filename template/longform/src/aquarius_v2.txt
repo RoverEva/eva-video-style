@@ -1,0 +1,71 @@
+TITLE 水瓶座的内心世界 || The Inner World of Aquarius
+SUBJ zodiac aquarius
+ELEMENT air
+PAL azure
+CONST 1150,200 1220,240 1280,220 1340,280 1400,260 1460,320
+HOOK 他的心里/有一片【星空】/他总在想/【明天的世界】/你以为他【很怪】/其实他【只是想得远】/从不解释 || Deep inside him/there's 【a starry sky】/He's always thinking/about 【tomorrow's world】/You think he's 【weird】/he just 【thinks far ahead】/He never explains
+
+# 怪 azure
+{think}他的想法/总是【不一样】 || His ideas/are always 【different】
+{bubble}他说的话/别人【听不懂】 || What he says/people 【don't get】
+{star}他喜欢的东西/【很少人懂】 || What he loves/【few understand】
+?你以为他/【故意特立独行】？ || You think he's/【weird on purpose】?
+{compass}其实他只是/【跟着自己的方向】 || He's just/【following his own compass】
+{book}他想知道/世界【还能怎样】 || He wants to know/【what else the world could be】
+*与众不同/是他【最自然的样子】 || Being different/is 【just how he is】
+{runroad}他走在/【别人前面一点】 || He walks/【a little ahead of everyone】
+
+# 冷 violet
+{shield}他看起来/【有点冷】 || He seems/【a little cold】
+{wall}他不爱/【黏人】 || He doesn't/【cling】
+{alone}他享受/【一个人的时间】 || He enjoys/【time alone】
+?他是不是/【没有感情】？ || Does he/【have no feelings】?
+{heart}他有/只是【表达得很理性】 || He does/he just 【expresses them logically】
+{gift}他关心你/是帮你【解决问题】 || He shows care/by 【solving your problems】
+*他的冷静/是一种【不吵的温柔】 || His calm/is 【a quiet kind of tenderness】
+
+# 友 air
+{crowd}他朋友很多/【什么样的都有】 || He has many friends/【all kinds of people】
+{people2}他对每个人/【都平等】 || He treats everyone/【as equals】
+{umbrella}朋友有难/他【一定在】 || A friend in need/he's 【always there】
+?为什么他/对朋友这么好？ || Why is he/so good to friends?
+{star}因为他相信/【人和人可以更好】 || Because he believes/【people can be better】
+{sun}他想要的/是一个【更好的世界】 || What he wants/is 【a better world】
+*他爱人类/也在学着【爱一个人】 || He loves humanity/and he's learning 【to love one person】
+
+# 自由 azure
+{chain}他最怕/【被定义】 || What he fears most/is being 【defined】
+{key}他需要/【自己的空间】 || He needs/【his own space】
+{compass}他要/【按自己的方式活】 || He wants/to 【live his own way】
+?那他会不会/【不懂得承诺】？ || Does that mean/he 【can't commit】?
+{rings}不会/他只是要【先被理解】 || No/he just needs to 【be understood first】
+{door}你尊重他的怪/他会【一直在】 || Respect his strangeness/and he'll 【always stay】
+*懂他/比爱他【更重要】 || Understanding him/【matters more】 than loving him
+
+# 爱 amber
+?水瓶爱一个人/是什么样子？ || When an Aquarius loves/what does it look like?
+{think}他会和你/聊【宇宙和未来】 || He'll talk with you/about 【the universe and the future】
+{people2}他爱你/也像【最好的朋友】 || He loves you/like 【a best friend】
+{star}他会带你/看【不一样的风景】 || He'll show you/【a different view】
+{blush}他不太会/【说肉麻的话】 || He's not good/at 【mushy words】
+{heart}可他会/【用脑子记住你】 || But he'll/【remember you with his whole mind】
+*他的爱/是一句/【你可以做你自己】 || His love sounds like/one sentence/【you can be yourself】
+{tears}可他也会/在你面前/【突然很感性】 || But sometimes/in front of you/he 【suddenly feels everything】
+
+# 孤 violet
+{moon}深夜里/他也会觉得【孤单】 || Late at night/he also feels 【lonely】
+{phone}他想找人说/却【不知道找谁】 || He wants to talk/but 【doesn't know who to call】
+?想得远的人/是不是【很难被懂】？ || Is someone who thinks so far ahead/【hard to understand】?
+{tears}是/所以他【很少解释】 || Yes/so he 【rarely explains】
+{key}遇到懂他的人/他会【如获至宝】 || When he meets someone who gets him/it's like 【finding treasure】
+*他不是不合群/是在等【同频的人】 || He's not antisocial/he's waiting for 【someone on his wavelength】
+
+# 真 azure
+?所以/水瓶到底是什么样的人？ || So/who is Aquarius, really?
+{star}是一片/【想得很远的星空】 || A starry sky/【thinking far ahead】
+{heart}也是一颗/【想被懂的心】 || And a heart/【that wants to be understood】
+{shield}他把理性/【给世界】 || He gives reason/【to the world】
+{smile}把真心/留给【懂他的人】 || and his true heart/to 【the ones who get him】
+{mirror}如果你身边有水瓶/【别急着改变他】 || If there's an Aquarius in your life/【don't try to change him】
+{sun}他会用他的方式/【把你放进未来】 || He'll find his own way/to 【put you in his future】
+*这就是水瓶座/外表很【酷】/内心很【热】 || This is Aquarius/【cool】 on the outside/【warm】 on the inside

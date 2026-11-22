@@ -27,6 +27,9 @@ import sfx
 import render_long as R
 
 PA = Palette('azure')
+PALS = {k: Palette(k) for k in ('fire', 'earth', 'air', 'water', 'violet', 'azure', 'amber', 'emerald')}
+PALS['fire'], PALS['violet'], PALS['azure'] = PF, PV, PA
+DEFAULT_PAL = [PF]
 STYLE_FLAME = [True]
 FIRST_END = V.END            # 226
 CH_PAL = {'直': PF, '软': PF, '疼': PV, '冲': PF, '爱': PF, '独': PA, '赢': PF, '累': PV, '真': PF}
@@ -38,40 +41,77 @@ class Card:
 
 
 DUR = {1: 16, 2: 18, 3: 22, 4: 26}
+TARGET = [None]
+
+
+TR = {}            # Chinese string -> (English string, English gold indices)
+MISSING = set()    # Chinese strings that had no English (filled during an EN render)
+
+
+def _marks(seg):
+    g, out, inside, segs, cur = [], '', False, [], ''
+    for chh in seg:
+        if chh == '【': inside = True; cur = ''; continue
+        if chh == '】': inside = False; segs.append(cur); continue
+        if inside: g.append(len(out)); cur += chh
+        out += chh
+    return out, tuple(g), segs
+
+
+def tr_add(cn, en):
+    """register a translation (both sides may carry 【gold】 marks); gold words map too, for in-scene word bubbles"""
+    lc, le = cn.split('/'), en.split('/')
+    for a, b in zip(lc, le):
+        a_, ga, sa = _marks(a.strip()); b_, gb, sb = _marks(b.strip())
+        TR[a_] = (b_, gb)
+        if sa and sb: TR[''.join(sa)] = (' '.join(sb), tuple(range(len(' '.join(sb)))))
 
 
 def parse(path, skip_ch=('燃',), first_end=None):
-    cards, ch = [], None; skip = True
+    cards, ch = [], None; skip = True; chpal = {}
     for line in open(path, encoding='utf-8'):
         line = line.rstrip('\n')
+        if line.startswith('TR '):
+            a, b = line[3:].split('||'); tr_add(a.strip(), b.strip()); continue
+        if line.startswith('TITLE ') and '||' in line:
+            a, b = line[6:].split('||'); tr_add(a.strip(), b.strip()); continue
         if line.startswith('# '):
-            ch = line[2:].split()[0]; skip = (ch in skip_ch); continue
-        if skip or not line.strip() or line.startswith(('//', 'H ', 'TITLE', 'SUBJ', 'Q ', 'B ', 'TAG', 'STYLE', 'MUSIC')): continue
+            parts = line[2:].split(); ch = parts[0]; skip = (ch in skip_ch)
+            for p_ in parts[1:]:
+                if p_ in PALS: chpal[ch] = PALS[p_]
+            continue
+        if skip or not line.strip() or line.startswith(('//', 'H ', 'TITLE', 'SUBJ', 'Q ', 'B ', 'TAG', 'STYLE', 'MUSIC', 'HOOK', 'CONST', 'ELEMENT', 'PAL', 'CHAR', 'KIND')): continue
+        en = None
+        if '||' in line: line, en = [x.strip() for x in line.split('||', 1)]
         kind, motif = 'n', None
         if line[0] == '?': kind, line = 'q', line[1:]
         elif line[0] == '*': kind, line = 'r', line[1:]
         m = re.match(r'\{(\w+)\}(.*)', line)
         if m: motif, line = m.group(1), m.group(2)
+        if en is not None:
+            if en[:1] in '?*': en = en[1:]
+            en = re.sub(r'^\{\w+\}', '', en)
+            tr_add(line, en)
         lines, golds = [], []
         for seg in line.split('/'):
-            g, out = [], ''
-            inside = False
-            for chh in seg:
-                if chh == '【': inside = True; continue
-                if chh == '】': inside = False; continue
-                if inside: g.append(len(out))
-                out += chh
-            lines.append(out); golds.append(tuple(g))
+            out, g, _ = _marks(seg); lines.append(out); golds.append(g)
         c = Card(); c.ch, c.kind, c.motif, c.lines, c.golds = ch, kind, motif, lines, golds
+        c.kw = ''.join(lines)
         cards.append(c)
     m = FIRST_END if first_end is None else first_end; prev = None
+    ds = []
     for i, c in enumerate(cards):
         n = len(c.lines); d = DUR.get(n, DUR[4])
         if c.kind == 'r': d += 10
         if c.kind == 'q': d += 2
         if i == len(cards) - 1: d += 14
+        ds.append(d)
+    if TARGET[0]:                                   # stretch/shrink card lengths so the film lands on ~TARGET seconds
+        f = (TARGET[0] / E8 - m) / sum(ds); ds = [max(14, int(round(d * f))) for d in ds]
+    for i, c in enumerate(cards):
+        d = ds[i]
         c.m0, c.m1, c.idx = m, m + d, i; c.first = (c.ch != prev); prev = c.ch; m += d
-        c.P = CH_PAL.get(c.ch, PF)
+        c.P = chpal.get(c.ch, CH_PAL.get(c.ch, DEFAULT_PAL[0]))
     return cards
 
 
@@ -336,7 +376,7 @@ def m_bolt(C, sh, tx):
 
 def m_phone(C, sh, tx):
     cv = sh.cv; P = C.P
-    txt = ''.join(C.lines)
+    txt = C.kw
     if '电话' in txt:                                   # midnight call: he is already out of the door
         nightsky(cv, C); ground(cv, 960, P, 0.5)
         doorframe(cv, C, 420, 960, 180, 380, 0.8)
@@ -461,7 +501,7 @@ def m_blush(C, sh, tx):
 
 def m_gift(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.4)
-    txt = ''.join(C.lines)
+    txt = C.kw
     Y(cv, C, 1380, 960, 520, 'stand', -1)
     A(cv, C, 560, 960, 540, pose('hero', mouth='smile', uaF=58, faF=78, hF='open'))
     k = eio(ramp(C.lt, 0.2, 1.4)); c = (lerp(820, 1120, k), 650)
@@ -482,7 +522,7 @@ def m_gift(C, sh, tx):
 def m_umbrella(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.4)
     with inst(cv): rain_live(cv, P, C.t, 0.45, 320, 0.12, 4)
-    Y(cv, C, 1180, 960, 520, 'turned' if '难过' in ''.join(C.lines) else 'stand', -1)
+    Y(cv, C, 1180, 960, 520, 'turned' if '难过' in C.kw else 'stand', -1)
     if C.lt < 1.4:
         x = lerp(200, 1000, eo(ramp(C.lt, 0, 1.4))); A(cv, C, x, 960, 540, run_cycle(C.lt / 0.42))
     else:
@@ -506,7 +546,7 @@ def m_flame(C, sh, tx):
             x = 260 + k * 170; h = (200 + 160 * ((k * 0.37) % 1)) * (0.6 + 0.4 * eo(ramp(C.lt, 0.2 + 0.08 * k, 1.0 + 0.08 * k))) * (1 + 0.06 * math.sin(C.t * 8 + k))
             flame(cv, x, 960, h, P.GOLD, 0.25)
         sparks_live(cv, (900, 900), C.t, 50, 20, 800, P, 0.8, 9, (-math.pi * 0.9, -math.pi * 0.1), 0.5, 1.4)
-    txt = ''.join(C.lines)
+    txt = C.kw
     p = pose('stand_arm', mouth='grit') if '不服输' in txt else pose('burst', mouth='shout') if '来劲' in txt else pose('point', mouth='shout', brow='angry')
     A(cv, C, 700, 960, 600, p)
     return 'R'
@@ -515,7 +555,7 @@ def m_flame(C, sh, tx):
 def m_wall(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.5)
     wall(cv, 1000, 180, 960, 120, P, 1.0)
-    txt = ''.join(C.lines)
+    txt = C.kw
     if '低不下头' in txt:
         Y(cv, C, 1340, 960, 520, 'turned', -1)
         A(cv, C, 680, 960, 560, pose('stand_arm', head=-12, mouth='grit', brow='fierce'), d=1)
@@ -531,7 +571,7 @@ def m_wall(C, sh, tx):
 
 def m_tears(C, sh, tx):
     cv = sh.cv; P = C.P
-    txt = ''.join(C.lines)
+    txt = C.kw
     J = A(cv, C, 760, 1080 + 1700 * 0.55, 1700, pose('hero', mouth='sad', brow='sad', head=10), tear=False, heart=0)
     with inst(cv):
         c = J['head']; tears(cv, C, (c[0] + 0.078 * 1700 * 0.46, c[1] + 40), 0.5, 3, 1.0)
@@ -545,7 +585,7 @@ def m_tears(C, sh, tx):
 
 def m_smile(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.5)
-    txt = ''.join(C.lines)
+    txt = C.kw
     if '打开门' in txt:
         doorframe(cv, C, 760, 960, 260, 520, eio(ramp(C.lt, 0.3, 1.2)))
         A(cv, C, 760, 960, 480, pose('hero', mouth='smile', uaF=150, faF=170, hF='open'))
@@ -617,7 +657,7 @@ def m_sprout(C, sh, tx):
 
 def m_chain(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.4)
-    txt = ''.join(C.lines)
+    txt = C.kw
     if '最狠' in txt:
         Y(cv, C, 1340, 960, 520, 'turned', -1)
         A(cv, C, 640, 960, 560, pose('point', mouth='shout', brow='angry'))
@@ -642,7 +682,7 @@ def m_feather(C, sh, tx):
     with inst(cv):
         y = lerp(80, 560, eio(ramp(C.lt, 0, 3.4))); x = 850 + 80 * math.sin(C.lt * 1.8)
         feather(cv, C, (x, y), 1.4, 0.5 * math.sin(C.lt * 1.8))
-        if '三秒' in ''.join(C.lines):
+        if '三秒' in C.kw:
             for k in range(3):
                 tk = 1.2 + k * 0.7
                 if C.lt > tk:
@@ -653,7 +693,7 @@ def m_feather(C, sh, tx):
 
 def m_people2(C, sh, tx):
     cv = sh.cv; P = C.P; ground(cv, 960, P, 0.4)
-    txt = ''.join(C.lines)
+    txt = C.kw
     Y(cv, C, 1180, 960, 520, 'stand', -1)
     if '掉眼泪' in txt or '信任' in txt:
         J = A(cv, C, 820, 960, 540, pose('hero', mouth='sad', brow='sad', head=12), tear='掉眼泪' in txt)
@@ -895,7 +935,7 @@ def m_reveal(C, sh, tx):
         stars_live(cv, P, C.t, 200, 800, 5 + C.idx % 4, 0.8)
         milkyway(cv, P, (-200, 160), (W + 200, 380), 140, 6 + C.idx % 3, 0.6)
     ground(cv, 980, P, 0.5)
-    txt = ''.join(C.lines)
+    txt = C.kw
     two = any(w in txt for w in ('你', '在乎', '有我', '真心', '对不起'))
     if two: Y(cv, C, 940, 980, 420, 'stand', -1, 0.8)
     A(cv, C, 560 if two else 700, 980, 440, pose('hero', mouth='smile', brow='calm', wind=(-0.8 + 0.1 * math.sin(C.t * 2), -0.2)), heart=1.4)
@@ -964,25 +1004,85 @@ def _count():
 
 
 def frame(t):
+    return frame_dual(t)[0]
+
+
+# ================================================================ two languages from one drawing
+CJK = re.compile(r'[\u3400-\u9fff]')
+
+
+class DualText:
+    """draws every caption into a Chinese layer and an English layer; English comes from TR, typed in the same time"""
+    def __init__(s, P):
+        s.cn, s.en = Text(P), Text(P); s.P = P
+
+    def lookup(s, txt, gold):
+        if not CJK.search(txt): return txt, gold
+        if txt in TR:
+            en, eg = TR[txt]
+            if gold and len(gold) == len(txt): eg = tuple(range(len(en)))
+            return en, eg
+        for k, (en, eg) in TR.items():                 # typed prefixes ('“你可' of '“你可以的”')
+            if len(txt) < len(k) and k.startswith(txt):
+                n = round(len(en) * len(txt) / len(k)); return en[:n], tuple(i for i in eg if i < n)
+        MISSING.add(txt); return txt, gold
+
+    def chars(s, txt, x, y, f, col, t, t0, t1=99, gold=(), anchor='c', spacing=0, stagger=0.035, hicol=None):
+        s.cn.chars(txt, x, y, f, col, t, t0, t1, gold, anchor, spacing, stagger, hicol)
+        en, eg = s.lookup(txt, gold)
+        if en != txt:
+            w = sum(f.getlength(ch) for ch in en)
+            lim = (2 * min(x, W - x) - 70) if anchor == 'c' else (W - x - 40 if anchor == 'l' else x - 40)
+            lim = min(lim, 980)
+            if w > lim and lim > 50: f = F(f.path, max(14, int(f.size * lim / w)))
+            stagger = stagger * min(1.0, len(txt) / max(1, len(en))) * 1.4
+        s.en.chars(en, x, y, f, col, t, t0, t1, eg, anchor, spacing, stagger, hicol)
+
+    def tag(s, *a, **k): s.cn.tag(*a, **k); s.en.tag(*a, **k)
+
+
+LOGO_S = 3.6
+_LOGO = [None]
+
+
+def logo_frame(tt):
+    if _LOGO[0] is None:
+        lp = os.path.join(HERE, '..', 'mbti', 'brand', 'logo.png'); im = cv2.imread(lp)
+        _LOGO[0] = im.astype(np.float32) / 255 if im is not None else np.zeros((10, 10, 3), np.float32)
+    Lg = _LOGO[0]; img = np.zeros((H, W, 3), np.float32)
+    h = 360; w = int(Lg.shape[1] * h / Lg.shape[0]); lg = cv2.resize(Lg, (w, h), interpolation=cv2.INTER_AREA)
+    rv = eo(ramp(tt, 0.2, 1.3)); xx = np.linspace(0, 1, w)[None, :]; m = np.clip((lerp(-0.2, 1.2, rv) - xx) * 6, 0, 1)
+    a = ramp(tt, 0.1, 0.5) * (1 - ramp(tt, LOGO_S - 0.6, LOGO_S - 0.05)) * (1 + 0.15 * pulse(tt, 1.3, 0.5))
+    lg = lg * m[..., None] * a; y0, x0 = (H - h) // 2, (W - w) // 2
+    img[y0:y0 + h, x0:x0 + w] += lg; img = img + cv2.GaussianBlur(img, (0, 0), 14) * 0.6
+    return np.clip(img * 255, 0, 255).astype(np.uint8)
+
+
+def base(t, tx):
+    """the drawing without text, plus its fade"""
     if not _COUNTS: _count()
     n = t / E8
-    if n < FIRST_END:
-        img = V.frame(t)
-        return img
-    tx = Text(PF)
+    if n < FIRST_END: return V.base(t, tx)
     C = CARDS[-1]
     for c in CARDS:
         if n < c.m1: C = c; break
     sh, P, glow, flash = card_scene(C, t, n, tx)
     img = sh.cv.composite(P.BG * 0.6, flash, glow=glow) * P.VIG
     img = img + cv2.GaussianBlur(sh.fg, (0, 0), 9) * 0.9
-    img = tx.blend(np.clip(img, 0, 1.6).astype(np.float32))
-    img *= (1 - ramp(t, T(END) - 2.5, T(END) - 0.05))
-    return np.clip(img * 255, 0, 255).astype(np.uint8)
+    return np.clip(img, 0, 1.6).astype(np.float32), (1 - ramp(t, T(END) - 2.5, T(END) - 0.05))
+
+
+def frame_dual(t):
+    if t >= T(END): return logo_frame(t - T(END)), None
+    tx = DualText(PF); img, fade = base(t, tx)
+    out = []
+    for layer in (tx.cn, tx.en):
+        im = layer.blend(img.copy()) * fade; out.append(np.clip(im * 255, 0, 255).astype(np.uint8))
+    return out[0], out[1]
 
 
 # ================================================================ audio
-def build_audio(music, out, duration):
+def build_audio(music, out, duration, tail=0.0):
     """first minute exactly as approved, then the track keeps looping on whole bars; dips on '?' beats, lifts on '*'"""
     import wave
     phase, e8 = R.grid(music); st = phase + V.MUSIC_START * e8; dr = T(V.DROP)
@@ -1038,51 +1138,72 @@ def build_audio(music, out, duration):
     k0 = len(fm); fade = int(0.05 * sfx.SR)
     mx[:k0] = fm[:k0]
     mx[k0:k0 + fade] = mx[k0:k0 + fade] * np.linspace(0, 1, fade) + fm[-1] * 0
+    if tail > 0:
+        tl = np.zeros(int(tail * sfx.SR), np.float32)
+        tl += sfx.mix([(0.25, sfx.chime(1046, 2.4), 0.35), (0.3, sfx.sparkle(1.6, 12), 0.25), (0.28, sfx.chime(1568, 2.0), 0.18)], tail)[:len(tl)]
+        mx = np.concatenate([mx, tl])
     sfx.write_wav(out, mx / max(1.0, np.abs(mx).max() / 0.97))
 
 
 # ================================================================ render
-def worker(a, b, path, fps):
-    p = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{W}x{H}', '-r', str(fps), '-i', '-',
-                          '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', path + '.tmp.mp4'], stdin=subprocess.PIPE)
-    last = np.zeros((H, W, 3), np.uint8)
+def _enc(path, fps):
+    return subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', f'{W}x{H}', '-r', str(fps), '-i', '-',
+                             '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', path + '.tmp.mp4'], stdin=subprocess.PIPE)
+
+
+def worker(a, b, path, fps, n_en):
+    pc = _enc(path + '_cn', fps); pe = _enc(path + '_en', fps) if a < n_en else None
+    lc = le = np.zeros((H, W, 3), np.uint8)
     for i in range(a, b):
-        try: last = frame(i / fps)
-        except Exception as e: print(f'frame {i / fps:.2f}s: {e!r}', flush=True)
-        p.stdin.write(last.tobytes())
-    p.stdin.close(); p.wait()
-    if p.returncode == 0: os.replace(path + '.tmp.mp4', path)
+        try: lc, e = frame_dual(i / fps); le = e if e is not None else le
+        except Exception as ex: print(f'frame {i / fps:.2f}s: {ex!r}', flush=True)
+        pc.stdin.write(lc.tobytes())
+        if pe is not None and i < n_en: pe.stdin.write(le.tobytes())
+    for p, suf in ((pc, '_cn'), (pe, '_en')):
+        if p is None: continue
+        p.stdin.close(); p.wait()
+        if p.returncode == 0: os.replace(path + suf + '.tmp.mp4', path + suf + '.mp4')
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument('--out', required=True); ap.add_argument('--stills'); ap.add_argument('--fps', type=int, default=30)
+    ap = argparse.ArgumentParser(); ap.add_argument('--out', required=True, help='Chinese output (logo at the end)'); ap.add_argument('--out-en', help='English output (no logo)')
+    ap.add_argument('--stills'); ap.add_argument('--fps', type=int, default=30)
     ap.add_argument('--jobs', type=int, default=os.cpu_count() or 2); ap.add_argument('--parts', help='directory to keep/reuse per-chunk files')
     ap.add_argument('--music', default=os.path.join(HERE, '..', '..', 'media', 'Vibecoding_music.mp3')); ap.add_argument('--list', action='store_true')
     args = ap.parse_args()
     if args.list:
-        for C in CARDS: print(f'{T(C.m0):6.1f}-{T(C.m1):6.1f} {C.ch} {C.kind} {C.motif or "":10s} {" / ".join(C.lines)}')
+        for C in CARDS: print(f'{T(C.m0):6.1f}-{T(C.m1):6.1f} {C.ch} {C.kind} {C.motif or "":10s} {" / ".join(C.lines)}  ||  {" / ".join(TR.get(l, ("?",))[0] for l in C.lines)}')
         print('END', T(END)); return
     if args.stills:
         os.makedirs(args.out, exist_ok=True)
-        for s in args.stills.split(','): cv2.imwrite(os.path.join(args.out, f'{float(s):06.2f}.jpg'), frame(float(s)), [cv2.IMWRITE_JPEG_QUALITY, 88])
+        for s_ in args.stills.split(','):
+            c, e = frame_dual(float(s_))
+            cv2.imwrite(os.path.join(args.out, f'{float(s_):06.2f}.jpg'), c, [cv2.IMWRITE_JPEG_QUALITY, 88])
+            if e is not None: cv2.imwrite(os.path.join(args.out, f'{float(s_):06.2f}_en.jpg'), e, [cv2.IMWRITE_JPEG_QUALITY, 88])
+        if MISSING: print('MISSING EN:', sorted(MISSING))
         return
-    dur = T(END); N = int(dur * args.fps); t0 = time.time()
+    dur = T(END); fps = args.fps; n_en = int(dur * fps); N = int((dur + LOGO_S) * fps); t0 = time.time()
     tmp = args.parts or tempfile.mkdtemp(); os.makedirs(tmp, exist_ok=True)
     CH = 600; chunks = [(i, min(N, i + CH)) for i in range(0, N, CH)]
-    parts = [os.path.join(tmp, f'p{i:03d}.mp4') for i in range(len(chunks))]
-    todo = [k for k in range(len(chunks)) if not os.path.exists(parts[k])]
+    parts = [os.path.join(tmp, f'p{i:03d}') for i in range(len(chunks))]
+    todo = [k for k in range(len(chunks)) if not os.path.exists(parts[k] + '_cn.mp4')]
     def run(ks):
-        for k in ks: worker(chunks[k][0], chunks[k][1], parts[k], args.fps); print('chunk', k, 'done', f'{time.time() - t0:.0f}s', flush=True)
+        for k in ks: worker(chunks[k][0], chunks[k][1], parts[k], fps, n_en); print('chunk', k, 'done', f'{time.time() - t0:.0f}s', flush=True)
     ps = [Process(target=run, args=(todo[j::args.jobs],)) for j in range(args.jobs)]
     for p in ps: p.start()
     for p in ps: p.join()
-    if not all(os.path.exists(p) for p in parts): print('missing chunks'); return
-    with open(os.path.join(tmp, 'l.txt'), 'w') as f: f.writelines(f"file '{p}'\n" for p in parts)
-    v = os.path.join(tmp, 'v.mp4'); subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', os.path.join(tmp, 'l.txt'), '-c', 'copy', v], check=True)
-    au = os.path.join(tmp, 'a.wav'); build_audio(args.music, au, dur)
-    os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', v, '-i', au, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart', '-shortest', args.out], check=True)
-    print(f'wrote {args.out} ({dur:.1f}s) in {time.time() - t0:.0f}s')
+    if not all(os.path.exists(p + '_cn.mp4') for p in parts): print('missing chunks'); return
+    for lang, out, d_, tail in (('cn', args.out, dur + LOGO_S, LOGO_S), ('en', args.out_en, dur, 0.0)):
+        if not out: continue
+        ps_ = [p + f'_{lang}.mp4' for p in parts if os.path.exists(p + f'_{lang}.mp4')]
+        lst = os.path.join(tmp, f'l_{lang}.txt')
+        with open(lst, 'w') as f: f.writelines(f"file '{p}'\n" for p in ps_)
+        v = os.path.join(tmp, f'v_{lang}.mp4'); subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', v], check=True)
+        au = os.path.join(tmp, f'a_{lang}.wav'); build_audio(args.music, au, dur, tail)
+        os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', v, '-i', au, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart', '-shortest', out], check=True)
+        print(f'wrote {out} ({d_:.1f}s) in {time.time() - t0:.0f}s', flush=True)
+    if MISSING: print('MISSING EN:', sorted(MISSING))
 
 
 if __name__ == '__main__':

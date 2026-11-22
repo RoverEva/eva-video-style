@@ -1,0 +1,80 @@
+TITLE 狮子座的内心世界 || The Inner World of Leo
+SUBJ zodiac leo
+ELEMENT fire
+PAL fire
+CONST 1180,220 1200,170 1250,160 1270,200 1250,250 1320,300 1460,280 1420,200 1320,300
+HOOK 他的心里/有一个【太阳】/走到哪里/【都在发光】/你以为他【爱面子】/其实他【怕被忘记】/从不承认 || Deep inside him/there's 【a sun】/Wherever he goes/【he shines】/You think he's 【all about pride】/he's 【afraid of being forgotten】/He'll never admit it
+
+# 光 fire
+{crowd}他一出现/全场都【亮了】 || When he walks in/the whole room 【lights up】
+{smile}他笑起来/像【夏天】 || His smile/feels like 【summer】
+{bubble}他说话/自带【主角光环】 || When he talks/he's 【the main character】
+?你以为他/只是【爱出风头】？ || You think he just/【loves the spotlight】?
+{heart}其实他想要的/是被【真正看见】 || What he really wants/is to be 【truly seen】
+{mirror}他在镜子前/也会问【我够好吗】 || In front of the mirror/he asks 【am I enough】
+*再亮的太阳/也想听一句【你很好】 || Even the brightest sun/wants to hear 【you're great】
+{star}所以他/【拼命发光】 || So he/【shines with everything he has】
+
+# 傲 fire
+{shield}他很骄傲/【不轻易低头】 || He's proud/he 【doesn't bow easily】
+{wall}他犯了错/嘴上【不认】 || When he's wrong/he 【won't say it】
+{gift}可第二天/他会【加倍对你好】 || But the next day/he's 【twice as kind】
+?为什么他/这么【在乎面子】？ || Why does he/care so much about 【face】?
+{broken}因为在他心里/面子是【尊严】 || Because to him/face means 【dignity】
+{tears}丢了面子/他会【一个人难过很久】 || Lose face/and he 【hurts alone for a long time】
+*他的骄傲/是保护【一颗很真的心】 || His pride/protects 【a very honest heart】
+
+# 护 amber
+{umbrella}你被欺负了/他第一个【站出来】 || When someone hurts you/he's 【the first to stand up】
+{shield}他护短/【护得理直气壮】 || He protects his people/【without apology】
+{people2}朋友有事/他【二话不说】 || A friend in trouble/he's there 【no questions asked】
+?他为什么/这么【讲义气】？ || Why is he/so 【loyal】?
+{crowd}因为他觉得/自己是【大家的太阳】 || Because he feels/he's 【everyone's sun】
+{sweat}太阳/【不能熄灭】 || And a sun/【can't go out】
+*他照亮别人/也想被【温暖一次】 || He lights up everyone/and wishes 【someone would warm him】
+
+# 累 violet
+{moon}散场以后/他会【安静下来】 || After the party/he 【goes quiet】
+{alone}一个人的时候/光就【暗了】 || Alone/【the light dims】
+{sigh}他也会想/【我是不是太用力了】 || He wonders/【am I trying too hard】
+?可谁见过/【熄灯后】的他？ || But who has seen him/【with the lights off】?
+{tears}他会躲起来哭/再【笑着出现】 || He cries in private/then 【shows up smiling】
+{phone}他最想收到的/是一句【“你辛苦了”】 || What he wants most/is a text: 【"You've worked so hard"】
+*狮子也需要/有人【摸摸头】 || Even a lion/needs 【a gentle pat on the head】
+
+# 爱 amber
+?狮子爱一个人/是什么样子？ || When a Leo loves/what does it look like?
+{gift}他会把你/【宠成公主】 || He'll treat you/like 【royalty】
+{crowd}他会在所有人面前/【大方地爱你】 || In front of everyone/he 【loves you out loud】
+{blush}可他也会/【吃醋】 || But he also/gets 【jealous】
+{rings}他要的/是你【眼里只有他】 || What he wants/is 【your eyes only on him】
+{heart}你夸他一句/他能【开心一整天】 || One compliment from you/makes him 【happy all day】
+*他的爱/是一句/【有我罩着你】 || His love sounds like/one sentence/【I've got your back】
+{tears}可他也会/在你面前/【放下所有骄傲】 || But sometimes/in front of you/he 【drops all his pride】
+
+# 王 fire
+{target}他想做的事/【就要做到最好】 || What he does/he 【does best】
+{mountain}他喜欢/站在【最高的地方】 || He likes/standing 【at the top】
+{flame}越被看低/越【不服】 || The more he's doubted/the 【harder he fights】
+?他为什么/这么【要强】？ || Why does he/need to 【win】 so much?
+{hourglass}因为他怕/【平凡】 || Because he's afraid/of being 【ordinary】
+{stairs}可真正的王/是【在低谷也站得直】 || But a true king/【stands tall even at the bottom】
+*王冠很重/他【一直戴着】 || The crown is heavy/he 【never takes it off】
+
+# 软 amber
+{smile}他对小孩/【特别温柔】 || With kids/he's 【so gentle】
+{cup}他对朋友/【大方得不像话】 || With friends/he's 【generous to a fault】
+{heart}他的心/其实【很容易被打动】 || His heart/is actually 【easily moved】
+?那他为什么/总装作【很强】？ || So why does he/always act 【so strong】?
+{mask}因为他觉得/强/才【配被爱】 || Because he thinks/only the strong/【deserve love】
+*可他不知道/他的软/【才最可爱】 || But he doesn't know/his softness/is 【what makes him lovable】
+
+# 真 fire
+?所以/狮子到底是什么样的人？ || So/who is Leo, really?
+{sun}是一个/【会发光的太阳】 || A sun/【that never stops shining】
+{heart}也是一颗/【想被看见的心】 || And a heart/【that wants to be seen】
+{shield}他把骄傲/【给世界】 || He shows his pride/【to the world】
+{smile}把真心/留给【在乎的人】 || and his true heart/to 【the ones he loves】
+{mirror}如果你身边有狮子/【多夸夸他】 || If there's a Leo in your life/【praise him often】
+{star}他会用一辈子/【照亮你】 || He'll spend his life/【lighting you up】
+*这就是狮子座/外表很【骄傲】/内心很【柔软】 || This is Leo/【proud】 on the outside/【tender】 on the inside

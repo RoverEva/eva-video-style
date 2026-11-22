@@ -1,0 +1,71 @@
+TITLE 天蝎座的内心世界 || The Inner World of Scorpio
+SUBJ zodiac scorpio
+ELEMENT water
+PAL violet
+CONST 1150,180 1200,200 1250,230 1300,280 1330,340 1400,360 1450,330 1470,290
+HOOK 他的心里/有一片【深海】/表面很平/【底下暗涌】/你以为他【冷漠】/其实他【爱得最深】/从不说出口 || Deep inside him/there's 【a deep sea】/Still on the surface/【currents underneath】/You think he's 【cold】/he 【loves the deepest】/He never says it
+
+# 看 violet
+{think}他话不多/但【什么都看得清】 || He doesn't say much/but he 【sees everything】
+{mirror}你一句谎话/他【一眼就知道】 || One lie from you/he 【knows instantly】
+{shield}他不轻易/【相信别人】 || He doesn't/【trust easily】
+?你以为他/【难接近】？ || You think he's/【hard to reach】?
+{key}其实他在等/一个【值得的人】 || He's waiting/for someone 【worth it】
+{door}门很难敲开/可一旦开了/【再也不关】 || The door is hard to open/but once it opens/it 【never closes】
+*他的防备/是被【伤过】的证据 || His guard/is proof he's 【been hurt before】
+{wave}平静的海面下/是【很深的情绪】 || Under the calm water/are 【deep feelings】
+
+# 深 water
+{heart}他爱一个人/就是【全部】 || When he loves/it's 【everything】
+{calendar}你说过的话/他【一句都没忘】 || What you said/he 【never forgot a word】
+{phone}他会看你的消息/【看很多遍】 || He reads your messages/【over and over】
+?为什么他/爱得【这么用力】？ || Why does he/love 【so intensely】?
+{broken}因为他知道/失去的【疼】 || Because he knows/the 【pain of losing】
+{chain}所以他会/【抓得很紧】 || So he/【holds on tight】
+*他不是占有/是【怕再失去一次】 || It's not possessiveness/he's 【afraid of losing again】
+
+# 痛 violet
+{tears}他受伤了/不会【让你看见】 || When he's hurt/he 【won't let you see】
+{wall}他会【一个人消化】 || He 【processes it alone】
+{moon}深夜里/他会【想很多】 || Late at night/he 【thinks too much】
+?被背叛的天蝎/会怎样？ || What happens/when a Scorpio is betrayed?
+{door}他会【安静地离开】 || He 【leaves quietly】
+{alone}不吵/不闹/【再也不回头】 || No fight/no scene/【never looks back】
+*他的狠/是【心碎过的样子】 || His coldness/is 【what a broken heart looks like】
+
+# 秘 water
+{mask}他有很多/【不说的秘密】 || He has many/【secrets he never tells】
+{letter}他写过的信/【从没寄出】 || Letters he wrote/【never sent】
+{think}他想的/比他说的【多一百倍】 || He thinks/【a hundred times more】 than he says
+?他为什么/总把自己【藏起来】？ || Why does he/always 【hide himself】?
+{shield}因为暴露/就意味着【可能受伤】 || Because being seen/means 【getting hurt】
+{key}能听到他秘密的人/【是他认定的人】 || Whoever hears his secrets/is 【the one he chose】
+*他的秘密/是给你的【信任】 || His secrets/are his 【trust in you】
+
+# 爱 amber
+?天蝎爱一个人/是什么样子？ || When a Scorpio loves/what does it look like?
+{people2}他会【一直站在你这边】 || He'll 【always be on your side】
+{umbrella}你被欺负/他会【比你还狠】 || Someone hurts you/he's 【fiercer than you】
+{blush}他吃醋/但【不承认】 || He gets jealous/but 【won't admit it】
+{rings}他要的/是一份【百分百的忠诚】 || What he wants/is 【total loyalty】
+{key}你对他真心/他会【用命对你好】 || Be true to him/and he'll 【give you his life】
+*他的爱/是一句/【我只要你】 || His love sounds like/one sentence/【I only want you】
+{tears}可他也会/在你面前/【脆弱得像个孩子】 || But sometimes/in front of you/he's 【as fragile as a child】
+
+# 强 violet
+{target}他想要的/就【一定要拿到】 || What he wants/he 【gets】
+{mountain}他不怕难/【越难越冷静】 || He doesn't fear hard things/【the harder, the calmer】
+{stairs}他会默默/【一步步往上爬】 || Quietly/he 【climbs step by step】
+?他会不会/【太执着】？ || Is he/【too obsessive】?
+{hourglass}会/可执着/也是他的【力量】 || Yes/but obsession/is also his 【power】
+*他的狠/是对自己【最狠】 || His toughness/is 【hardest on himself】
+
+# 真 violet
+?所以/天蝎到底是什么样的人？ || So/who is Scorpio, really?
+{wave}是一片/【看不见底的海】 || A sea/【you can't see the bottom of】
+{heart}也是一颗/【爱得最深的心】 || And a heart/【that loves the deepest】
+{shield}他把锋利/【对着世界】 || He turns his sting/【toward the world】
+{smile}把柔软/留给【在乎的人】 || and his softness/to 【the ones he loves】
+{mirror}如果你身边有天蝎/【别骗他】 || If there's a Scorpio in your life/【never lie to him】
+{sun}他会用一辈子/【守着你】 || He'll spend his life/【guarding you】
+*这就是天蝎座/外表很【冷】/内心很【烫】 || This is Scorpio/【cold】 on the outside/【burning】 on the inside

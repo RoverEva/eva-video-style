@@ -1,0 +1,61 @@
+TITLE INTJ的内心世界 || The Inner World of an INTJ
+SUBJ mbti INTJ
+ELEMENT air
+PAL violet
+HOOK 他的心里/有一张【地图】/每一步/【都算好了】/你以为他【冷血】/其实他【比谁都在乎】/只是不说 || Deep inside him/there's 【a map】/Every step/【already planned】/You think he's 【cold-blooded】/he 【cares more than anyone】/He just won't say
+
+# 算 violet
+{list}他做事/【先有计划】 || Before anything/he 【makes a plan】
+{think}别人看一步/他【看十步】 || Others see one step/he 【sees ten】
+{book}他的书单/【比你的购物车还长】 || His reading list/is 【longer than your cart】
+?你以为他/【太理性】？ || You think he's/【too rational】?
+{heart}其实他的理性/是在【保护在乎的人】 || His logic/【protects the people he loves】
+{target}他想的/是【怎么让一切更好】 || He's thinking/【how to make everything better】
+*他的冷静/是一种【责任】 || His calm/is 【responsibility】
+{mountain}他的目标/【很远】 || His goals/are 【far away】
+
+# 冷 azure
+{shield}他看起来/【不好接近】 || He seems/【hard to approach】
+{bubble}他说话/【直接到扎心】 || He speaks/【painfully direct】
+{alone}他不爱/【无意义的社交】 || He hates/【pointless small talk】
+?他是不是/【没有感情】？ || Does he/【have no feelings】?
+{blush}他有/只是【不知道怎么说】 || He does/he just 【doesn't know how to say it】
+{gift}他关心你/是帮你【把问题解决】 || He shows care/by 【fixing your problem】
+*他的冷/是【不擅长表达】 || His coldness/is 【being bad at expressing】
+
+# 孤 violet
+{moon}深夜/他一个人【想事情】 || Late at night/he 【thinks alone】
+{door}他很少/让人【进他的世界】 || He rarely/lets anyone 【into his world】
+{key}能进去的人/【他会护一辈子】 || Whoever gets in/he'll 【protect for life】
+?被误解的时候/他会怎样？ || When he's misunderstood/what does he do?
+{wall}他【不解释】 || He 【doesn't explain】
+{tears}只是/【一个人消化】 || He just/【processes it alone】
+*他的骄傲/是【不想被同情】 || His pride/means 【he doesn't want pity】
+
+# 爱 violet
+?INTJ爱一个人/是什么样子？ || When an INTJ loves/what does it look like?
+{list}他会把你/写进【未来的计划】 || He writes you/into 【his future plans】
+{calendar}他记得/你的【每个需求】 || He remembers/【everything you need】
+{think}他会研究/【怎么让你开心】 || He studies/【how to make you happy】
+{rings}他要的/是一个【能并肩的人】 || What he wants/is someone 【to stand beside him】
+{key}你懂他的笨拙/他会【给你全部】 || See his awkwardness/and he'll 【give you everything】
+*他的爱/是一句/【我已经算好了我们的以后】 || His love sounds like/one sentence/【I've already planned our future】
+{blush}可他也会/在你面前/【不知所措】 || But sometimes/in front of you/he's 【completely lost】
+
+# 长 violet
+{stairs}他一步步/【建自己的世界】 || Step by step/he 【builds his world】
+{hourglass}他很有耐心/【等结果】 || He's patient/【waiting for results】
+{sweat}他也会累/只是【不说】 || He gets tired too/he 【just won't say】
+?他会不会/【太苛刻自己】？ || Is he/【too hard on himself】?
+{feather}会/所以他也要学着/【放过自己】 || Yes/so he's learning/to 【go easy on himself】
+*再强的人/也值得【被温柔对待】 || Even the strongest/deserve 【gentleness】
+
+# 真 violet
+?所以/INTJ到底是什么样的人？ || So/who is an INTJ, really?
+{compass}是一张/【精准的地图】 || A map/【precise and clear】
+{heart}也是一颗/【不会说的心】 || And a heart/【that can't find the words】
+{shield}他把理性/【给世界】 || He gives logic/【to the world】
+{smile}把笨拙的温柔/留给【在乎的人】 || and his clumsy tenderness/to 【the ones he loves】
+{mirror}如果你身边有INTJ/【别怪他不浪漫】 || If there's an INTJ in your life/【don't blame him for not being romantic】
+{sun}他会用行动/【证明一辈子】 || He'll prove it/【with actions for life】
+*这就是INTJ/外表很【冷】/内心很【深情】 || This is an INTJ/【cold】 on the outside/【devoted】 on the inside

@@ -1,0 +1,71 @@
+TITLE 摩羯座的内心世界 || The Inner World of Capricorn
+SUBJ zodiac capricorn
+ELEMENT earth
+PAL earth
+CONST 1150,200 1250,320 1400,330 1480,220 1350,240 1150,200
+HOOK 他的心里/有一座【山】/他一直在/【往上爬】/你以为他【冷冰冰】/其实他【扛着所有人】/一声不吭 || Deep inside him/there's 【a mountain】/He's always/【climbing】/You think he's 【ice cold】/he's 【carrying everyone】/Without a word
+
+# 爬 earth
+{mountain}他的目标/【在山顶】 || His goal/is 【at the summit】
+{stairs}他走得慢/但【从不停】 || He walks slowly/but 【never stops】
+{list}他的计划/【排到了五年后】 || His plans/【go five years ahead】
+?你以为他/【只看重成功】？ || You think he only/【cares about success】?
+{home}其实他想的是/给家人【一个靠得住的以后】 || What he's really thinking/is 【a secure future for his family】
+{coins}他省下的每一分钱/都有【名字】 || Every coin he saves/【has a name on it】
+*他的野心/是他的【责任心】 || His ambition/is his 【sense of duty】
+{target}他说到的/【一定做到】 || What he promises/he 【always delivers】
+
+# 冷 violet
+{shield}他看起来/【很严肃】 || He looks/【so serious】
+{bubble}他说话/【简短直接】 || He speaks/【short and direct】
+{wall}他不轻易/【让人靠近】 || He doesn't/【let people close】 easily
+?他是不是/【没有感情】？ || Does he/【have no feelings】?
+{heart}有/只是【藏得很深】 || He does/they're just 【buried deep】
+{blush}你对他好/他会【偷偷记着】 || Be kind to him/and he 【quietly remembers】
+*他的冷/是一层【保护色】 || His coldness/is 【camouflage】
+
+# 扛 earth
+{sweat}累了/他说“【还行】” || Tired/he says "【I'm okay】"
+{umbrella}家里有事/他【第一个顶上】 || Trouble at home/he's 【the first to step in】
+{tug}再难/他也【不松手】 || However hard/he 【won't let go】
+?为什么他/什么都【自己扛】？ || Why does he/【carry everything alone】?
+{mountain}因为他觉得/自己是【大家的山】 || Because he feels/he's 【everyone's mountain】
+{tears}山也会累/只是【不能倒】 || Mountains get tired too/they just 【can't fall】
+*他最大的温柔/是【让你们都不用扛】 || His greatest kindness/is 【so none of you have to carry it】
+
+# 孤 violet
+{alone}深夜下班/他一个人【走回家】 || Off work late/he 【walks home alone】
+{moon}他也会/【想很多】 || He also/【thinks a lot】
+{phone}他想给谁打电话/又【放下了】 || He thinks of calling someone/then 【puts the phone down】
+?他是不是/【很孤独】？ || Is he/【lonely】?
+{door}是/但他【不说】 || Yes/but he 【won't say】
+{cup}有人给他/留一盏灯/他就【满足了】 || If someone/leaves a light on for him/he's 【content】
+*坚强的人/最缺的是【被心疼】 || Strong people/need 【someone to worry about them】
+
+# 爱 amber
+?摩羯爱一个人/是什么样子？ || When a Capricorn loves/what does it look like?
+{home}他会给你/【一个家的计划】 || He gives you/【a plan for a home】
+{calendar}他不会说情话/但【每个日子都记着】 || He won't say sweet things/but he 【remembers every date】
+{coins}他会默默/【为你们的以后攒钱】 || He quietly/【saves for your future】
+{rings}他要的/是【长长久久】 || What he wants/is 【forever】
+{key}你信他/他就【不会让你失望】 || Trust him/and he'll 【never let you down】
+*他的爱/是一句/【交给我】 || His love sounds like/one sentence/【leave it to me】
+{tears}可他也会/在你面前/【卸下盔甲】 || But sometimes/in front of you/he 【takes off his armor】
+
+# 慢 earth
+{seed}他的成功/【来得慢】 || His success/【comes slowly】
+{hourglass}别人着急/他【沉得住气】 || Others rush/he 【stays patient】
+{sprout}一年一年/他【越来越稳】 || Year after year/he 【grows steadier】
+?他会不会/【太压抑自己】？ || Does he/【hold himself back too much】?
+{feather}会/所以他也要学着/【放松一点】 || Yes/so he's learning/to 【relax a little】
+*摩羯是/【越老越可爱】的人 || Capricorn is someone/who gets 【sweeter with age】
+
+# 真 earth
+?所以/摩羯到底是什么样的人？ || So/who is Capricorn, really?
+{mountain}是一座/【一直往上的山】 || A mountain/【always rising】
+{heart}也是一颗/【不说累的心】 || And a heart/【that never says it's tired】
+{shield}他把严肃/【给世界】 || He shows seriousness/【to the world】
+{smile}把笑容/留给【在乎的人】 || and his smile/to 【the ones he loves】
+{mirror}如果你身边有摩羯/【记得对他说辛苦了】 || If there's a Capricorn in your life/【tell him he's worked hard】
+{sun}他会用一辈子/【撑起你的天】 || He'll spend his life/【holding up your sky】
+*这就是摩羯座/外表很【硬】/内心很【暖】 || This is Capricorn/【tough】 on the outside/【warm】 on the inside

@@ -1,0 +1,60 @@
+TITLE ESFJ的内心世界 || The Inner World of an ESFJ
+SUBJ mbti ESFJ
+ELEMENT earth
+PAL azure
+HOOK 他的心里/有一张【大圆桌】/每个人/【都要坐得舒服】/你以为他【爱热闹】/其实他【怕有人被落下】/从不说 || Deep inside him/there's 【a big round table】/Everyone/【must sit comfortably】/You think he 【loves a crowd】/he's 【afraid someone gets left out】/He never says it
+
+# 聚 azure
+{crowd}聚会/【总是他组织】 || The party/is 【always his idea】
+{food}他会准备/【每个人爱吃的】 || He prepares/【everyone's favorite】
+{smile}他会注意到/【角落里的人】 || He notices/【the person in the corner】
+?你以为他/只是【爱热闹】？ || You think he just/【loves a crowd】?
+{heart}其实他是/【不想任何人孤单】 || He just/【doesn't want anyone alone】
+{people2}他会拉你/【一起加入】 || He pulls you/【into the circle】
+*他的热闹/是一种【照顾】 || His warmth/is 【a kind of caretaking】
+{gift}他记得/每个人的【生日】 || He remembers/everyone's 【birthday】
+
+# 在意 violet
+{think}别人一句评价/他会【想很久】 || One comment/he 【thinks about for ages】
+{phone}你没回消息/他会【担心】 || If you don't reply/he 【worries】
+{mirror}他很在意/【别人喜不喜欢他】 || He cares/whether 【people like him】
+?他为什么/这么在意【别人】？ || Why does he care/so much about 【others】?
+{broken}因为对他来说/【关系就是一切】 || Because to him/【relationships are everything】
+{tears}被冷落/他会【偷偷难过】 || When he's ignored/he 【quietly hurts】
+*他的在意/是【太珍惜】 || His worry/is 【cherishing too much】
+
+# 累 violet
+{sweat}他总是/【忙着照顾大家】 || He's always/【busy caring for everyone】
+{moon}散场后/他一个人【收拾残局】 || After the party/he 【cleans up alone】
+?谁会/【陪他收拾】？ || Who/【helps him clean up】?
+{tears}他也想/有人说一句/“【今天辛苦了】” || He wishes/someone would say/"【You did so much today】"
+{cup}一个拥抱/他就【满血复活】 || One hug/and he's 【fully recharged】
+*会照顾别人的人/也需要【被看见】 || Those who care for others/need 【to be seen】 too
+
+# 家 azure
+{home}他的家/【永远热闹】 || His home/is 【always lively】
+{calendar}家里的节日/他【一个都不落】 || Family holidays/he 【never misses one】
+{food}他做的饭/是【家的味道】 || His cooking/【tastes like home】
+?他心里/最重要的是什么？ || What matters/most to him?
+{people2}【大家都好好的】 || 【Everyone being okay】
+*他的幸福/是【大家的幸福】 || His happiness/is 【everyone's happiness】
+
+# 爱 azure
+?ESFJ爱一个人/是什么样子？ || When an ESFJ loves/what does it look like?
+{gift}他会给你/【满满的仪式感】 || He gives you/【so many little rituals】
+{food}他会记住/你的【口味】 || He remembers/your 【taste】
+{crowd}他会把你/介绍给【所有朋友】 || He introduces you/to 【all his friends】
+{rings}他要的/是【被回应】 || What he wants/is 【to be loved back】
+{key}你回应他/他会【把心掏给你】 || Love him back/and he'll 【give you his heart】
+*他的爱/是一句/【有我在 你不会孤单】 || His love sounds like/one sentence/【with me, you'll never be alone】
+{tears}可他也会/在你面前/【委屈地哭】 || But sometimes/in front of you/he 【cries his hurt out】
+
+# 真 azure
+?所以/ESFJ到底是什么样的人？ || So/who is an ESFJ, really?
+{home}是一张/【坐满人的圆桌】 || A table/【full of people】
+{heart}也是一颗/【怕被冷落的心】 || And a heart/【afraid of being left out】
+{crowd}他把热情/【给所有人】 || He gives warmth/【to everyone】
+{smile}把脆弱/留给【在乎的人】 || and his vulnerability/to 【the ones he loves】
+{mirror}如果你身边有ESFJ/【记得回应他】 || If there's an ESFJ in your life/【remember to respond】
+{sun}他会用一辈子/【让你不孤单】 || He'll spend his life/【making sure you're never alone】
+*这就是ESFJ/外表很【热】/内心很【细】 || This is an ESFJ/【warm】 on the outside/【tender】 on the inside

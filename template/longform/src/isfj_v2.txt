@@ -1,0 +1,60 @@
+TITLE ISFJ的内心世界 || The Inner World of an ISFJ
+SUBJ mbti ISFJ
+ELEMENT earth
+PAL azure
+HOOK 他的心里/有一个【小厨房】/永远亮着/【一盏灯】/你以为他【没脾气】/其实他【什么都记在心里】/只是不说 || Deep inside him/there's 【a little kitchen】/Always lit by/【one warm lamp】/You think he 【never gets upset】/he 【remembers everything】/He just doesn't say
+
+# 照顾 azure
+{food}你饿了/他【已经做好饭】 || When you're hungry/he's 【already cooked】
+{cup}你累了/他递上【一杯热水】 || When you're tired/he hands you 【warm water】
+{calendar}你的生日/他【提前一个月准备】 || Your birthday/he 【prepares a month early】
+?你以为他/【天生就会照顾人】？ || You think he's/【a natural caretaker】?
+{heart}其实他是/【太怕你难过】 || He's just/【so afraid of you being sad】
+{home}他想让每个人/【都有家的感觉】 || He wants everyone/to 【feel at home】
+*他的照顾/是他【说爱的方式】 || His care/is 【how he says I love you】
+{gift}他记得/你【随口说过的喜好】 || He remembers/【what you mentioned once】
+
+# 忍 violet
+{wall}他不开心/也【不说】 || When he's unhappy/he 【won't say】
+{smile}他会笑着说/“【没事】” || He smiles/and says "【It's fine】"
+{chain}他很难/【拒绝别人】 || He finds it hard/to 【say no】
+?他真的/【不委屈】吗？ || Does he really/【not feel hurt】?
+{tears}委屈/只是【攒着】 || He does/he just 【stores it up】
+{moon}深夜/他会【一个人难过】 || Late at night/he 【feels sad alone】
+*最温柔的人/最容易【委屈自己】 || The gentlest people/most easily 【shortchange themselves】
+
+# 记 azure
+{letter}他记得/每个人的【小细节】 || He remembers/everyone's 【little details】
+{book}他珍藏的/是【旧照片和回忆】 || What he treasures/are 【old photos and memories】
+{alone}老地方/他会【一个人去】 || Old places/he 【visits alone】
+?为什么他/这么【念旧】？ || Why is he/so 【nostalgic】?
+{hourglass}因为回忆/是他的【安全感】 || Because memories/are his 【safety】
+*他记得别人的好/也记得【自己的委屈】 || He remembers others' kindness/and 【his own hurts】
+
+# 累 violet
+{sweat}他总是/【最后一个休息】 || He's always/【the last to rest】
+{people2}他照顾所有人/却没人【照顾他】 || He cares for everyone/but no one 【cares for him】
+?谁会/【为他做一顿饭】？ || Who will/【cook for him】?
+{tears}他也想/有人说一句/“【你也歇歇吧】” || He wishes/someone would say/"【You rest too】"
+{cup}一句谢谢/他能【开心很久】 || One thank-you/makes him 【happy for ages】
+*照顾别人的人/也需要【被照顾】 || Those who care for others/need 【care too】
+
+# 爱 azure
+?ISFJ爱一个人/是什么样子？ || When an ISFJ loves/what does it look like?
+{home}他会给你/【一个温暖的家】 || He gives you/【a warm home】
+{food}每天的饭菜/都是【你爱吃的】 || Every meal/is 【what you love】
+{umbrella}你出门/他【操心一路】 || When you go out/he 【worries the whole way】
+{rings}他要的/是【安稳的陪伴】 || What he wants/is 【steady companionship】
+{key}你珍惜他/他会【把一辈子给你】 || Treasure him/and he'll 【give you his whole life】
+*他的爱/是一句/【饭做好了 回家吧】 || His love sounds like/one sentence/【dinner's ready, come home】
+{tears}可他也会/在你面前/【说出所有委屈】 || But sometimes/in front of you/he 【lets out every hurt】
+
+# 真 azure
+?所以/ISFJ到底是什么样的人？ || So/who is an ISFJ, really?
+{home}是一个/【永远亮灯的厨房】 || A kitchen/【where the light is always on】
+{heart}也是一颗/【不说委屈的心】 || And a heart/【that never complains】
+{shield}他把温和/【给世界】 || He gives gentleness/【to the world】
+{smile}把全部心思/留给【在乎的人】 || and all his thoughts/to 【the ones he loves】
+{mirror}如果你身边有ISFJ/【问问他想要什么】 || If there's an ISFJ in your life/【ask what he wants】
+{sun}他会用一辈子/【照顾你】 || He'll spend his life/【taking care of you】
+*这就是ISFJ/外表很【温和】/内心很【坚韧】 || This is an ISFJ/【gentle】 on the outside/【resilient】 on the inside

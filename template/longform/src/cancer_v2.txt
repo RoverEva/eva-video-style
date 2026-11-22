@@ -1,0 +1,82 @@
+TITLE 巨蟹座的内心世界 || The Inner World of Cancer
+SUBJ zodiac cancer
+ELEMENT water
+PAL water
+CONST 1300,170 1310,260 1250,340 | 1310,260 1390,330
+HOOK 他的心里/有一片【海】/表面很静/【底下很深】/你以为他【很硬】/其实他【一碰就疼】/只是缩回壳里 || Deep inside him/there's 【an ocean】/Calm on the surface/【deep underneath】/You think he's 【tough】/he 【hurts at a touch】/He just hides in his shell
+
+# 壳 water
+{shield}第一次见面/他有点【冷】 || When you first meet/he seems a bit 【cold】
+{wall}他在观察/你是不是【安全】 || He's checking/if you're 【safe】
+{think}你说的每句话/他都【记在心里】 || Every word you say/he 【keeps inside】
+?为什么他/要先【躲起来】？ || Why does he/【hide】 first?
+{broken}因为他的心/【太软了】 || Because his heart/is 【too soft】
+{tears}一句随口的话/他能【难过好几天】 || One careless word/can 【hurt him for days】
+*硬壳/是他给软心【搭的家】 || The hard shell/is a 【home for his soft heart】
+{key}能被他放进壳里的人/【不多】 || The ones he lets inside/are 【few】
+
+# 家 amber
+{home}他最在乎的/是【家】 || What he cares about most/is 【home】
+{food}他会记得/你爱吃【什么】 || He remembers/【what you love to eat】
+{cup}你生病了/他比你【还紧张】 || When you're sick/he's 【more worried than you】
+?为什么他/总想【照顾别人】？ || Why does he/always 【take care of others】?
+{people2}因为在他心里/被照顾/就是【被爱】 || Because to him/being cared for/means 【being loved】
+{umbrella}他给你的/都是他【想要的】 || What he gives you/is what he 【wishes he had】
+*他照顾全世界/却忘了【照顾自己】 || He takes care of everyone/but 【forgets himself】
+{moon}夜深了/他还在想/【明天给你带什么】 || Late at night/he's still thinking/【what to bring you tomorrow】
+
+# 敏感 violet
+{wave}他的情绪/像【潮水】 || His moods/come in 【tides】
+{sigh}一会儿涨/一会儿【退】 || Rising/then 【falling】
+{phone}你回消息慢了/他会【多想】 || If you reply slowly/he 【overthinks】
+?他是不是/【太敏感】了？ || Is he/【too sensitive】?
+{heart}是/可正因为敏感/他才【最懂你】 || Yes/and that's why/he 【understands you best】
+{blush}你一个眼神/他就知道【你累了】 || One look from you/and he knows 【you're tired】
+*敏感的人/心里有【最细的温柔】 || Sensitive people/carry 【the finest tenderness】
+
+# 记 water
+{calendar}你们的纪念日/他【一个都不会忘】 || Your anniversaries/he 【never forgets one】
+{letter}旧照片 旧信/他都【好好收着】 || Old photos, old letters/he 【keeps them all】
+{alone}走过的地方/他会【一个人再去】 || Places you went together/he 【revisits alone】
+?为什么他/这么【恋旧】？ || Why is he/so 【nostalgic】?
+{hourglass}因为他觉得/回忆是【不会走的人】 || Because to him/memories are 【people who never leave】
+{tears}可他也会/被回忆【困住】 || But sometimes/memories 【trap him】
+*他抱着过去/是因为【怕失去】 || He holds on to the past/because he's 【afraid to lose】
+{sprout}慢慢地/他也在学着【往前走】 || Slowly/he's learning to 【move forward】
+
+# 脾气 water
+{wall}他不高兴了/不会说 || When he's upset/he won't say
+{shield}他会【缩回壳里】 || He 【goes back into his shell】
+{clock}你不哄/他能【安静一整天】 || If you don't reach out/he'll 【stay silent all day】
+?他到底/【想要什么】？ || What does he/【actually want】?
+{people2}他只想要/【一句“我在”】 || He just wants/【one "I'm here"】
+{smile}你一抱/他就【全好了】 || One hug/and he's 【all better】
+*他的生气/其实是【需要你】 || His anger/is really 【needing you】
+
+# 爱 amber
+?巨蟹爱一个人/是什么样子？ || When a Cancer loves/what does it look like?
+{home}他会给你/一个【可以回的地方】 || He gives you/【a place to come back to】
+{food}你加班到很晚/桌上有一碗【热汤】 || You work late/and there's 【warm soup】 waiting
+{umbrella}你委屈了/他第一个【护着你】 || When you're hurt/he's 【first to protect you】
+{rings}他要的/是一个【不会走】的人 || What he wants/is someone 【who won't leave】
+{key}你给他安全感/他把【整颗心】给你 || Make him feel safe/he'll give you 【his whole heart】
+*他的爱/是一句/【回家吃饭吧】 || His love sounds like/one sentence/【come home for dinner】
+{tears}可他也会/在你怀里/【哭得像个孩子】 || But sometimes/in your arms/he 【cries like a child】
+
+# 累 violet
+{sweat}他总说/“【我没事】” || He always says/"【I'm fine】"
+{stairs}一边照顾所有人/一边【自己扛】 || Caring for everyone/while 【carrying it all himself】
+?可谁/【照顾过他】？ || But who/【takes care of him】?
+{tears}其实他也想/有人说一句/“【你也歇一会儿】” || Deep down he wishes/someone would say/"【You rest too】"
+{cup}有人给他/也倒一杯【热水】 || Someone pouring him/a 【warm drink】 too
+*温柔的人/也需要【被温柔对待】 || Gentle people/need 【gentleness】 too
+
+# 真 water
+?所以/巨蟹到底是什么样的人？ || So/who is Cancer, really?
+{shield}是一层/【硬硬的壳】 || A shell/【hard on the outside】
+{heart}也是一颗/【最软的心】 || And also/【the softest heart】
+{wave}他把防备/【留给世界】 || He keeps his guard/【for the world】
+{home}把整个家/留给【在乎的人】 || and a whole home/for 【the people he loves】
+{mirror}如果你身边有巨蟹/【别急着敲开他的壳】 || If there's a Cancer in your life/【don't force the shell open】
+{sun}等他自己/【慢慢打开】 || Wait for him/to 【open up on his own】
+*这就是巨蟹座/外表很【硬】/内心很【软】 || This is Cancer/【hard】 on the outside/【soft】 on the inside

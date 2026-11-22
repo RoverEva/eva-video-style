@@ -1,0 +1,69 @@
+TITLE INFP的内心世界 || The Inner World of an INFP
+SUBJ mbti INFP
+ELEMENT water
+PAL emerald
+HOOK 他的心里/有一个【童话】/每一页/【都很柔软】/你以为他【太敏感】/其实他【在保护那个童话】/从不说出口 || Deep inside him/there's 【a fairy tale】/Every page/【is soft】/You think he's 【too sensitive】/he's 【protecting that story】/He never says it
+
+# 梦 emerald
+{book}他喜欢/【一个人看书】 || He loves/【reading alone】
+{star}他会对着星星/【发呆很久】 || He stares at the stars/【for a long time】
+{letter}他写过很多/【没给人看的诗】 || He's written/【poems no one has read】
+?你以为他/【活在梦里】？ || You think he/【lives in a dream】?
+{heart}其实他只是/【把美好存起来】 || He's just/【saving the beautiful things】
+{sprout}一朵花/能让他【开心一整天】 || One flower/can make him 【happy all day】
+*他的世界/比你看到的【大得多】 || His world/is 【much bigger】 than you see
+{moon}夜里/他在心里【写故事】 || At night/he 【writes stories in his head】
+
+# 软 violet
+{tears}他很容易/【被感动】 || He's/【easily moved】
+{broken}一句重话/他能【记很久】 || One harsh word/he 【remembers for ages】
+{wall}他受伤了/会【躲起来】 || When he's hurt/he 【hides】
+?他是不是/【太玻璃心】？ || Is he/【too fragile】?
+{wave}不是/他只是【感受得更深】 || No/he just 【feels more deeply】
+{heart}他的眼泪/是对世界的【在意】 || His tears/show how much he 【cares about the world】
+*敏感/是他给世界的【温柔】 || Sensitivity/is his 【gift of tenderness】
+
+# 坚持 emerald
+{shield}他看起来很软/可他有【底线】 || He seems soft/but he has 【lines he won't cross】
+{target}违背内心的事/他【绝不做】 || Anything against his heart/he 【won't do】
+{tug}你逼他/他会【比谁都倔】 || Push him/and he's 【more stubborn than anyone】
+?温柔的人/怎么会【这么固执】？ || How can someone so gentle/be 【so stubborn】?
+{compass}因为他的心里/有一个【方向】 || Because in his heart/there's 【a direction】
+*他的温柔/有【骨头】 || His gentleness/has 【a backbone】
+
+# 孤 violet
+{alone}人群里/他会觉得【很远】 || In a crowd/he feels 【far away】
+{phone}他想找人聊/又怕【打扰别人】 || He wants to talk/but fears 【bothering anyone】
+{mask}他会说/“【我没事】” || He says/"【I'm fine】"
+?可谁/真的【懂他】？ || But who/really 【gets him】?
+{key}能懂他的人/【很少】 || The ones who get him/are 【rare】
+{cup}有一个就够了/他会【珍惜一辈子】 || One is enough/he'll 【treasure them forever】
+*他不是不合群/是在等【一个懂他的人】 || He's not antisocial/he's waiting for 【one person who understands】
+
+# 爱 emerald
+?INFP爱一个人/是什么样子？ || When an INFP loves/what does it look like?
+{letter}他会给你/写【只属于你的信】 || He writes you/【letters only for you】
+{gift}他记得/你随口说的【小愿望】 || He remembers/your 【tiny wishes】
+{blush}他喜欢你/会【不敢说】 || When he likes you/he's 【too shy to say】
+{rings}他要的/是一份【真心】 || What he wants/is 【true love】
+{key}你接住他的软/他会【把童话给你】 || Catch his softness/and he'll 【give you the fairy tale】
+*他的爱/是一句/【你在我的故事里】 || His love sounds like/one sentence/【you're in my story】
+{tears}可他也会/在你面前/【哭得很安心】 || But sometimes/in front of you/he 【cries and feels safe】
+
+# 长 emerald
+{stairs}他在学着/【面对现实】 || He's learning/to 【face reality】
+{list}他会给梦想/【做一个计划】 || He makes/【a plan for his dream】
+{sun}慢慢地/他的童话【变成了真的】 || Slowly/his fairy tale 【comes true】
+?他会不会/【失去天真】？ || Will he/【lose his innocence】?
+{sprout}不会/他只是【更勇敢了】 || No/he's just 【braver now】
+*长大的INFP/是【带着童话的大人】 || A grown-up INFP/is 【an adult who kept the fairy tale】
+
+# 真 emerald
+?所以/INFP到底是什么样的人？ || So/who is an INFP, really?
+{book}是一本/【柔软的童话书】 || A book/【of gentle fairy tales】
+{heart}也是一颗/【很固执的心】 || And a heart/【that's very stubborn】
+{shield}他把安静/【给世界】 || He gives quiet/【to the world】
+{smile}把童话/留给【懂他的人】 || and the fairy tale/to 【the ones who get him】
+{mirror}如果你身边有INFP/【别笑他的梦】 || If there's an INFP in your life/【don't laugh at his dreams】
+{star}他会用一辈子/【对世界温柔】 || He'll spend his life/【being gentle with the world】
+*这就是INFP/外表很【软】/内心很【坚定】 || This is an INFP/【soft】 on the outside/【unshakable】 on the inside

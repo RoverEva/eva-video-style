@@ -1,0 +1,59 @@
+TITLE ESTP的内心世界 || The Inner World of an ESTP
+SUBJ mbti ESTP
+ELEMENT fire
+PAL amber
+HOOK 他的心里/有一台【引擎】/随时准备/【冲出去】/你以为他【冲动】/其实他【反应比谁都快】/从不犹豫 || Deep inside him/there's 【an engine】/Always ready/to 【take off】/You think he's 【reckless】/he 【reacts faster than anyone】/He never hesitates
+
+# 冲 amber
+{runroad}想到就做/【不用等】 || He thinks it/he 【does it】
+{target}关键时刻/他【一出手就中】 || In the clutch/he 【hits the mark】
+{crowd}哪里热闹/【哪里就有他】 || Wherever it's lively/【he's there】
+?你以为他/【没脑子】？ || You think he/【doesn't think】?
+{think}其实他/【看得比谁都清楚】 || He actually/【sees more clearly than anyone】
+{bolt}他的反应/【快得像闪电】 || His reflexes/are 【lightning fast】
+*他的冲动/是【当机立断】 || His impulse/is 【decisiveness】
+{mountain}越刺激/他越【来劲】 || The bigger the thrill/the 【more fired up】 he gets
+
+# 直 amber
+{bubble}他说话/【直来直去】 || He talks/【straight】
+{smile}他开玩笑/【没大没小】 || His jokes/【spare no one】
+{broken}有时候/会【说过头】 || Sometimes/he 【goes too far】
+?他是不是/【不在乎别人】？ || Does he/【not care about others】?
+{gift}他在乎/只是用【行动道歉】 || He cares/he just 【apologizes with actions】
+*他的直/是【不想装】 || His bluntness/is 【refusing to pretend】
+
+# 静 violet
+{alone}热闹散场后/他也会【安静】 || After the party/he also 【goes quiet】
+{moon}深夜/他也会想/【我在追什么】 || Late at night/he wonders/【what am I chasing】
+{mask}他不让人看见/【他的迷茫】 || He won't let anyone see/【his doubt】
+?他真的/【什么都不怕】吗？ || Is he really/【afraid of nothing】?
+{tears}他怕/【停下来】 || He fears/【stopping】
+*他的快/有时是【不想面对】 || His speed/sometimes means 【not wanting to face it】
+
+# 义 amber
+{umbrella}朋友有难/他【第一个冲】 || A friend in trouble/he's 【the first to charge in】
+{shield}他护着的人/【谁也别想欺负】 || The people he protects/【no one touches】
+{people2}他对朋友/【大方得不像话】 || To friends/he's 【generous to a fault】
+?他为什么/这么讲义气？ || Why is he/so loyal?
+{heart}因为他觉得/【兄弟就是家人】 || Because to him/【friends are family】
+*他的义气/是他【最重的承诺】 || His loyalty/is his 【heaviest promise】
+
+# 爱 amber
+?ESTP爱一个人/是什么样子？ || When an ESTP loves/what does it look like?
+{runroad}他会拉你/【去冒险】 || He'll drag you/【on an adventure】
+{gift}他会给你/【说来就来的惊喜】 || He gives you/【spontaneous surprises】
+{blush}他认真的时候/【反而不会说】 || When he's serious/he 【can't find words】
+{rings}他要的/是【一起玩的人】 || What he wants/is 【a partner in crime】
+{key}你跟得上他/他会【只为你停下】 || Keep up with him/and he'll 【slow down just for you】
+*他的爱/是一句/【走 我带你去】 || His love sounds like/one sentence/【come on, I'll take you】
+{tears}可他也会/在你面前/【第一次停下来】 || But sometimes/in front of you/he 【stops for the first time】
+
+# 真 amber
+?所以/ESTP到底是什么样的人？ || So/who is an ESTP, really?
+{runroad}是一台/【停不下的引擎】 || An engine/【that never stops】
+{heart}也是一颗/【怕停下来的心】 || And a heart/【afraid of stopping】
+{crowd}他把刺激/【给世界】 || He gives thrills/【to the world】
+{smile}把义气/留给【在乎的人】 || and his loyalty/to 【the ones he loves】
+{mirror}如果你身边有ESTP/【陪他停一会儿】 || If there's an ESTP in your life/【sit still with him a while】
+{sun}他会用一辈子/【护着你】 || He'll spend his life/【protecting you】
+*这就是ESTP/外表很【野】/内心很【义】 || This is an ESTP/【wild】 on the outside/【loyal】 on the inside

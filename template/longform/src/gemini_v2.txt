@@ -1,0 +1,92 @@
+TITLE 双子座的内心世界 || The Inner World of Gemini
+SUBJ zodiac gemini
+ELEMENT air
+PAL air
+CONST 1150,170 1170,250 1190,340 | 1260,160 1280,250 1300,340 | 1170,250 1280,250
+HOOK 他的心里/住着【两个人】/一个在笑/【一个在想】/你以为他【善变】/其实他只是【想得多】/从不说破 || Deep inside him/live 【two people】/One is laughing/【one is thinking】/You think he's 【fickle】/he just 【thinks a lot】/He never says it
+
+# 快 air
+{bubble}他说话/【又快又好笑】 || He talks/【fast and funny】
+{crowd}走到哪里/都是【人群中心】 || Wherever he goes/he's 【the center of the room】
+{book}今天学吉他/明天学【画画】 || Guitar today/【painting】 tomorrow
+?你以为他/【三分钟热度】？ || You think he's/just 【a passing phase】?
+{think}其实他的脑子/同时开着/【十个窗口】 || Actually his mind/runs/【ten tabs at once】
+{star}世界太有趣了/他【舍不得错过】 || The world is too interesting/he 【can't bear to miss it】
+*好奇心/是他的【氧气】 || Curiosity/is his 【oxygen】
+{runroad}他总在路上/【停不下来】 || He's always on the move/【can't stand still】
+
+# 两面 violet
+{mask}白天的他/【热闹开朗】 || By day he's/【loud and bright】
+{moon}深夜的他/【安静得像另一个人】 || By night he's/【quiet like someone else】
+?哪一个/才是【真的他】？ || Which one/is 【the real him】?
+{mirror}两个/【都是】 || Both/【are】
+{tears}他也会难过/只是用笑话【盖过去】 || He gets sad too/he just 【covers it with jokes】
+{smile}你问他怎么了/他说“【我好得很】” || You ask what's wrong/he says "【I'm great】"
+*他最怕的/不是孤单/是【没人懂】 || What he fears most/isn't loneliness/it's 【no one understanding】
+{phone}他会在凌晨/给你发一句【奇怪的话】 || At 3 a.m. he'll send you/【something strange】
+{bubble}那是他/【在敲你的门】 || That's him/【knocking on your door】
+
+# 聊 air
+{people2}跟他聊天/【永远不会冷场】 || Talking with him/is 【never awkward】
+{think}他记得你说过的/【每一个梗】 || He remembers/【every joke you made】
+{letter}他的消息/【一条接一条】 || His messages come/【one after another】
+?可为什么/有时候他【突然消失】？ || So why does he/sometimes 【vanish】?
+{feather}因为他的电/【用完了】 || Because his battery/【ran out】
+{moon}他需要一个人/【充一下电】 || He needs some time alone/【to recharge】
+*他消失/不是不在乎/是【太累了】 || When he disappears/it's not that he doesn't care/he's 【just worn out】
+{sun}等他回来/又是【满格的他】 || When he comes back/he's 【fully charged】 again
+
+# 怕 water
+{chain}他最怕/被【绑住】 || What he fears most/is being 【tied down】
+{clock}一成不变的日子/让他【喘不过气】 || The same day over and over/【suffocates】 him
+{compass}他要的/是【新鲜的风】 || What he needs/is 【fresh air】
+?那他是不是/【不会认真】？ || Does that mean/he 【can't be serious】?
+{key}不是/他只是【挑得很慢】 || No/he's just 【slow to choose】
+{heart}一旦认真/比谁都【专一】 || Once he's serious/he's 【more loyal than anyone】
+*他不是花心/他是【在找对的人】 || He's not a player/he's 【looking for the right one】
+{rings}给他空间/他会【自己飞回来】 || Give him space/he'll 【fly back on his own】
+
+# 爱 amber
+?双子爱一个人/是什么样子？ || When a Gemini loves/what does it look like?
+{bubble}他会把你/变成【他的头号听众】 || He makes you/【his number one audience】
+{gift}他会带你去/【没去过的地方】 || He takes you/【places you've never been】
+{blush}他会用玩笑/说出【真心话】 || He says 【what he really means】/as a joke
+{think}他需要的/是一个【聊得来】的人 || He needs someone/【he can really talk to】
+{people2}不是管住他/而是【陪他好奇】 || Not someone to control him/but someone 【curious with him】
+*他的爱/是一句/【我们去看看吧】 || His love sounds like/one sentence/【let's go see】
+{star}和他在一起/日子【不会无聊】 || With him/life is 【never boring】
+
+# 乱 violet
+{list}他的计划/【总在改】 || His plans/【keep changing】
+{clock}说好的事/有时会【忘】 || Promises/sometimes 【slip his mind】
+{sweat}他也知道/自己【有点乱】 || He knows/he's 【a bit of a mess】
+?可谁知道/他心里也【很着急】？ || But who knew/he 【worries about it】 too?
+{letter}他偷偷/写过很多【提醒】 || He secretly/writes himself 【so many reminders】
+{stairs}他在学着/【慢慢稳下来】 || He's learning/to 【slow down】
+*他不是不靠谱/是心里【装了太多世界】 || He's not unreliable/he just 【carries too many worlds】
+
+# 懂 air
+{alone}热闹散场后/他会【一个人走一段】 || After the party/he 【walks a while alone】
+{door}能看见他安静一面的人/【不多】 || The ones who see his quiet side/are 【few】
+{key}如果他在你面前/【不说话了】 || If he stops talking/【around you】
+?那是什么意思？ || What does that mean?
+{smile}那是他/【终于放松了】 || It means/he's 【finally relaxed】
+*能让双子安静下来的人/是他的【家】 || The person who makes a Gemini quiet/is his 【home】
+
+# 长 air
+{road}长大的双子/【不再到处跑】 || The grown-up Gemini/【stops running everywhere】
+{target}他学会了/【把一件事做完】 || He learns/to 【finish one thing】
+{book}他的好奇心/变成了【深度】 || His curiosity/turns into 【depth】
+?那他还是/那个有趣的人吗？ || Is he still/the fun one?
+{sun}当然/只是更【温柔】了 || Of course/just 【gentler】
+*聪明是天赋/【定下来】是选择 || Being clever is a gift/【settling down】 is a choice
+
+# 真 air
+?所以/双子到底是什么样的人？ || So/who is Gemini, really?
+{star}是一阵/【停不下来的风】 || A wind/【that never stops】
+{heart}也是一颗/【怕被看穿】的心 || And a heart/【afraid of being seen through】
+{bubble}他把热闹/【给所有人】 || He gives his noise/【to everyone】
+{people2}把安静/留给【懂他的人】 || and his quiet/to 【the ones who get him】
+{mirror}如果你身边有双子/【别只听他的笑话】 || If there's a Gemini in your life/【don't just hear the jokes】
+{moon}也听听/笑话后面的【那一句】 || Listen for/【the line behind them】
+*这就是双子座/外表很【热闹】/内心很【安静】 || This is Gemini/【loud】 on the outside/【quiet】 on the inside

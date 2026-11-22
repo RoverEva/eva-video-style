@@ -1,0 +1,61 @@
+TITLE ENTJ的内心世界 || The Inner World of an ENTJ
+SUBJ mbti ENTJ
+ELEMENT air
+PAL violet
+HOOK 他的心里/有一面【旗帜】/他要带着/【所有人往前】/你以为他【强势】/其实他【怕辜负大家】/从不示弱 || Deep inside him/there's 【a banner】/He wants to lead/【everyone forward】/You think he's 【domineering】/he's 【afraid of failing everyone】/He never shows weakness
+
+# 领 violet
+{crowd}一群人里/他【自然就是领头的】 || In any group/he's 【naturally the leader】
+{target}他定的目标/【一定达成】 || The goals he sets/【get done】
+{list}他的效率/【高得吓人】 || His efficiency/is 【scary】
+?你以为他/【只看结果】？ || You think he only/【cares about results】?
+{people2}其实他想的是/【带大家一起赢】 || He's really thinking/【how we all win together】
+{mountain}他总站在【最前面】 || He always stands 【at the front】
+*他的强势/是【替大家扛压力】 || His forcefulness/is 【taking the pressure for everyone】
+{shield}出了事/他说“【我来】” || When things break/he says "【I've got it】"
+
+# 硬 azure
+{bubble}他说话/【不绕弯】 || He speaks/【without sugarcoating】
+{bolt}他着急的时候/【很凶】 || When he's stressed/he's 【harsh】
+{broken}有时候/会【伤到人】 || Sometimes/he 【hurts people】
+?他是不是/【不顾别人感受】？ || Does he/【ignore people's feelings】?
+{think}不是/他事后会【反复想】 || No/afterward he 【replays it】
+{gift}他会用行动/【悄悄补偿】 || He makes it up/【quietly, with actions】
+*他的硬/是【不会软着说】 || His hardness/is 【not knowing how to say it softly】
+
+# 累 violet
+{sweat}他总是/【最后一个下班】 || He's always/【the last to leave】
+{moon}深夜/他还在【想明天】 || Late at night/he's still 【planning tomorrow】
+{hourglass}他觉得/时间【永远不够】 || He feels/there's 【never enough time】
+?谁见过/【疲惫的他】？ || Who has seen/【him exhausted】?
+{tears}他会一个人/【在车里坐很久】 || He'll sit alone/【in his car for a long time】
+{mask}再下车时/又是【那个可靠的他】 || When he gets out/he's 【reliable again】
+*领头的人/最孤单的是【不能倒】 || The loneliest thing about leading/is 【never being allowed to fall】
+
+# 软 violet
+{home}他对家人/【特别心软】 || With family/he's 【a softie】
+{cup}他会记得/你【爱喝什么】 || He remembers/【what you like to drink】
+{umbrella}你遇到麻烦/他【比你还急】 || When you're in trouble/he's 【more anxious than you】
+?他为什么/不让人看见这一面？ || Why doesn't he/let anyone see this side?
+{shield}因为他觉得/【软就会被打倒】 || Because he thinks/【soft means getting knocked down】
+*他的温柔/只给【自己人】 || His tenderness/is only for 【his people】
+
+# 爱 violet
+?ENTJ爱一个人/是什么样子？ || When an ENTJ loves/what does it look like?
+{list}他会给你/【一个清晰的未来】 || He gives you/【a clear future】
+{coins}他会默默/【打点好一切】 || He quietly/【takes care of everything】
+{target}他想和你/【一起变强】 || He wants you/to 【grow strong together】
+{rings}他要的/是【旗鼓相当的爱】 || What he wants/is 【an equal match】
+{key}你懂他的累/他会【放下所有防备】 || Understand his tiredness/and he'll 【drop his guard】
+*他的爱/是一句/【有我在 别怕】 || His love sounds like/one sentence/【I'm here, don't be afraid】
+{tears}可他也会/在你面前/【像个孩子一样累】 || But sometimes/in front of you/he's 【tired like a child】
+
+# 真 violet
+?所以/ENTJ到底是什么样的人？ || So/who is an ENTJ, really?
+{mountain}是一面/【往前冲的旗】 || A banner/【charging forward】
+{heart}也是一颗/【怕辜负人的心】 || And a heart/【afraid of letting people down】
+{shield}他把强硬/【给世界】 || He shows strength/【to the world】
+{smile}把柔软/留给【在乎的人】 || and his softness/to 【the ones he loves】
+{mirror}如果你身边有ENTJ/【告诉他可以休息】 || If there's an ENTJ in your life/【tell him he can rest】
+{sun}他会用一辈子/【护你周全】 || He'll spend his life/【keeping you safe】
+*这就是ENTJ/外表很【强】/内心很【重情】 || This is an ENTJ/【strong】 on the outside/【loyal】 on the inside

@@ -1,0 +1,60 @@
+TITLE ENTP的内心世界 || The Inner World of an ENTP
+SUBJ mbti ENTP
+ELEMENT air
+PAL violet
+HOOK 他的心里/有一个【游乐场】/每个想法/【都要试一试】/你以为他【爱抬杠】/其实他【只想找到真相】/从不认真解释 || Deep inside him/there's 【a playground】/Every idea/【must be tried】/You think he 【just loves to argue】/he 【only wants the truth】/He never explains
+
+# 辩 violet
+{bubble}你说东/他偏要【说西】 || You say east/he says 【west】
+{bolt}他吵架/【从来不输】 || In an argument/he 【never loses】
+{think}他的脑子/【转得飞快】 || His mind/【spins fast】
+?你以为他/【故意气你】？ || You think he's/【trying to annoy you】?
+{compass}其实他是/【在找另一种可能】 || He's actually/【looking for another possibility】
+{star}一个新点子/能让他【兴奋一整晚】 || One new idea/keeps him 【excited all night】
+*他抬杠/是因为【太好奇】 || He argues/because he's 【too curious】
+{crowd}有他在/【永远不无聊】 || With him around/it's 【never boring】
+
+# 玩 azure
+{list}他的计划/【常常变】 || His plans/【change often】
+{book}他学东西/【很快就会】 || He learns/【fast】
+{clock}可学会了/【就想换下一个】 || But once he's learned it/he 【wants the next thing】
+?他是不是/【没长性】？ || Does he/【lack staying power】?
+{target}不是/有挑战的事/他【死磕到底】 || No/give him a challenge/and he'll 【never let go】
+*他怕的/不是难/是【无聊】 || What he fears/isn't difficulty/it's 【boredom】
+
+# 冷 violet
+{mask}他总在开玩笑/【看不出真心】 || He's always joking/【you can't tell what he feels】
+{alone}可热闹之后/他也会【突然安静】 || But after the fun/he 【goes quiet】
+{moon}深夜/他也会想/【我是不是太过了】 || Late at night/he wonders/【did I go too far】
+?他到底/【在不在乎】？ || Does he/【care or not】?
+{heart}在乎/只是【不好意思认真】 || He cares/he's just 【embarrassed to be serious】
+{gift}他道歉的方式/是【给你一个惊喜】 || His apology/is 【a surprise for you】
+*他的玩笑/是给真心【打的掩护】 || His jokes/are 【cover for his real feelings】
+
+# 孤 violet
+{crowd}他朋友很多/【能聊的很少】 || He has many friends/but 【few he can really talk to】
+{phone}他半夜/会给你发一个【奇怪的想法】 || At midnight/he'll send you 【a strange idea】
+{key}能接住的人/他会【记很久】 || Whoever catches it/he'll 【remember for a long time】
+?他最想要的/是什么？ || What does he/want most?
+{people2}一个【跟得上他的人】 || Someone 【who can keep up】
+*他的热闹里/藏着【找知己的心】 || Inside his noise/is 【a heart looking for a kindred spirit】
+
+# 爱 violet
+?ENTP爱一个人/是什么样子？ || When an ENTP loves/what does it look like?
+{bubble}他会/【逗你一整天】 || He'll/【tease you all day】
+{runroad}他会拉你/【去做疯狂的事】 || He'll drag you/【into crazy adventures】
+{blush}他认真表白的时候/【反而会结巴】 || When he confesses for real/he 【actually stutters】
+{rings}他要的/是一个【能跟他斗嘴的人】 || What he wants/is someone 【to banter with】
+{key}你懂他的认真/他会【只对你认真】 || See that he's serious/and he'll 【be serious only with you】
+*他的爱/是一句/【跟你在一起 永远不无聊】 || His love sounds like/one sentence/【with you it's never boring】
+{tears}可他也会/在你面前/【放下所有玩笑】 || But sometimes/in front of you/he 【drops all the jokes】
+
+# 真 violet
+?所以/ENTP到底是什么样的人？ || So/who is an ENTP, really?
+{star}是一个/【停不下来的游乐场】 || A playground/【that never closes】
+{heart}也是一颗/【不好意思认真的心】 || And a heart/【too shy to be serious】
+{crowd}他把玩笑/【给所有人】 || He gives jokes/【to everyone】
+{smile}把认真/留给【在乎的人】 || and his seriousness/to 【the ones he loves】
+{mirror}如果你身边有ENTP/【跟他吵一架】 || If there's an ENTP in your life/【argue with him】
+{sun}他会觉得/【找到知己了】 || He'll feel/he's 【found his match】
+*这就是ENTP/外表很【皮】/内心很【真】 || This is an ENTP/【playful】 on the outside/【genuine】 on the inside
