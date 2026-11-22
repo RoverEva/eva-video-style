@@ -6,9 +6,9 @@ Turn raw talking-head videos into professionally edited content with motion grap
 
 将原始口播视频转换为包含专业动效、字幕和质量检测的成片。
 
-**200 Templates (T01–T205) · AI-Powered Editing · MIT Licensed**
+**200 Templates (T01–T206) · AI-Powered Editing · MIT Licensed**
 
-**200 套模板（T01–T205）· AI 自动剪辑 · MIT 开源**
+**200 套模板（T01–T206）· AI 自动剪辑 · MIT 开源**
 
 > **[Download EVA Video Style v1.0.1 | 下载正式版](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)**
 
@@ -16,7 +16,7 @@ Turn raw talking-head videos into professionally edited content with motion grap
 
 | EVA Core — Required / 核心引擎（必装） | 200 Templates — Optional / 200 套视频模板（按需安装） |
 |---|---|
-| **`EVA-Core.zip`** · download once / 只需下载一次 | **`TNN-1.0.0.zip`** for T01–T27, plus **T29–T205** as source in [`template/concepts/`](template/concepts/) / T01–T27 为 ZIP，T29–T205 为源码 |
+| **`EVA-Core.zip`** · download once / 只需下载一次 | **`TNN-1.0.0.zip`** for T01–T27, plus **T30–T206** as source in [`template/concepts/`](template/concepts/) / T01–T27 为 ZIP，T30–T206 为源码 |
 | ASR, AI Content Planner, Template Registry, Renderer, captions and QA | Template-owned animations, layouts, configuration and distributable assets |
 | 语音识别、AI 内容规划、模板注册表、渲染、字幕与质量检测 | 每套模板独立包含视觉布局、动画、配置及可分发素材 |
 | **[Download EVA-Core.zip](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/EVA-Core.zip)** | **[Browse all 23 template ZIPs](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)** |
@@ -96,9 +96,9 @@ T08 继续排除在展示和 v1.0.0 安装包之外；T26、T27 暂不标注为�
 
 ## Available Templates | 已发布模板
 
-200 templates in total, all MIT-licensed and free: the 23 installable ZIPs below (T01–T27) plus [177 concept templates T29–T205](#concept-templates-t29t205--概念模板). Download only the ZIPs you need.
+200 templates in total, all MIT-licensed and free: the 23 installable ZIPs below (T01–T27) plus [177 concept templates T30–T206](#concept-templates-t30t206--概念模板). Download only the ZIPs you need.
 
-共 200 套模板，全部 MIT 开源免费：下表 23 套可独立安装的 ZIP（T01–T27），以及 [177 套概念模板 T29–T205](#concept-templates-t29t205--概念模板)。
+共 200 套模板，全部 MIT 开源免费：下表 23 套可独立安装的 ZIP（T01–T27），以及 [177 套概念模板 T30–T206](#concept-templates-t30t206--概念模板)。
 
 | ID | Template / 模板 | Supported formats | ZIP |
 |---|---|---|---|
@@ -128,11 +128,11 @@ T08 继续排除在展示和 v1.0.0 安装包之外；T26、T27 暂不标注为�
 
 T08, T25 and T28 are excluded. T18 and T22 are retired and their IDs are not reused.
 
-## Concept Templates T29–T205 | 概念模板
+## Concept Templates T30–T206 | 概念模板
 
-**177 more templates, free and MIT-licensed**, kept as source in [`template/concepts/`](template/concepts/). Each one is a 10-second, silent concept with bilingual captions (Chinese on top) that renders in both **16:9 and 9:16**. T101–T205 are grouped by industry (teacher, science, finance, medical, legal, tech, vlog, beauty, food, travel, appliances, business, founder, engineering, gaming, fitness, home, cars, workplace, brand intros/outros). Each is a three-scene story with real transitions between the scenes (push, rise, zoom, iris, wipe, flip, shutter, blur, slide), and the presenter window morphs from one scene to the next. Templates marked *logo/text only* need no presenter footage.
+**177 more templates, free and MIT-licensed**, kept as source in [`template/concepts/`](template/concepts/). Each one is a 10-second, silent concept with bilingual captions (Chinese on top) that renders in both **16:9 and 9:16**. T101–T206 are grouped by industry (teacher, science, finance, medical, legal, tech, vlog, beauty, food, travel, appliances, business, founder, engineering, gaming, fitness, home, cars, workplace, brand intros/outros). Each is a three-scene story with real transitions between the scenes (push, rise, zoom, iris, wipe, flip, shutter, blur, slide), and the presenter window morphs from one scene to the next. Templates marked *logo/text only* need no presenter footage.
 
-另有 **177 套免费开源（MIT）概念模板**，源码在 [`template/concepts/`](template/concepts/)：每套 10 秒、无声、中英双语字幕（中文在上），同时支持 **16:9 和 9:16**。T101–T205 按行业分组，每套是三段式故事，场景之间是真实转场，人物窗口随场景变形。标注 *logo/text only* 的模板不需要人物素材。
+另有 **177 套免费开源（MIT）概念模板**，源码在 [`template/concepts/`](template/concepts/)：每套 10 秒、无声、中英双语字幕（中文在上），同时支持 **16:9 和 9:16**。T101–T206 按行业分组，每套是三段式故事，场景之间是真实转场，人物窗口随场景变形。标注 *logo/text only* 的模板不需要人物素材。
 
 Presenter footage is **not bundled**. Point the renderer at your own frame sequence (`f_00000.jpg`, `f_00001.jpg`, …):
 
@@ -143,11 +143,10 @@ node scripts/render.mjs template/concepts/t150/index.html --ar 9:16 --query "eva
 
 All sample copy and numbers in these concepts are illustrative (marked *示例 / sample* on screen). Together with T01–T27 that makes 200 templates; the retired IDs T08, T18, T22, T25 and T28 are not reused.
 
-<details><summary>T29–T100 (72 templates)</summary>
+<details><summary>T30–T100 (71 templates)</summary>
 
 | ID | Template / 模板 |
 |---|---|
-| [T29](template/concepts/t29/) | 翻牌信息板 Split Flap |
 | [T30](template/concepts/t30/) | Blueprint 蓝图工程 |
 | [T31](template/concepts/t31/) | Sticky Notes Board 便利贴墙 |
 | [T32](template/concepts/t32/) | Chat Bubbles 聊天对话 |
@@ -222,7 +221,7 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 
 </details>
 
-<details><summary>T101–T205 (105 templates)</summary>
+<details><summary>T101–T206 (106 templates)</summary>
 
 | ID | Template / 模板 |
 |---|---|
@@ -331,6 +330,7 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 | [T203](template/concepts/t203/) | 天气播报 Weather Desk |
 | [T204](template/concepts/t204/) | 前后对比 Before / After slider |
 | [T205](template/concepts/t205/) | 倒计时开场 Countdown (logo/text only) |
+| [T206](template/concepts/t206/) | 翻牌信息板 Split Flap |
 
 </details>
 
