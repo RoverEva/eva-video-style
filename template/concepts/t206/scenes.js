@@ -1,4 +1,4 @@
-/* T29 翻牌信息板 Split Flap: airport-style split-flap board — characters flip into place, rows update, final message. */
+/* T206 翻牌信息板 Split Flap: airport-style split-flap board — characters flip into place, rows update, final message. */
 (function () { const M = K.T.mo, X = M.X, Y = '#ffd23f', CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:';
   const cell = (p, x, y, s) => { const g = M.box(p, x, y, { width: 56 * s + 'px', height: 80 * s + 'px', background: '#1b1b1f', borderRadius: 6 * s + 'px', color: '#f4f4f4', font: M.f(700, 56 * s, M.MONO), display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 -2px 0 #000' }); M.box(g, 0, 40 * s - 1, { width: '100%', height: '2px', background: '#000' }); g.tx = M.box(g, 0, 0, { width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }); return g; };
   const row = (p, x, y, txt, s) => [...txt].map((ch, i) => { const g = cell(p, x + i * 62 * s, y, s); g.ch = ch; return g; });
