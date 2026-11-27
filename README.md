@@ -6,15 +6,17 @@ Turn raw talking-head videos into professionally edited content with motion grap
 
 将原始口播视频转换为包含专业动效、字幕和质量检测的成片。
 
-**23 Modular Templates · AI-Powered Editing · MIT Licensed**
+**200 Templates (T01–T206) · AI-Powered Editing · MIT Licensed**
+
+**200 套模板（T01–T206）· AI 自动剪辑 · MIT 开源**
 
 > **[Download EVA Video Style v1.0.1 | 下载正式版](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)**
 
 ## Get Started | 快速开始
 
-| EVA Core — Required / 核心引擎（必装） | 23 Templates — Optional / 视频模板（按需安装） |
+| EVA Core — Required / 核心引擎（必装） | 200 Templates — Optional / 200 套视频模板（按需安装） |
 |---|---|
-| **`EVA-Core.zip`** · download once / 只需下载一次 | **`TNN-1.0.0.zip`** · choose the styles you need / 按需选择 |
+| **`EVA-Core.zip`** · download once / 只需下载一次 | **`TNN-1.0.0.zip`** for T01–T27, plus **T30–T206** as source in [`template/concepts/`](template/concepts/) / T01–T27 为 ZIP，T30–T206 为源码 |
 | ASR, AI Content Planner, Template Registry, Renderer, captions and QA | Template-owned animations, layouts, configuration and distributable assets |
 | 语音识别、AI 内容规划、模板注册表、渲染、字幕与质量检测 | 每套模板独立包含视觉布局、动画、配置及可分发素材 |
 | **[Download EVA-Core.zip](https://github.com/RoverEva/eva-video-style/releases/download/v1.0.1/EVA-Core.zip)** | **[Browse all 23 template ZIPs](https://github.com/RoverEva/eva-video-style/releases/tag/v1.0.1)** |
@@ -51,9 +53,9 @@ EVA Core 支持完整长度的视频（至少 3 秒，无固定时长上限）�
 
 ![Eva Video Style: 21 templates in 8 seconds](docs/montage.gif)
 
-Explore the original showcase using the same AI-generated presenter. The table below contains 21 historical demo styles; labels embedded in the preserved GIF and collage may reflect earlier snapshot counts. This showcase is separate from the current 23-template modular package inventory.
+Explore the original showcase using the same AI-generated presenter. The table below contains 21 historical demo styles; labels embedded in the preserved GIF and collage may reflect earlier snapshot counts. This showcase is separate from the current 200-template inventory (23 installable ZIPs + 177 concept templates).
 
-使用相同的 AI 虚拟人物和口播内容，对比表格中的 21 种历史视觉效果。保留的 GIF 和拼图中可能仍显示旧版本数量；历史 Demo 展示与当前正式发布的 23 套可安装模板是两个不同范围。
+使用相同的 AI 虚拟人物和口播内容，对比表格中的 21 种历史视觉效果。保留的 GIF 和拼图中可能仍显示旧版本数量；历史 Demo 展示与当前 200 套模板（23 套可安装 ZIP + 177 套概念模板）是两个不同范围。
 
 - **Demo Reel / 演示合集:** English and Chinese + English MP4 files are preserved; **public hosting pending**.
 - **Music Montages / 音乐合集:** 21-template and 10-template MP4 files are preserved; **public hosting pending**.
@@ -94,9 +96,9 @@ T08 继续排除在展示和 v1.0.0 安装包之外；T26、T27 暂不标注为�
 
 ## Available Templates | 已发布模板
 
-All 23 templates are MIT-licensed, Free and independently installable. Download only the ZIPs you need.
+200 templates in total, all MIT-licensed and free: the 23 installable ZIPs below (T01–T27) plus [177 concept templates T30–T206](#concept-templates-t30t206--概念模板). Download only the ZIPs you need.
 
-23 套模板均为 MIT 开源授权，可免费独立安装并按需下载。
+共 200 套模板，全部 MIT 开源免费：下表 23 套可独立安装的 ZIP（T01–T27），以及 [177 套概念模板 T30–T206](#concept-templates-t30t206--概念模板)。
 
 | ID | Template / 模板 | Supported formats | ZIP |
 |---|---|---|---|
@@ -126,11 +128,11 @@ All 23 templates are MIT-licensed, Free and independently installable. Download 
 
 T08, T25 and T28 are excluded. T18 and T22 are retired and their IDs are not reused.
 
-## Concept Templates T30–T200 | 概念模板
+## Concept Templates T30–T206 | 概念模板
 
-**162 more templates, free and MIT-licensed**, kept as source in [`template/concepts/`](template/concepts/). Each one is a 10-second, silent concept with bilingual captions (Chinese on top) that renders in both **16:9 and 9:16**. T101–T200 are grouped by industry (teacher, science, finance, medical, legal, tech, vlog, beauty, food, travel, appliances, business, founder, engineering, gaming, fitness, home, cars, workplace, brand intros/outros). Each is a three-scene story with real transitions between the scenes (push, rise, zoom, iris, wipe, flip, shutter, blur, slide), and the presenter window morphs from one scene to the next. Templates marked *logo/text only* need no presenter footage.
+**177 more templates, free and MIT-licensed**, kept as source in [`template/concepts/`](template/concepts/). Each one is a 10-second, silent concept with bilingual captions (Chinese on top) that renders in both **16:9 and 9:16**. T101–T206 are grouped by industry (teacher, science, finance, medical, legal, tech, vlog, beauty, food, travel, appliances, business, founder, engineering, gaming, fitness, home, cars, workplace, brand intros/outros). Each is a three-scene story with real transitions between the scenes (push, rise, zoom, iris, wipe, flip, shutter, blur, slide), and the presenter window morphs from one scene to the next. Templates marked *logo/text only* need no presenter footage.
 
-另有 **162 套免费开源（MIT）概念模板**，源码在 [`template/concepts/`](template/concepts/)：每套 10 秒、无声、中英双语字幕（中文在上），同时支持 **16:9 和 9:16**。T101–T200 按行业分组，每套是三段式故事，场景之间是真实转场，人物窗口随场景变形。标注 *logo/text only* 的模板不需要人物素材。
+另有 **177 套免费开源（MIT）概念模板**，源码在 [`template/concepts/`](template/concepts/)：每套 10 秒、无声、中英双语字幕（中文在上），同时支持 **16:9 和 9:16**。T101–T206 按行业分组，每套是三段式故事，场景之间是真实转场，人物窗口随场景变形。标注 *logo/text only* 的模板不需要人物素材。
 
 Presenter footage is **not bundled**. Point the renderer at your own frame sequence (`f_00000.jpg`, `f_00001.jpg`, …):
 
@@ -139,7 +141,7 @@ node scripts/render.mjs template/concepts/t150/index.html --query "eva=/path/to/
 node scripts/render.mjs template/concepts/t150/index.html --ar 9:16 --query "eva=/path/to/frames&srcw=1920&srch=1080" --out out/T150_9x16.mp4
 ```
 
-All sample copy and numbers in these concepts are illustrative (marked *示例 / sample* on screen). Not every ID between T30 and T200 is used.
+All sample copy and numbers in these concepts are illustrative (marked *示例 / sample* on screen). Together with T01–T27 that makes 200 templates; the retired IDs T08, T18, T22, T25 and T28 are not reused.
 
 <details><summary>T30–T100 (71 templates)</summary>
 
@@ -219,11 +221,12 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 
 </details>
 
-<details><summary>T101–T200 (91 templates)</summary>
+<details><summary>T101–T206 (106 templates)</summary>
 
 | ID | Template / 模板 |
 |---|---|
 | [T101](template/concepts/t101/) | 课堂纸雕 Papercut Lesson |
+| [T102](template/concepts/t102/) | 粉笔推导 Chalk Proof |
 | [T103](template/concepts/t103/) | 展墙历史课 Gallery Lesson |
 | [T104](template/concepts/t104/) | 汉字小剧场 Glyph Theater |
 | [T105](template/concepts/t105/) | 三种解法 Three Solutions |
@@ -232,35 +235,40 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 | [T108](template/concepts/t108/) | 影子几何 Shadow Geometry |
 | [T109](template/concepts/t109/) | 火星蓝暮 Blue Dusk |
 | [T110](template/concepts/t110/) | 声音拐弯 Sound Lines |
-| [T111](template/concepts/t111/) | 三栏账本 Ledger Trio. All amounts are SAMPLE figure |
+| [T111](template/concepts/t111/) | 三栏账本 Ledger Trio. All amounts are SAMPLE figures |
 | [T112](template/concepts/t112/) | 决策剧场 Decision Theater |
-| [T113](template/concepts/t113/) | 黑金早报 Black Gold (logo/text only). |
-| [T115](template/concepts/t115/) | 信息卡堆叠 Card Stack (finance). Figures are SAMPL |
-| [T117](template/concepts/t117/) | 热成像体温 Thermal (general health info; not medic |
-| [T118](template/concepts/t118/) | 门诊排队 Clinic Queue (illustrative). |
-| [T119](template/concepts/t119/) | 皮肤分层 Skin Layers (general skincare info). Moist |
-| [T120](template/concepts/t120/) | 健康问答 Health Q&A (general wellness; not medical |
-| [T121](template/concepts/t121/) | 维权三步 Three Steps (legal info, not legal advice) |
-| [T122](template/concepts/t122/) | 条款放大镜 Clause Lens (illustrative contract; not |
-| [T123](template/concepts/t123/) | 案卷剪报 Case Clippings (illustrative evidence boar |
+| [T113](template/concepts/t113/) | 黑金早报 Black Gold (logo/text only) |
+| [T114](template/concepts/t114/) | 复利雪球 Compound Snowball |
+| [T115](template/concepts/t115/) | 信息卡堆叠 Card Stack. Figures are SAMPLE |
+| [T116](template/concepts/t116/) | 用药时间钟 Dose Clock |
+| [T117](template/concepts/t117/) | 热成像体温 Thermal |
+| [T118](template/concepts/t118/) | 门诊排队 Clinic Queue |
+| [T119](template/concepts/t119/) | 皮肤分层 Skin Layers. Moisturisers act on the epidermis; UV damages dermal collagen |
+| [T120](template/concepts/t120/) | 健康问答 Health Q&A. Weekend catch-up sleep only partly repays sleep debt |
+| [T121](template/concepts/t121/) | 维权三步 Three Steps. Labour arbitration in China is free of charge |
+| [T122](template/concepts/t122/) | 条款放大镜 Clause Lens |
+| [T123](template/concepts/t123/) | 案卷剪报 Case Clippings |
 | [T124](template/concepts/t124/) | 证据图示 Evidence Icons |
 | [T125](template/concepts/t125/) | 正反论证 Argument |
+| [T126](template/concepts/t126/) | 终端启动 Terminal Boot |
 | [T127](template/concepts/t127/) | 线框都市 Wireframe City |
 | [T128](template/concepts/t128/) | 激光扫描 Laser Scan (logo/text only) |
 | [T129](template/concepts/t129/) | 芯片之旅 Chip Journey |
 | [T130](template/concepts/t130/) | 数字光场 Light Field |
-| [T131](template/concepts/t131/) | 一日旅程 Day Story (vlog). Photos are frames of the |
-| [T132](template/concepts/t132/) | 撕纸回忆 Torn Memories. Photos = frames of the pres |
+| [T131](template/concepts/t131/) | 一日旅程 Day Story. Photos are frames of the presenter's own clip |
+| [T132](template/concepts/t132/) | 撕纸回忆 Torn Memories. Photos = frames of the presenter's own clip |
 | [T133](template/concepts/t133/) | 拍摄手记 BTS Notes |
 | [T134](template/concepts/t134/) | 无限画布 Infinite Canvas |
-| [T136](template/concepts/t136/) | 成分表 Ingredient Label (general skincare info; samp |
+| [T135](template/concepts/t135/) | 拍立得掉落 Polaroid Drop |
+| [T136](template/concepts/t136/) | 成分表 Ingredient Label |
 | [T137](template/concepts/t137/) | 网点人像 Halftone Portrait |
-| [T138](template/concepts/t138/) | 窗口叠影 Window Overlay (beauty / mood) |
+| [T138](template/concepts/t138/) | 窗口叠影 Window Overlay |
 | [T139](template/concepts/t139/) | 笔触妆效 Brush Repaint |
-| [T140](template/concepts/t140/) | 万花筒色盘 Kaleidoscope palette (beauty colours). |
-| [T141](template/concepts/t141/) | 排队值不值 Queue Meter (food review). Scores are S |
+| [T140](template/concepts/t140/) | 万花筒色盘 Kaleidoscope palette |
+| [T141](template/concepts/t141/) | 排队值不值 Queue Meter. Scores are SAMPLE |
 | [T142](template/concepts/t142/) | 火候 Heat & Timing |
 | [T143](template/concepts/t143/) | 咖啡旅程 Coffee Journey |
+| [T144](template/concepts/t144/) | 菜单黑板 Menu Board |
 | [T145](template/concepts/t145/) | 宣纸菜谱 Scroll Recipe |
 | [T146](template/concepts/t146/) | 一镜横移 One-Take Pan |
 | [T147](template/concepts/t147/) | 双景城市 Day & Night |
@@ -273,21 +281,23 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 | [T154](template/concepts/t154/) | 键帽微距 Keycap Macro (logo/text only) |
 | [T155](template/concepts/t155/) | 产品舞台 Product Stage (logo/text only) |
 | [T156](template/concepts/t156/) | 拼贴开场 Collage Open |
+| [T157](template/concepts/t157/) | 转化漏斗 Funnel |
 | [T158](template/concepts/t158/) | 模块拼贴 Bento |
 | [T159](template/concepts/t159/) | 明暗快切 Flash Cut |
 | [T160](template/concepts/t160/) | 发布会 Keynote |
 | [T161](template/concepts/t161/) | 深境舞台 Deep Stage |
 | [T162](template/concepts/t162/) | 机芯咬合 Gear Train (logo/text only) |
 | [T163](template/concepts/t163/) | 一条线 One Line (logo/text only) |
+| [T164](template/concepts/t164/) | 创业时间线 Founder Timeline |
 | [T165](template/concepts/t165/) | 破框而出 Frame Break |
 | [T166](template/concepts/t166/) | 工业管线 Pipeline |
 | [T167](template/concepts/t167/) | 时基对齐 Timebase |
 | [T168](template/concepts/t168/) | 蓝图剖面 Section View |
 | [T169](template/concepts/t169/) | 轴测线稿 Axonometric |
 | [T170](template/concepts/t170/) | 能流传导 Current |
-| [T171](template/concepts/t171/) | 像素闯关 Pixel Run (game commentary) |
-| [T172](template/concepts/t172/) | 赛博像素 Cyber Pixel (game) |
-| [T173](template/concepts/t173/) | 信号故障 Glitch Highlight (game clips) |
+| [T171](template/concepts/t171/) | 像素闯关 Pixel Run |
+| [T172](template/concepts/t172/) | 赛博像素 Cyber Pixel |
+| [T173](template/concepts/t173/) | 信号故障 Glitch Highlight |
 | [T174](template/concepts/t174/) | 牌桌战术 Card Tactics |
 | [T175](template/concepts/t175/) | 粒子变形 Particle Morph (logo/text only) |
 | [T176](template/concepts/t176/) | 体能仪表 Fitness HUD |
@@ -295,7 +305,7 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 | [T178](template/concepts/t178/) | 恢复循环 Recovery Loop |
 | [T179](template/concepts/t179/) | 城市夜跑 Night Run |
 | [T180](template/concepts/t180/) | 习惯档案 Habit Grid |
-| [T181](template/concepts/t181/) | 等距户型 Iso Floor (home) |
+| [T181](template/concepts/t181/) | 等距户型 Iso Floor |
 | [T182](template/concepts/t182/) | 马赛克揭幕 Mosaic Reveal |
 | [T183](template/concepts/t183/) | 黏土小屋 Clay House |
 | [T184](template/concepts/t184/) | 点阵手账 Dot Journal |
@@ -310,10 +320,17 @@ All sample copy and numbers in these concepts are illustrative (marked *示例 /
 | [T193](template/concepts/t193/) | 快讯台 News Desk |
 | [T194](template/concepts/t194/) | 取景器 Viewfinder |
 | [T195](template/concepts/t195/) | 现代图文 Modern Editorial |
+| [T196](template/concepts/t196/) | 火漆封印 Wax Seal (logo/text only) |
 | [T197](template/concepts/t197/) | 涂鸦片头 Doodle Opener (logo/text only) |
 | [T198](template/concepts/t198/) | 擦除转场包 Wipe Pack |
 | [T199](template/concepts/t199/) | 粒子 logo Particle Logo (logo/text only) |
 | [T200](template/concepts/t200/) | 关注结尾卡 Follow Card (logo/text only) |
+| [T201](template/concepts/t201/) | 门票片头 Ticket Stub (logo/text only) |
+| [T202](template/concepts/t202/) | 文字立方体 Word Cube |
+| [T203](template/concepts/t203/) | 天气播报 Weather Desk |
+| [T204](template/concepts/t204/) | 前后对比 Before / After slider |
+| [T205](template/concepts/t205/) | 倒计时开场 Countdown (logo/text only) |
+| [T206](template/concepts/t206/) | 翻牌信息板 Split Flap |
 
 </details>
 
